@@ -6,35 +6,10 @@
 <title>FROST MARKET</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-:root {
-  --bg:#070b14; --panel:#0f1726; --card:#141f33; --border:#22334f;
-  --blue:#58b4ff; --cyan:#8ce0ff; --gold:#ffd77a; --green:#34d399; --red:#ff6b8b;
-  --text:#f3f7ff; --muted:#8b9bb5;
-  --hero1:#102342; --hero2:#121b30; --hero3:#192642; --heroBorder:#2b4369;
-  --accent:#3b8ee8; --accent2:#6c63ff;
-  --snow: none;
-}
-body[data-theme="winter"] {
-  --bg:#0a1628; --panel:#0f2238; --card:#152b45; --border:#2a4a6e;
-  --blue:#7cc4ff; --cyan:#a8e6ff; --gold:#ffe4a3; --green:#4ade80; --red:#ff8095;
-  --text:#f0f8ff; --muted:#93aec9;
-  --hero1:#123a5e; --hero2:#0f2842; --hero3:#1a4066; --heroBorder:#3a6a9e;
-  --accent:#5ab0ff; --accent2:#7c8cff;
-}
-body[data-theme="newyear"] {
-  --bg:#0a0806; --panel:#1a0f0f; --card:#241414; --border:#4a2020;
-  --blue:#ff6b6b; --cyan:#ffd4a3; --gold:#ffd77a; --green:#4ade80; --red:#ff4d6d;
-  --text:#fff5e6; --muted:#c9a89a;
-  --hero1:#3d0f0f; --hero2:#1f0808; --hero3:#4a1414; --heroBorder:#7a2a2a;
-  --accent:#e63946; --accent2:#2a9d8f;
-}
-body[data-theme="halloween"] {
-  --bg:#0a0612; --panel:#150b22; --card:#1e1030; --border:#3a2456;
-  --blue:#c77dff; --cyan:#e0aaff; --gold:#ffa94d; --green:#80ed99; --red:#ff6b6b;
-  --text:#f5e6ff; --muted:#a896c4;
-  --hero1:#2a0f4a; --hero2:#150822; --hero3:#3a1656; --heroBorder:#5a2a7e;
-  --accent:#9d4edd; --accent2:#ff6d00;
-}
+:root { --bg:#070b14; --panel:#0f1726; --card:#141f33; --border:#22334f; --blue:#58b4ff; --cyan:#8ce0ff; --gold:#ffd77a; --green:#34d399; --red:#ff6b8b; --text:#f3f7ff; --muted:#8b9bb5; --hero1:#102342; --hero2:#121b30; --hero3:#192642; --heroBorder:#2b4369; --accent:#3b8ee8; --accent2:#6c63ff; }
+body[data-theme="winter"] { --bg:#0a1628; --panel:#0f2238; --card:#152b45; --border:#2a4a6e; --blue:#7cc4ff; --cyan:#a8e6ff; --gold:#ffe4a3; --green:#4ade80; --red:#ff8095; --text:#f0f8ff; --muted:#93aec9; --hero1:#123a5e; --hero2:#0f2842; --hero3:#1a4066; --heroBorder:#3a6a9e; --accent:#5ab0ff; --accent2:#7c8cff; }
+body[data-theme="newyear"] { --bg:#0a0806; --panel:#1a0f0f; --card:#241414; --border:#4a2020; --blue:#ff6b6b; --cyan:#ffd4a3; --gold:#ffd77a; --green:#4ade80; --red:#ff4d6d; --text:#fff5e6; --muted:#c9a89a; --hero1:#3d0f0f; --hero2:#1f0808; --hero3:#4a1414; --heroBorder:#7a2a2a; --accent:#e63946; --accent2:#2a9d8f; }
+body[data-theme="halloween"] { --bg:#0a0612; --panel:#150b22; --card:#1e1030; --border:#3a2456; --blue:#c77dff; --cyan:#e0aaff; --gold:#ffa94d; --green:#80ed99; --red:#ff6b6b; --text:#f5e6ff; --muted:#a896c4; --hero1:#2a0f4a; --hero2:#150822; --hero3:#3a1656; --heroBorder:#5a2a7e; --accent:#9d4edd; --accent2:#ff6d00; }
 body { background:radial-gradient(circle at 50% 0%, var(--hero1) 0%, var(--bg) 55%); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif; min-height:100vh; padding-bottom:84px; overflow-x:hidden; transition:background .4s, color .4s; }
 header { position:sticky; top:0; z-index:30; height:62px; padding:0 4%; background:rgba(9,14,26,0.92); backdrop-filter:blur(14px); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:10px; }
 .brand { font-size:17px; font-weight:900; color:var(--text); display:flex; align-items:center; gap:6px; cursor:pointer; }
@@ -112,7 +87,6 @@ h2 { font-size:18px; margin:18px 0 10px; }
 .theme-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
 .theme-btn { padding:9px 14px; border-radius:11px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:12px; font-weight:700; cursor:pointer; }
 .theme-btn.active { border-color:var(--accent); background:var(--accent); color:#fff; }
-.roulette-box { background:linear-gradient(135deg,#1a0f2e,#2a1f4e); border:2px solid var(--gold); border-radius:18px; padding:20px; margin:14px 0; text-align:center; }
 .roulette-prizes { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:14px 0; }
 .roulette-prize { background:rgba(255,215,122,0.1); border:1px solid var(--gold); border-radius:10px; padding:10px 6px; font-size:13px; font-weight:800; color:var(--gold); }
 .roulette-result { font-size:22px; font-weight:900; color:var(--gold); margin:10px 0; min-height:30px; }
@@ -254,6 +228,24 @@ h2 { font-size:18px; margin:18px 0 10px; }
             <div class="listings-list" id="adminListingsList"></div>
             <div class="catalog-head"><h2>⏳ Активные аукционы</h2></div>
             <div class="listings-list" id="adminAuctionsList"></div>
+            <div class="catalog-head"><h2>🎰 Рулетка (последние 200)</h2></div>
+            <div class="listings-list" id="adminRouletteList"></div>
+            <div class="catalog-head"><h2>💰 Финансы</h2></div>
+            <div class="listings-list" id="adminFinanceList"></div>
+            <div class="catalog-head"><h2>🏆 Топ по балансу</h2></div>
+            <div class="listings-list" id="adminRichList"></div>
+            <div class="catalog-head"><h2>📈 Регистрации (30 дней)</h2></div>
+            <div class="listings-list" id="adminChartReg"></div>
+            <div class="catalog-head"><h2>📈 Продажи (30 дней)</h2></div>
+            <div class="listings-list" id="adminChartSales"></div>
+            <div class="catalog-head"><h2>🛡 Гаранты (ожидают)</h2></div>
+            <div class="listings-list" id="adminGuaranteesList"></div>
+            <div class="catalog-head"><h2>📢 Массовые операции</h2></div>
+            <div class="row" style="margin-bottom:10px">
+                <button class="btn-buy" onclick="openBroadcast()">📢 Рассылка</button>
+                <button class="btn-buy" onclick="openMassBalance()">💰 Начислить всем</button>
+                <button class="btn-buy" onclick="openMassGiveNft()">🎁 NFT всем</button>
+            </div>
             <div class="catalog-head"><h2>📝 Логи</h2></div>
             <div class="listings-list" id="adminLogsList"></div>
         </div>
@@ -279,7 +271,6 @@ h2 { font-size:18px; margin:18px 0 10px; }
         <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="listSub"></p>
         <input type="number" class="m-input" id="listPrice" placeholder="Цена">
         <select class="m-input" id="listCurrency"><option value="TON">💎 TON</option><option value="STARS">⭐ Stars</option></select>
-        <div class="toggle-row"><span>⚡ Мгновенная покупка (+2%)</span><input type="checkbox" id="listInstant"></div>
         <div class="toggle-row"><span>🔒 Приватный лот (0.5 TON)</span><input type="checkbox" id="listPrivate"></div>
         <button class="btn-primary" onclick="confirmListing()" style="width:100%;margin-bottom:8px">Выставить</button>
         <button class="btn-glass" onclick="closeM('listModal')" style="width:100%">Отмена</button>
@@ -339,7 +330,7 @@ h2 { font-size:18px; margin:18px 0 10px; }
         <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="wdSub"></p>
         <input type="text" class="m-input" id="wdTarget" placeholder="Реквизиты">
         <input type="number" class="m-input" id="wdAmount" placeholder="Сумма (на руки)">
-        <div class="toggle-row"><span>⚡ Срочный вывод 1ч (15% вместо 10%)</span><input type="checkbox" id="wdUrgent"></div>
+        <div class="toggle-row"><span>⚡ Срочный вывод 1ч (15%)</span><input type="checkbox" id="wdUrgent"></div>
         <button class="btn-primary" onclick="doWithdraw()" style="width:100%;margin-bottom:8px">Отправить заявку</button>
         <button class="btn-glass" onclick="closeM('wdModal')" style="width:100%">Отмена</button>
     </div>
@@ -426,6 +417,35 @@ h2 { font-size:18px; margin:18px 0 10px; }
         </select>
         <button class="btn-primary" onclick="adminSetRole()" style="width:100%;margin-bottom:8px">Применить</button>
         <button class="btn-glass" onclick="closeM('roleModal')" style="width:100%">Отмена</button>
+    </div>
+</div>
+
+<div class="modal" id="broadcastModal">
+    <div class="modal-box">
+        <h3>📢 Рассылка всем</h3>
+        <input type="text" class="m-input" id="bcTitle" placeholder="Заголовок">
+        <input type="text" class="m-input" id="bcText" placeholder="Текст">
+        <button class="btn-primary" onclick="doBroadcast()" style="width:100%;margin-bottom:8px">Отправить</button>
+        <button class="btn-glass" onclick="closeM('broadcastModal')" style="width:100%">Отмена</button>
+    </div>
+</div>
+
+<div class="modal" id="massBalanceModal">
+    <div class="modal-box">
+        <h3>💰 Начислить всем</h3>
+        <select class="m-input" id="mbCurrency"><option value="TON">💎 TON</option><option value="STARS">⭐ Stars</option></select>
+        <input type="number" class="m-input" id="mbAmount" placeholder="Сумма (+/-)">
+        <button class="btn-primary" onclick="doMassBalance()" style="width:100%;margin-bottom:8px">Применить</button>
+        <button class="btn-glass" onclick="closeM('massBalanceModal')" style="width:100%">Отмена</button>
+    </div>
+</div>
+
+<div class="modal" id="massGiveNftModal">
+    <div class="modal-box">
+        <h3>🎁 NFT всем</h3>
+        <select class="m-input" id="mgnNft"></select>
+        <button class="btn-primary" onclick="doMassGiveNft()" style="width:100%;margin-bottom:8px">Выдать</button>
+        <button class="btn-glass" onclick="closeM('massGiveNftModal')" style="width:100%">Отмена</button>
     </div>
 </div>
 
@@ -607,9 +627,7 @@ function goTab(t) {
 function setTheme(name) {
     document.body.setAttribute('data-theme', name);
     localStorage.setItem('frost_theme', name);
-    document.querySelectorAll('[data-theme-btn]').forEach(b => {
-        b.classList.toggle('active', b.getAttribute('data-theme-btn') === name);
-    });
+    document.querySelectorAll('[data-theme-btn]').forEach(b => { b.classList.toggle('active', b.getAttribute('data-theme-btn') === name); });
 }
 (function initTheme(){ const t = localStorage.getItem('frost_theme') || 'dark'; setTheme(t); })();
 
@@ -667,9 +685,7 @@ function refreshProfileHeader() {
     if (!currentUser) return;
     document.getElementById('uName').innerHTML = currentUser.username + ' ' + (currentUser.is_verified ? '<span class="badge-verif">✅ Проверен</span>' : '');
     document.getElementById('uMeta').innerText = 'ID: '+currentUser.id + (currentUser.role!=='user'?' • '+currentUser.role.toUpperCase():'');
-    document.getElementById('uVerif').innerHTML = '';
 }
-
 function updateBalance() {
     if(!currentUser) return;
     document.getElementById('balancePill').innerText = currentUser.ton_balance.toFixed(2)+' TON';
@@ -683,7 +699,6 @@ async function refreshBalance() {
     currentUser = await r.json();
     updateBalance(); refreshProfileHeader();
 }
-
 async function loadFavorites() {
     if(!currentUser) return;
     const r = await fetch(API+'/api/favorites/'+currentUser.id);
@@ -729,7 +744,6 @@ async function loadInventory() {
             </div>
         </div>`).join('');
 }
-
 async function loadBundles() {
     if(!currentUser) return;
     const r = await fetch(API+'/api/listings');
@@ -744,7 +758,6 @@ async function loadBundles() {
         return `<div class="listing-item"><div><strong>📦 Пакет #${bid}</strong><br><span style="color:var(--muted);font-size:10px">${arr.map(x=>x.nft_emoji).join(' ')} (${arr.length} NFT)</span></div><span class="price">${arr.reduce((s,x)=>s+x.price,0).toFixed(2)} TON</span></div>`;
     }).join('');
 }
-
 async function loadTrials() {
     if(!currentUser) return;
     const r = await fetch(API+'/api/nft/trials/'+currentUser.id);
@@ -753,7 +766,6 @@ async function loadTrials() {
     if(!list.length){ box.innerHTML='<div class="empty">Нет примерок</div>'; return; }
     box.innerHTML = list.map(t => `<div class="listing-item"><div><strong>${t.nft_emoji} ${t.nft_name}</strong><br><span style="color:var(--muted);font-size:10px">до ${new Date(t.expires_at).toLocaleString()}</span></div></div>`).join('');
 }
-
 function rarityBadge(ton) {
     if(ton>=500) return '<span style="background:#5a1f1f;color:#ff9b9b;font-size:9px;padding:2px 5px;border-radius:4px">Legendary</span>';
     if(ton>=50) return '<span style="background:#5a3a1f;color:var(--gold);font-size:9px;padding:2px 5px;border-radius:4px">Epic</span>';
@@ -866,7 +878,6 @@ function openList(item) {
     curListingItem = item;
     document.getElementById('listSub').innerText = item.nft_name+' ('+item.nft_emoji+')';
     document.getElementById('listPrice').value='';
-    document.getElementById('listInstant').checked=false;
     document.getElementById('listPrivate').checked=false;
     document.getElementById('listModal').style.display='flex';
 }
@@ -1014,7 +1025,6 @@ function openTopup() {
     document.getElementById('adminContactBox').innerHTML = `💬 <b>Для пополнения напишите админу:</b><br><a href="https://t.me/${ADMIN_CONTACT.replace('@','')}" target="_blank" style="color:var(--gold);font-weight:700">${ADMIN_CONTACT}</a>`;
     document.getElementById('topupModal').style.display='flex';
 }
-
 function openWithdraw(currency) {
     wdCurrency = currency;
     document.getElementById('wdAmount').value='';
@@ -1041,7 +1051,6 @@ async function doWithdraw() {
     if(d.error) return toast('❌ '+d.error);
     closeM('wdModal'); toast('📤 Заявка отправлена'); await refreshBalance();
 }
-
 function openWdNft(item) {
     if(!currentUser) return toast('⚠️ Войдите');
     wdNftItem = item;
@@ -1058,11 +1067,7 @@ async function doWithdrawNft() {
     if(d.error) return toast('❌ '+d.error);
     closeM('wdNftModal'); toast('📤 Заявка отправлена'); await loadInventory();
 }
-
-function openExchange() {
-    document.getElementById('exAmount').value='';
-    document.getElementById('exchangeModal').style.display='flex';
-}
+function openExchange() { document.getElementById('exAmount').value=''; document.getElementById('exchangeModal').style.display='flex'; }
 async function doExchange() {
     if(!currentUser) return toast('⚠️ Войдите');
     const from = document.getElementById('exFrom').value;
@@ -1073,7 +1078,6 @@ async function doExchange() {
     if(d.error) return toast('❌ '+d.error);
     closeM('exchangeModal'); toast('🔄 Обмен выполнен'); await refreshBalance();
 }
-
 async function doTrial(item) {
     if(!confirm('Примерка на 24ч за 0.1 TON?')) return;
     const r = await fetch(API+'/api/nft/trial',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,slug:item.nft_slug,name:item.nft_name,emoji:item.nft_emoji})});
@@ -1088,11 +1092,7 @@ async function doEvaluate(item) {
     if(d.error) return toast('❌ '+d.error);
     toast('📊 Оценка: '+d.result); await refreshBalance();
 }
-
-function openRoulette() {
-    document.getElementById('rouletteResult').innerText = 'Нажмите «Крутить»';
-    document.getElementById('rouletteModal').style.display='flex';
-}
+function openRoulette() { document.getElementById('rouletteResult').innerText = 'Нажмите «Крутить»'; document.getElementById('rouletteModal').style.display='flex'; }
 async function spinRoulette() {
     if(!currentUser) return toast('⚠️ Войдите');
     const btn = document.getElementById('rouletteBtn');
@@ -1105,15 +1105,9 @@ async function spinRoulette() {
         res.innerText = '🎉 Выигрыш: ' + d.prize + ' TON';
         toast('🎉 +' + d.prize + ' TON');
         await refreshBalance();
-    } finally {
-        btn.disabled = false; btn.classList.remove('spin-anim');
-    }
+    } finally { btn.disabled = false; btn.classList.remove('spin-anim'); }
 }
-
-function openVerify() {
-    if(!currentUser) return toast('⚠️ Войдите');
-    document.getElementById('verifyModal').style.display='flex';
-}
+function openVerify() { if(!currentUser) return toast('⚠️ Войдите'); document.getElementById('verifyModal').style.display='flex'; }
 async function doVerify() {
     if(!confirm('Верификация за 50 TON?')) return;
     const r = await fetch(API+'/api/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id})});
@@ -1126,10 +1120,7 @@ async function loadTopSellers() {
     const r = await fetch(API+'/api/top-sellers');
     const list = await r.json();
     document.getElementById('topSellersList').innerHTML = list.length ? list.map((s,i)=>`
-        <div class="listing-item">
-            <div><strong>#${i+1} ${s.username}</strong></div>
-            <div style="text-align:right"><span class="price">${s.sold} продаж</span> • ${s.total.toFixed(2)}</div>
-        </div>`).join('') : '<div class="empty">Пока нет продаж</div>';
+        <div class="listing-item"><div><strong>#${i+1} ${s.username}</strong></div><div style="text-align:right"><span class="price">${s.sold} продаж</span> • ${s.total.toFixed(2)}</div></div>`).join('') : '<div class="empty">Пока нет продаж</div>';
 }
 async function loadSalesHistory() {
     if(!currentUser) return;
@@ -1149,13 +1140,19 @@ async function renderAdmin() {
     if(!currentUser || (currentUser.role!=='super' && currentUser.role!=='moder')) return;
     document.getElementById('adminSection').style.display='block';
     const id = currentUser.id;
-    const [stats, users, logs, list, aucs, wds] = await Promise.all([
+    const [stats, users, logs, list, aucs, wds, roulette, fin, rich, reg, salesChart, guar] = await Promise.all([
         fetch(API+'/api/admin/stats?adminId='+id).then(r=>r.json()),
         fetch(API+'/api/admin/users?adminId='+id).then(r=>r.json()),
         fetch(API+'/api/admin/logs?adminId='+id).then(r=>r.json()),
         fetch(API+'/api/admin/listings?adminId='+id).then(r=>r.json()),
         fetch(API+'/api/admin/auctions?adminId='+id).then(r=>r.json()),
-        fetch(API+'/api/admin/withdrawals?adminId='+id).then(r=>r.json())
+        fetch(API+'/api/admin/withdrawals?adminId='+id).then(r=>r.json()),
+        fetch(API+'/api/admin/roulette/spins?adminId='+id).then(r=>r.json()),
+        fetch(API+'/api/admin/finance?adminId='+id).then(r=>r.json()),
+        fetch(API+'/api/admin/rich-users?adminId='+id).then(r=>r.json()),
+        fetch(API+'/api/admin/chart/registrations?adminId='+id).then(r=>r.json()),
+        fetch(API+'/api/admin/chart/sales?adminId='+id).then(r=>r.json()),
+        fetch(API+'/api/admin/guarantees?adminId='+id).then(r=>r.json())
     ]);
     allUsers = users || [];
     document.getElementById('adminStatsList').innerHTML = `
@@ -1179,15 +1176,36 @@ async function renderAdmin() {
         </div>`;
     }).join('') : '<div class="empty">Нет заявок</div>';
     document.getElementById('adminListingsList').innerHTML = list.length ? list.map(l=>`
-        <div class="listing-item">
-            <div><strong>${l.nft_emoji} ${l.nft_name}</strong><br><span style="color:var(--muted);font-size:10px">${l.seller_name} • ${l.price} ${l.currency}</span></div>
-            <button class="btn-glass" style="padding:4px 8px;font-size:10px" onclick="adminCancelListing(${l.id})">Снять</button>
-        </div>`).join('') : '<div class="empty">Нет лотов</div>';
+        <div class="listing-item"><div><strong>${l.nft_emoji} ${l.nft_name}</strong><br><span style="color:var(--muted);font-size:10px">${l.seller_name} • ${l.price} ${l.currency}</span></div><button class="btn-glass" style="padding:4px 8px;font-size:10px" onclick="adminCancelListing(${l.id})">Снять</button></div>`).join('') : '<div class="empty">Нет лотов</div>';
     document.getElementById('adminAuctionsList').innerHTML = aucs.length ? aucs.map(a=>`
+        <div class="listing-item"><div><strong>${a.nft_emoji} ${a.nft_name}</strong><br><span style="color:var(--muted);font-size:10px">${a.seller_name} • ${a.current_bid} ${a.currency}</span></div>${currentUser.role==='super'?`<button class="btn-glass" style="padding:4px 8px;font-size:10px" onclick="adminCancelAuction(${a.id})">Снять</button>`:''}</div>`).join('') : '<div class="empty">Нет аукционов</div>';
+    document.getElementById('adminRouletteList').innerHTML = roulette.length ? roulette.map(r=>`
+        <div class="listing-item"><div><strong>${r.username||'—'}</strong><br><span style="color:var(--muted);font-size:10px">${r.pool==='owner'?'👑 ':'👤 '}${new Date(r.created_at).toLocaleString()}</span></div><span class="price">${r.cost} → ${r.prize} TON</span></div>`).join('') : '<div class="empty">Нет прокруток</div>';
+    document.getElementById('adminFinanceList').innerHTML = `
+        <div class="listing-item"><strong>💎 TON у юзеров</strong><span class="price">${fin.totalTon.toFixed(2)}</span></div>
+        <div class="listing-item"><strong>⭐ Stars у юзеров</strong><span class="price">${fin.totalStars.toFixed(0)}</span></div>
+        <div class="listing-item"><strong>👑 Твой TON</strong><span class="price">${fin.ownerTon.toFixed(2)}</span></div>
+        <div class="listing-item"><strong>👑 Твои Stars</strong><span class="price">${fin.ownerStars.toFixed(0)}</span></div>
+        <div class="listing-item"><strong>💰 Комиссия с продаж TON</strong><span class="price">${fin.salesFeesTon.toFixed(2)}</span></div>
+        <div class="listing-item"><strong>💰 Комиссия с продаж Stars</strong><span class="price">${fin.salesFeesStars.toFixed(0)}</span></div>
+        <div class="listing-item"><strong>📤 Комиссия с выводов TON</strong><span class="price">${fin.withdrawFeesTon.toFixed(2)}</span></div>
+        <div class="listing-item"><strong>📤 Комиссия с выводов Stars</strong><span class="price">${fin.withdrawFeesStars.toFixed(0)}</span></div>
+        <div class="listing-item"><strong>🎰 Прибыль с рулетки</strong><span class="price">${fin.rouletteProfit.toFixed(2)} TON</span></div>
+    `;
+    document.getElementById('adminRichList').innerHTML = rich.length ? rich.map((u,i)=>`
+        <div class="listing-item"><div><strong>#${i+1} ${u.username}</strong> ${roleBadge(u.role)}</div><span class="price">${u.ton_balance.toFixed(2)} 💎 • ${u.stars_balance.toFixed(0)} ⭐</span></div>`).join('') : '<div class="empty">Пусто</div>';
+    document.getElementById('adminChartReg').innerHTML = reg.length ? reg.map(r=>`
+        <div class="listing-item"><span>${r.day}</span><span class="price">${r.count} 👤</span></div>`).join('') : '<div class="empty">Нет данных</div>';
+    document.getElementById('adminChartSales').innerHTML = salesChart.length ? salesChart.map(r=>`
+        <div class="listing-item"><span>${r.day}</span><span class="price">${r.count} 💸 • ${r.volume.toFixed(2)}</span></div>`).join('') : '<div class="empty">Нет данных</div>';
+    document.getElementById('adminGuaranteesList').innerHTML = guar.length ? guar.map(g=>`
         <div class="listing-item">
-            <div><strong>${a.nft_emoji} ${a.nft_name}</strong><br><span style="color:var(--muted);font-size:10px">${a.seller_name} • ${a.current_bid} ${a.currency}</span></div>
-            ${currentUser.role==='super'?`<button class="btn-glass" style="padding:4px 8px;font-size:10px" onclick="adminCancelAuction(${a.id})">Снять</button>`:''}
-        </div>`).join('') : '<div class="empty">Нет аукционов</div>';
+            <div><strong>${g.nft_emoji||''} ${g.nft_name||'—'}</strong><br><span style="color:var(--muted);font-size:10px">${g.buyer_name} → ${g.seller_name} • ${g.price} ${g.currency} (fee ${g.fee})</span></div>
+            <div style="display:flex;gap:4px">
+                <button class="btn-send" style="padding:4px 8px;font-size:10px" onclick="adminGuaranteeComplete(${g.id})">Завершить</button>
+                <button class="btn-red" style="padding:4px 8px;font-size:10px" onclick="adminGuaranteeCancel(${g.id})">Отменить</button>
+            </div>
+        </div>`).join('') : '<div class="empty">Нет заявок</div>';
     document.getElementById('adminLogsList').innerHTML = logs.length ? logs.map(l=>`
         <div class="log-row"><span style="color:var(--blue)">${l.username||'—'}</span><span>${l.role||''}</span><span>${l.action}</span><span style="color:var(--muted)">${l.details||''}</span></div>
     `).join('') : '<div class="empty">Нет логов</div>';
@@ -1218,6 +1236,14 @@ async function adminGiveNft() { const userId = Number(document.getElementById('g
 async function openBalance() { const r = await fetch(API+'/api/admin/users?adminId='+currentUser.id); const users = await r.json(); document.getElementById('balUserId').innerHTML = users.map(u=>`<option value="${u.id}">${u.username}</option>`).join(''); document.getElementById('balAmount').value=''; document.getElementById('balanceModal').style.display='flex'; }
 async function adminBalance() { const userId = Number(document.getElementById('balUserId').value); const amount = parseFloat(document.getElementById('balAmount').value); const currency = document.getElementById('balCurrency').value; if(!amount||isNaN(amount)) return toast('⚠️ Сумма'); await fetch(API+'/api/admin/balance',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id,userId,amount,currency})}); closeM('balanceModal'); toast('💎'); await renderAdmin(); }
 async function exportLogs() { const r = await fetch(API+'/api/admin/logs?adminId='+currentUser.id); const logs = await r.json(); const blob = new Blob([JSON.stringify(logs, null, 2)], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'frost_logs.json'; a.click(); toast('📥 Логи'); }
+async function adminGuaranteeComplete(id) { const r = await fetch(API+'/api/admin/guarantees/'+id+'/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id})}); const d = await r.json(); if(d.error) return toast('❌ '+d.error); toast('✅ Гарант завершён'); await renderAdmin(); }
+async function adminGuaranteeCancel(id) { const r = await fetch(API+'/api/admin/guarantees/'+id+'/cancel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id})}); const d = await r.json(); if(d.error) return toast('❌ '+d.error); toast('❌ Гарант отменён'); await renderAdmin(); }
+function openBroadcast() { document.getElementById('bcTitle').value=''; document.getElementById('bcText').value=''; document.getElementById('broadcastModal').style.display='flex'; }
+async function doBroadcast() { const title = document.getElementById('bcTitle').value.trim(); const text = document.getElementById('bcText').value.trim(); if(!title||!text) return toast('⚠️ Заполните'); const r = await fetch(API+'/api/admin/broadcast',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id,title,text})}); const d = await r.json(); if(d.error) return toast('❌ '+d.error); closeM('broadcastModal'); toast('📢 Отправлено: '+d.sent); }
+function openMassBalance() { document.getElementById('mbAmount').value=''; document.getElementById('massBalanceModal').style.display='flex'; }
+async function doMassBalance() { const amount = parseFloat(document.getElementById('mbAmount').value); const currency = document.getElementById('mbCurrency').value; if(!amount||isNaN(amount)) return toast('⚠️ Сумма'); const r = await fetch(API+'/api/admin/mass-balance',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id,amount,currency})}); const d = await r.json(); if(d.error) return toast('❌ '+d.error); closeM('massBalanceModal'); toast('💰 Начислено всем'); await renderAdmin(); }
+function openMassGiveNft() { document.getElementById('mgnNft').innerHTML = gifts.map(g=>`<option value="${g.slug}|${g.name}|${g.emoji}">${g.emoji} ${g.name}</option>`).join(''); document.getElementById('massGiveNftModal').style.display='flex'; }
+async function doMassGiveNft() { const [slug,name,emoji] = document.getElementById('mgnNft').value.split('|'); const r = await fetch(API+'/api/admin/mass-give-nft',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id,slug,name,emoji})}); const d = await r.json(); if(d.error) return toast('❌ '+d.error); closeM('massGiveNftModal'); toast('🎁 Выдано: '+d.sent); }
 
 renderCatalog();
 initAuth();
