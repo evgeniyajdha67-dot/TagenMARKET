@@ -6,7 +6,7 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE,
     password_hash TEXT,
-    ton_balance REAL DEFAULT 100,
+    ton_balance REAL DEFAULT 0,
     is_admin INTEGER DEFAULT 0,
     is_banned INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -66,6 +66,13 @@ db.exec(`
     nft_emoji TEXT,
     price_ton REAL,
     sale_type TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    action TEXT,
+    details TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
 `);
