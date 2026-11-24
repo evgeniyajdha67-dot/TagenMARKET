@@ -392,7 +392,140 @@ header {
     .product-image { height: 125px; }
 }
 </style>
-</head><div class="modal" id="productModal" onclick="if(event.target===this) closeModal('productModal')">
+</head><body>
+
+<div class="toast" id="toast">Уведомление</div>
+
+<header>
+    <div class="logo">❄ МРКТ<span>NFT</span></div>
+    <div class="header-right">
+        <div class="balance-pill" onclick="openTopupModal()">
+            <span id="headerBalance">0.00 TON</span>
+            <span class="add-plus">+</span>
+        </div>
+        <button class="currency-btn" id="currencyBtn" onclick="toggleCurrency()">💎 TON</button>
+    </div>
+</header>
+
+<div class="container">
+    <div id="tab-market" class="view-section active">
+        <section class="hero">
+            <h1>Новогодний <span>МРКТ ❄</span></h1>
+            <p>Полный каталог 122 NFT-подарков Telegram. Покупай с баланса, продавай мгновенно или выводи на свой аккаунт.</p>
+            <div class="hero-btns">
+                <button class="primary-btn" onclick="openTopupModal()">💳 Пополнить</button>
+                <button class="secondary-btn" onclick="openWithdrawFundsModal('TON')">📤 Вывести средства</button>
+            </div>
+        </section>
+
+        <div class="section-head">
+            <h2>Маркет (<span id="totalCount">122</span> NFT)</h2>
+            <select class="sort-select" id="sortSelect" onchange="renderProducts()">
+                <option value="popular">По популярности</option>
+                <option value="price_desc">Сначала дорогие</option>
+                <option value="price_asc">Сначала дешёвые</option>
+            </select>
+        </div>
+
+        <input type="text" class="search" id="searchInput" placeholder="🔍 Поиск среди 122 NFT (Plush Pepe, Durov, Watch...)" oninput="renderProducts()">
+
+        <div class="categories">
+            <button class="category active" onclick="setCategory('all', this)">Все NFT</button>
+            <button class="category" onclick="setCategory('legendary', this)">👑 Легендарные</button>
+            <button class="category" onclick="setCategory('newyear', this)">🎄 Новогодние</button>
+            <button class="category" onclick="setCategory('rare', this)">💎 Редкие</button>
+            <button class="category" onclick="setCategory('classic', this)">🎁 Доступные</button>
+            <button class="category" onclick="setCategory('favs', this)">❤️ Избранное</button>
+        </div>
+
+        <div class="products" id="productsGrid"></div>
+    </div>
+
+    <div id="tab-inventory" class="view-section">
+        <div class="section-head">
+            <h2>🎒 Мои NFT-подарки</h2>
+            <span style="color:var(--muted); font-size:12.5px;" id="invCountText">0 шт.</span>
+        </div>
+        <div class="products" id="inventoryGrid"></div>
+    </div>
+
+    <div id="tab-profile" class="view-section">
+        <div class="profile-card">
+            <div class="avatar" id="userAvatar">👤</div>
+            <div class="user-info">
+                <h2 id="userName">Пользователь МРКТ</h2>
+                <p id="userHandle">@telegram_user • ID: 100000</p>
+                <span class="badge-vip">❄ Верифицированный трейдер</span>
+            </div>
+        </div>
+
+        <div class="ton-connect-bar">
+            <div>
+                <div style="font-size:12px; font-weight:700; margin-bottom:2px;">💎 TON Кошелёк для выплат</div>
+                <div class="wallet-addr" id="connectedWalletText">Не привязан</div>
+            </div>
+            <button class="ton-connect-btn" id="connectWalletBtn" onclick="toggleTonWallet()">Привязать</button>
+        </div>
+
+        <div class="wallet-grid">
+            <div class="wallet-box">
+                <span>💎 Баланс TON</span>
+                <strong id="profileTon">0.00 TON</strong>
+                <div class="wallet-btns">
+                    <button class="w-btn-in" onclick="openTopupModal('TON')">+ Пополнить</button>
+                    <button class="w-btn-out" onclick="openWithdrawFundsModal('TON')">↑ Вывести</button>
+                </div>
+            </div>
+            <div class="wallet-box">
+                <span>⭐ Баланс Stars</span>
+                <strong id="profileStars">0 ⭐</strong>
+                <div class="wallet-btns">
+                    <button class="w-btn-in" onclick="openTopupModal('STARS')">+ Пополнить</button>
+                    <button class="w-btn-out" onclick="openWithdrawFundsModal('STARS')">↑ Вывести</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="extra-grid">
+            <div class="extra-box">
+                <h4>🤝 Реферальная ссылка</h4>
+                <p>Приглашай друзей и получай <b>10%</b> с комиссии маркета.</p>
+                <div class="promo-row">
+                    <input type="text" class="promo-input" id="refLinkInput" readonly value="https://t.me">
+                    <button class="promo-apply" onclick="copyRefLink()">Копия</button>
+                </div>
+            </div>
+            <div class="extra-box">
+                <h4>🎟 Промокод</h4>
+                <p>Бонусные коды: <b>NEWYEAR2026</b> и <b>MRKT</b>.</p>
+                <div class="promo-row">
+                    <input type="text" class="promo-input" id="promoCodeInput" placeholder="Введите код...">
+                    <button class="promo-apply" onclick="activatePromo()">OK</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-stats">
+            <div class="p-stat">
+                <strong id="statOwned">0</strong>
+                <span>NFT в инвентаре</span>
+            </div>
+            <div class="p-stat">
+                <strong id="statTurnover">0 TON</strong>
+                <span>Оборот сделок</span>
+            </div>
+            <div class="p-stat">
+                <strong id="statFavs">0</strong>
+                <span>В избранном</span>
+            </div>
+        </div>
+
+        <div class="section-head">
+            <h2>📜 История операций</h2>
+        </div>
+        <div class="tx-list" id="txList"></div>
+    </div>
+</div><div class="modal" id="productModal" onclick="if(event.target===this) closeModal('productModal')">
     <div class="modal-box">
         <div class="modal-img-wrap" id="modalImgWrap"></div>
         <span class="modal-tag" id="modalTag">Коллекция</span>
@@ -519,130 +652,130 @@ function initUserProfile() {
     }
 }
 
-const rawCollections = [
-    ["Plush Pepe", "plushpepe", "legendary", 2500, "🐸"],
-    ["Algorithm Cup", "algorithmcup", "legendary", 1450, "🏆"],
-    ["Intelligence Cup", "intelligencecup", "legendary", 1320, "🧠"],
-    ["Heart Locket", "heartlocket", "legendary", 890, "💖"],
-    ["Resistance Dog", "resistancedog", "legendary", 640, "🐶"],
-    ["Durov's Cap", "durovscap", "legendary", 455, "🧢"],
-    ["Durov's Glasses", "durovsglasses", "legendary", 380, "🕶️"],
-    ["Precious Peach", "preciouspeach", "legendary", 320, "🍑"],
-    ["Heroic Helmet", "heroichelmet", "legendary", 210, "🪖"],
-    ["Mighty Arm", "mightyarm", "legendary", 175, "💪"],
-    ["Nail Bracelet", "nailbracelet", "legendary", 145, "📿"],
-    ["Artisan Brick", "artisanbrick", "legendary", 120, "🧱"],
-    ["Ion Gem", "iongem", "legendary", 95, "💎"],
-    ["Astral Shard", "astralshard", "legendary", 89, "🔮"],
-    ["Perfume Bottle", "perfumebottle", "legendary", 85, "🧴"],
-    ["Mini Oscar", "minioscar", "legendary", 78, "🏆"],
-    ["Gem Signet", "gemsignet", "legendary", 72, "💍"],
-    ["Westside Sign", "westsidesign", "legendary", 68, "🤟"],
-    ["Low Rider", "lowrider", "legendary", 64, "🚗"],
-    ["Magic Potion", "magicpotion", "legendary", 55, "🧪"],
-    ["Sharp Tongue", "sharptongue", "legendary", 52, "👅"],
-    ["Voodoo Doll", "voodoodoll", "legendary", 49, "🪆"],
-    ["Loot Bag", "lootbag", "rare", 44, "💰"],
-    ["Genie Lamp", "genielamp", "rare", 39, "🪔"],
-    ["Bond Peach", "bondpeach", "rare", 37, "🍑"],
-    ["Electric Skull", "electricskull", "rare", 35, "💀"],
-    ["Swiss Watch", "swisswatch", "rare", 32, "⌚"],
-    ["Signet Ring", "signetring", "rare", 28, "💍"],
-    ["Neko Helmet", "nekohelmet", "rare", 27, "🐱"],
-    ["Scared Cat", "scaredcat", "rare", 25, "🙀"],
-    ["Kissed Frog", "kissedfrog", "rare", 22, "🐸"],
-    ["Diamond Ring", "diamondring", "rare", 21, "💎"],
-    ["Crystal Ball", "crystalball", "rare", 19, "🔮"],
-    ["Cupid Charm", "cupidcharm", "rare", 18.5, "💘"],
-    ["Toy Bear", "toybear", "rare", 18, "🧸"],
-    ["Khabib's Papakha", "khabibspapakha", "rare", 17.5, "🐑"],
-    ["Snow Globe", "snowglobe", "newyear", 17, "🔮"],
-    ["Love Potion", "lovepotion", "rare", 16.5, "🍷"],
-    ["Mad Pumpkin", "madpumpkin", "rare", 16, "🎃"],
-    ["Snow Mittens", "snowmittens", "newyear", 15.5, "🧤"],
-    ["Top Hat", "tophat", "rare", 15, "🎩"],
-    ["Vintage Cigar", "vintagecigar", "rare", 14.5, "🚬"],
-    ["Trapped Heart", "trappedheart", "rare", 14, "❤️‍🔥"],
-    ["Sleigh Bell", "sleighbell", "newyear", 13.5, "🔔"],
-    ["Sky Stilettos", "skystilettos", "rare", 13, "👠"],
-    ["Hanging Star", "hangingstar", "newyear", 12.5, "⭐"],
-    ["Eternal Rose", "eternalrose", "rare", 12, "🥀"],
-    ["Jingle Bells", "jinglebells", "newyear", 11.5, "🛎️"],
-    ["Record Player", "recordplayer", "rare", 11, "📻"],
-    ["Skull Flower", "skullflower", "rare", 10.5, "💀"],
-    ["Ionic Dryer", "ionicdryer", "rare", 10.2, "💨"],
-    ["Joyful Bundle", "joyfulbundle", "newyear", 10, "🎁"],
-    ["Santa Hat", "santahat", "newyear", 9.5, "🎅"],
-    ["UFC Strike", "ufcstrike", "rare", 9.4, "🥊"],
-    ["Evil Eye", "evileye", "rare", 9.2, "🧿"],
-    ["Bunny Muffin", "bunnymuffin", "rare", 9.0, "🧁"],
-    ["Witch Hat", "witchhat", "classic", 8.8, "🧙‍♀️"],
-    ["Bow Tie", "bowtie", "classic", 8.6, "🎀"],
-    ["Snoop Cigar", "snoopcigar", "classic", 8.5, "🌿"],
-    ["Winter Wreath", "winterwreath", "newyear", 8.2, "🎄"],
-    ["Valentine Box", "valentinebox", "classic", 8.0, "💝"],
-    ["Hex Pot", "hexpot", "classic", 7.8, "🧪"],
-    ["Lush Bouquet", "lushbouquet", "classic", 7.6, "💐"],
-    ["Spiced Wine", "spicedwine", "newyear", 7.4, "🍷"],
-    ["Light Sword", "lightsword", "classic", 7.3, "⚔️"],
-    ["Flying Broom", "flyingbroom", "classic", 7.1, "🧹"],
-    ["Restless Jar", "restlessjar", "classic", 7.0, "🫙"],
-    ["Jester Hat", "jesterhat", "classic", 6.9, "🃏"],
-    ["Ginger Cookie", "gingercookie", "newyear", 6.8, "🍪"],
-    ["Money Pot", "moneypot", "classic", 6.7, "🍯"],
-    ["Star Notepad", "starnotepad", "newyear", 6.5, "📓"],
-    ["Berry Box", "berrybox", "classic", 6.4, "🫐"],
-    ["Party Sparkler", "partysparkler", "newyear", 6.3, "🎇"],
-    ["Homemade Cake", "homemadecake", "classic", 6.2, "🎂"],
-    ["Sakura Flower", "sakuraflower", "classic", 6.1, "🌸"],
-    ["Jelly Bunny", "jellybunny", "classic", 6.0, "🐰"],
-    ["Candy Cane", "candycane", "newyear", 5.9, "🍬"],
-    ["Love Candle", "lovecandle", "classic", 5.8, "🕯️"],
-    ["Spring Basket", "springbasket", "classic", 5.7, "🧺"],
-    ["Clover Pin", "cloverpin", "classic", 5.6, "🍀"],
-    ["Cookie Heart", "cookieheart", "newyear", 5.5, "🤎"],
-    ["Hypno Lollipop", "hypnolollipop", "classic", 5.45, "🍭"],
-    ["Pet Snake", "petsnake", "classic", 5.4, "🐍"],
-    ["Desk Calendar", "deskcalendar", "classic", 5.35, "📅"],
-    ["Tama Gadget", "tamagadget", "classic", 5.3, "👾"],
-    ["Easter Egg", "easteregg", "classic", 5.25, "🥚"],
-    ["Stellar Rocket", "stellarrocket", "classic", 5.2, "🚀"],
-    ["Whip Cupcake", "whipcupcake", "classic", 5.18, "🧁"],
-    ["Moon Pendant", "moonpendant", "classic", 5.15, "🌙"],
-    ["Lol Pop", "lolpop", "classic", 5.12, "🍭"],
-    ["B-Day Candle", "bdaycandle", "classic", 5.1, "🕯️"],
-    ["Xmas Stocking", "xmasstocking", "newyear", 5.08, "🧦"],
-    ["Lunar Snake", "lunarsnake", "newyear", 5.05, "🐉"],
-    ["Snake Box", "snakebox", "classic", 5.02, "📦"],
-    ["Big Year", "bigyear", "newyear", 5.0, "2️⃣"],
-    ["Holiday Drink", "holidaydrink", "newyear", 4.98, "☕"],
-    ["Snoop Dogg", "snoopdogg", "classic", 4.95, "🐕"],
-    ["Swag Bag", "swagbag", "classic", 4.92, "🎒"],
-    ["Input Key", "inputkey", "classic", 4.9, "⌨️"],
-    ["Happy Brownie", "happybrownie", "classic", 4.88, "🍫"],
-    ["Instant Ramen", "instantramen", "classic", 4.85, "🍜"],
-    ["Ice Cream", "icecream", "classic", 4.82, "🍦"],
-    ["Faith Amulet", "faithamulet", "classic", 4.8, "🧿"],
-    ["Bling Binky", "blingbinky", "classic", 4.78, "🍼"],
-    ["Fresh Socks", "freshsocks", "newyear", 4.75, "🧦"],
-    ["Pretty Posy", "prettyposy", "classic", 4.72, "🌼"],
-    ["Mousse Cake", "moussecake", "classic", 4.7, "🍰"],
-    ["BDay Candle Gold", "bdaycandlegold", "classic", 5.5, "✨"],
-    ["Crystal Eagle", "crystaleagle", "rare", 14.2, "🦅"],
-    ["Golden Star", "goldenstar", "newyear", 11.8, "🌟"],
-    ["Neon Cat", "neoncat", "rare", 16.2, "🐈"],
-    ["Cyber Mask", "cybermask", "rare", 13.8, "🎭"],
-    ["Frost Crown", "frostcrown", "newyear", 19.5, "👑"],
-    ["Velvet Box", "velvetbox", "classic", 6.1, "🎁"],
-    ["Magic Wand", "magicwand", "classic", 7.5, "🪄"],
-    ["Diamond Dice", "diamonddice", "rare", 15.8, "🎲"],
-    ["Royal Goblet", "royalgoblet", "rare", 20.5, "🏆"],
-    ["Winter Owl", "winterowl", "newyear", 12.9, "🦉"],
-    ["Lucky Horseshoe", "luckyhorseshoe", "classic", 6.6, "🧲"],
-    ["Cosmic Pearl", "cosmicpearl", "rare", 24.0, "🦪"],
-    ["Silver Bell", "silverbell", "newyear", 9.8, "🔔"],
-    ["Secret Key", "secretkey", "rare", 17.2, "🗝️"]
-];
+const rawCollections = Array.of(
+    Array.of("Plush Pepe", "plushpepe", "legendary", 2500, "🐸"),
+    Array.of("Algorithm Cup", "algorithmcup", "legendary", 1450, "🏆"),
+    Array.of("Intelligence Cup", "intelligencecup", "legendary", 1320, "🧠"),
+    Array.of("Heart Locket", "heartlocket", "legendary", 890, "💖"),
+    Array.of("Resistance Dog", "resistancedog", "legendary", 640, "🐶"),
+    Array.of("Durov's Cap", "durovscap", "legendary", 455, "🧢"),
+    Array.of("Durov's Glasses", "durovsglasses", "legendary", 380, "🕶️"),
+    Array.of("Precious Peach", "preciouspeach", "legendary", 320, "🍑"),
+    Array.of("Heroic Helmet", "heroichelmet", "legendary", 210, "🪖"),
+    Array.of("Mighty Arm", "mightyarm", "legendary", 175, "💪"),
+    Array.of("Nail Bracelet", "nailbracelet", "legendary", 145, "📿"),
+    Array.of("Artisan Brick", "artisanbrick", "legendary", 120, "🧱"),
+    Array.of("Ion Gem", "iongem", "legendary", 95, "💎"),
+    Array.of("Astral Shard", "astralshard", "legendary", 89, "🔮"),
+    Array.of("Perfume Bottle", "perfumebottle", "legendary", 85, "🧴"),
+    Array.of("Mini Oscar", "minioscar", "legendary", 78, "🏆"),
+    Array.of("Gem Signet", "gemsignet", "legendary", 72, "💍"),
+    Array.of("Westside Sign", "westsidesign", "legendary", 68, "🤟"),
+    Array.of("Low Rider", "lowrider", "legendary", 64, "🚗"),
+    Array.of("Magic Potion", "magicpotion", "legendary", 55, "🧪"),
+    Array.of("Sharp Tongue", "sharptongue", "legendary", 52, "👅"),
+    Array.of("Voodoo Doll", "voodoodoll", "legendary", 49, "🪆"),
+    Array.of("Loot Bag", "lootbag", "rare", 44, "💰"),
+    Array.of("Genie Lamp", "genielamp", "rare", 39, "🪔"),
+    Array.of("Bond Peach", "bondpeach", "rare", 37, "🍑"),
+    Array.of("Electric Skull", "electricskull", "rare", 35, "💀"),
+    Array.of("Swiss Watch", "swisswatch", "rare", 32, "⌚"),
+    Array.of("Signet Ring", "signetring", "rare", 28, "💍"),
+    Array.of("Neko Helmet", "nekohelmet", "rare", 27, "🐱"),
+    Array.of("Scared Cat", "scaredcat", "rare", 25, "🙀"),
+    Array.of("Kissed Frog", "kissedfrog", "rare", 22, "🐸"),
+    Array.of("Diamond Ring", "diamondring", "rare", 21, "💎"),
+    Array.of("Crystal Ball", "crystalball", "rare", 19, "🔮"),
+    Array.of("Cupid Charm", "cupidcharm", "rare", 18.5, "💘"),
+    Array.of("Toy Bear", "toybear", "rare", 18, "🧸"),
+    Array.of("Khabib's Papakha", "khabibspapakha", "rare", 17.5, "🐑"),
+    Array.of("Snow Globe", "snowglobe", "newyear", 17, "🔮"),
+    Array.of("Love Potion", "lovepotion", "rare", 16.5, "🍷"),
+    Array.of("Mad Pumpkin", "madpumpkin", "rare", 16, "🎃"),
+    Array.of("Snow Mittens", "snowmittens", "newyear", 15.5, "🧤"),
+    Array.of("Top Hat", "tophat", "rare", 15, "🎩"),
+    Array.of("Vintage Cigar", "vintagecigar", "rare", 14.5, "🚬"),
+    Array.of("Trapped Heart", "trappedheart", "rare", 14, "❤️‍🔥"),
+    Array.of("Sleigh Bell", "sleighbell", "newyear", 13.5, "🔔"),
+    Array.of("Sky Stilettos", "skystilettos", "rare", 13, "👠"),
+    Array.of("Hanging Star", "hangingstar", "newyear", 12.5, "⭐"),
+    Array.of("Eternal Rose", "eternalrose", "rare", 12, "🥀"),
+    Array.of("Jingle Bells", "jinglebells", "newyear", 11.5, "🛎️"),
+    Array.of("Record Player", "recordplayer", "rare", 11, "📻"),
+    Array.of("Skull Flower", "skullflower", "rare", 10.5, "💀"),
+    Array.of("Ionic Dryer", "ionicdryer", "rare", 10.2, "💨"),
+    Array.of("Joyful Bundle", "joyfulbundle", "newyear", 10, "🎁"),
+    Array.of("Santa Hat", "santahat", "newyear", 9.5, "🎅"),
+    Array.of("UFC Strike", "ufcstrike", "rare", 9.4, "🥊"),
+    Array.of("Evil Eye", "evileye", "rare", 9.2, "🧿"),
+    Array.of("Bunny Muffin", "bunnymuffin", "rare", 9.0, "🧁"),
+    Array.of("Witch Hat", "witchhat", "classic", 8.8, "🧙‍♀️"),
+    Array.of("Bow Tie", "bowtie", "classic", 8.6, "🎀"),
+    Array.of("Snoop Cigar", "snoopcigar", "classic", 8.5, "🌿"),
+    Array.of("Winter Wreath", "winterwreath", "newyear", 8.2, "🎄"),
+    Array.of("Valentine Box", "valentinebox", "classic", 8.0, "💝"),
+    Array.of("Hex Pot", "hexpot", "classic", 7.8, "🧪"),
+    Array.of("Lush Bouquet", "lushbouquet", "classic", 7.6, "💐"),
+    Array.of("Spiced Wine", "spicedwine", "newyear", 7.4, "🍷"),
+    Array.of("Light Sword", "lightsword", "classic", 7.3, "⚔️"),
+    Array.of("Flying Broom", "flyingbroom", "classic", 7.1, "🧹"),
+    Array.of("Restless Jar", "restlessjar", "classic", 7.0, "🫙"),
+    Array.of("Jester Hat", "jesterhat", "classic", 6.9, "🃏"),
+    Array.of("Ginger Cookie", "gingercookie", "newyear", 6.8, "🍪"),
+    Array.of("Money Pot", "moneypot", "classic", 6.7, "🍯"),
+    Array.of("Star Notepad", "starnotepad", "newyear", 6.5, "📓"),
+    Array.of("Berry Box", "berrybox", "classic", 6.4, "🫐"),
+    Array.of("Party Sparkler", "partysparkler", "newyear", 6.3, "🎇"),
+    Array.of("Homemade Cake", "homemadecake", "classic", 6.2, "🎂"),
+    Array.of("Sakura Flower", "sakuraflower", "classic", 6.1, "🌸"),
+    Array.of("Jelly Bunny", "jellybunny", "classic", 6.0, "🐰"),
+    Array.of("Candy Cane", "candycane", "newyear", 5.9, "🍬"),
+    Array.of("Love Candle", "lovecandle", "classic", 5.8, "🕯️"),
+    Array.of("Spring Basket", "springbasket", "classic", 5.7, "🧺"),
+    Array.of("Clover Pin", "cloverpin", "classic", 5.6, "🍀"),
+    Array.of("Cookie Heart", "cookieheart", "newyear", 5.5, "🤎"),
+    Array.of("Hypno Lollipop", "hypnolollipop", "classic", 5.45, "🍭"),
+    Array.of("Pet Snake", "petsnake", "classic", 5.4, "🐍"),
+    Array.of("Desk Calendar", "deskcalendar", "classic", 5.35, "📅"),
+    Array.of("Tama Gadget", "tamagadget", "classic", 5.3, "👾"),
+    Array.of("Easter Egg", "easteregg", "classic", 5.25, "🥚"),
+    Array.of("Stellar Rocket", "stellarrocket", "classic", 5.2, "🚀"),
+    Array.of("Whip Cupcake", "whipcupcake", "classic", 5.18, "🧁"),
+    Array.of("Moon Pendant", "moonpendant", "classic", 5.15, "🌙"),
+    Array.of("Lol Pop", "lolpop", "classic", 5.12, "🍭"),
+    Array.of("B-Day Candle", "bdaycandle", "classic", 5.1, "🕯️"),
+    Array.of("Xmas Stocking", "xmasstocking", "newyear", 5.08, "🧦"),
+    Array.of("Lunar Snake", "lunarsnake", "newyear", 5.05, "🐉"),
+    Array.of("Snake Box", "snakebox", "classic", 5.02, "📦"),
+    Array.of("Big Year", "bigyear", "newyear", 5.0, "2️⃣"),
+    Array.of("Holiday Drink", "holidaydrink", "newyear", 4.98, "☕"),
+    Array.of("Snoop Dogg", "snoopdogg", "classic", 4.95, "🐕"),
+    Array.of("Swag Bag", "swagbag", "classic", 4.92, "🎒"),
+    Array.of("Input Key", "inputkey", "classic", 4.9, "⌨️"),
+    Array.of("Happy Brownie", "happybrownie", "classic", 4.88, "🍫"),
+    Array.of("Instant Ramen", "instantramen", "classic", 4.85, "🍜"),
+    Array.of("Ice Cream", "icecream", "classic", 4.82, "🍦"),
+    Array.of("Faith Amulet", "faithamulet", "classic", 4.8, "🧿"),
+    Array.of("Bling Binky", "blingbinky", "classic", 4.78, "🍼"),
+    Array.of("Fresh Socks", "freshsocks", "newyear", 4.75, "🧦"),
+    Array.of("Pretty Posy", "prettyposy", "classic", 4.72, "🌼"),
+    Array.of("Mousse Cake", "moussecake", "classic", 4.7, "🍰"),
+    Array.of("BDay Candle Gold", "bdaycandlegold", "classic", 5.5, "✨"),
+    Array.of("Crystal Eagle", "crystaleagle", "rare", 14.2, "🦅"),
+    Array.of("Golden Star", "goldenstar", "newyear", 11.8, "🌟"),
+    Array.of("Neon Cat", "neoncat", "rare", 16.2, "🐈"),
+    Array.of("Cyber Mask", "cybermask", "rare", 13.8, "🎭"),
+    Array.of("Frost Crown", "frostcrown", "newyear", 19.5, "👑"),
+    Array.of("Velvet Box", "velvetbox", "classic", 6.1, "🎁"),
+    Array.of("Magic Wand", "magicwand", "classic", 7.5, "🪄"),
+    Array.of("Diamond Dice", "diamonddice", "rare", 15.8, "🎲"),
+    Array.of("Royal Goblet", "royalgoblet", "rare", 20.5, "🏆"),
+    Array.of("Winter Owl", "winterowl", "newyear", 12.9, "🦉"),
+    Array.of("Lucky Horseshoe", "luckyhorseshoe", "classic", 6.6, "🧲"),
+    Array.of("Cosmic Pearl", "cosmicpearl", "rare", 24.0, "🦪"),
+    Array.of("Silver Bell", "silverbell", "newyear", 9.8, "🔔"),
+    Array.of("Secret Key", "secretkey", "rare", 17.2, "🗝️")
+);
 
 const tagMap = {
     legendary: "Легендарный NFT",
@@ -653,25 +786,25 @@ const tagMap = {
 
 const gifts = rawCollections.map((item, idx) => ({
     id: idx + 1,
-    name: item[0],
-    slug: item[1],
-    category: item[2],
-    tag: tagMap[item[2]],
-    ton: item[3],
-    stars: Math.round(item[3] * 125),
-    emoji: item[4],
-    desc: `Коллекционный NFT-подарок Telegram «${item[0]}» на блокчейне TON. Доступен для покупки с баланса МРКТ и вывода в профиль.`
-}));let state = JSON.parse(localStorage.getItem('mrkt_final_state')) || {
+    name: item.at(0),
+    slug: item.at(1),
+    category: item.at(2),
+    tag: tagMap[item.at(2)],
+    ton: item.at(3),
+    stars: Math.round(item.at(3) * 125),
+    emoji: item.at(4),
+    desc: `Коллекционный NFT-подарок Telegram «${item.at(0)}» на блокчейне TON. Доступен для мгновенной покупки с баланса МРКТ и вывода на любой аккаунт.`
+}));let state = JSON.parse(localStorage.getItem('mrkt_clean_state')) || {
     ton: 25.00,
     stars: 2500,
     tonWallet: '',
     turnoverTon: 0,
-    usedPromos: [],
-    inventory: [],
-    favorites: [],
-    transactions: [
+    usedPromos: Array.of(),
+    inventory: Array.of(),
+    favorites: Array.of(),
+    transactions: Array.of(
         { type: 'plus', icon: '🎁', title: 'Стартовый бонус МРКТ', amount: '+25.00 TON', date: 'Сегодня' }
-    ]
+    )
 };
 
 let currency = 'TON';
@@ -683,7 +816,7 @@ let selectedPayMethod = 'TON Connect';
 let wdNftUid = null;
 
 function saveState() {
-    localStorage.setItem('mrkt_final_state', JSON.stringify(state));
+    localStorage.setItem('mrkt_clean_state', JSON.stringify(state));
     updateUI();
 }
 
@@ -776,7 +909,7 @@ function toggleFavorite(id, e) {
     if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
     state.favorites = state.favorites.includes(id)
         ? state.favorites.filter(x => x !== id)
-        : [...state.favorites, id];
+        : state.favorites.concat(id);
     saveState();
     renderProducts();
 }
@@ -786,8 +919,7 @@ function setCategory(cat, btn) {
     currentCategory = cat;
     document.querySelectorAll('.category').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    renderProducts();
-}function renderProducts() {
+    renderPfunction renderProducts() {
     const q = document.getElementById('searchInput').value.toLowerCase().trim();
     const sortBy = document.getElementById('sortSelect').value;
 
@@ -913,7 +1045,7 @@ function renderInventory() {
 function sellNft(uid) {
     const idx = state.inventory.findIndex(x => x.uid === uid);
     if (idx === -1) return;
-    const item = state.inventory[idx];
+    const item = state.inventory.at(idx);
     const refund = Number((item.ton * 0.85).toFixed(2));
 
     state.inventory.splice(idx, 1);
@@ -952,7 +1084,7 @@ function confirmWithdrawNft() {
 
     const idx = state.inventory.findIndex(x => x.uid === wdNftUid);
     if (idx === -1) return;
-    const item = state.inventory[idx];
+    const item = state.inventory.at(idx);
 
     state.ton -= 0.1;
     state.inventory.splice(idx, 1);
@@ -977,11 +1109,13 @@ function confirmWithdrawNft() {
             recipient: username
         }));
     }
+}
+roducts();
 }function openTopupModal(curr = currency) {
     topupCurrency = curr;
     document.getElementById('topupCurrencyBadge').innerText = curr === 'TON' ? '💎 Пополнение TON' : '⭐ Пополнение Stars';
-    const presets = curr === 'TON' ? [5, 15, 50, 100] :;
-    document.getElementById('topupAmountInput').value = presets[1];
+    const presets = curr === 'TON' ? Array.of(5, 10, 25, 100) : Array.of(500, 1000, 2500, 5000);
+    document.getElementById('topupAmountInput').value = presets.at(1);
 
     document.getElementById('topupPresets').innerHTML = presets.map(val =>
         `<button class="preset-btn" onclick="document.getElementById('topupAmountInput').value=${val}">+${val}</button>`
@@ -1177,10 +1311,11 @@ function closeModal(id) {
     document.getElementById(id).style.display = 'none';
 }
 
+const snowIcons = Array.of('❄', '❅', '❆');
 for (let i = 0; i < 18; i++) {
     const s = document.createElement('div');
     s.className = 'snow';
-    s.innerText = ['❄', '❅', '❆'][i % 3];
+    s.innerText = snowIcons.at(i % 3);
     s.style.left = Math.random() * 100 + 'vw';
     s.style.fontSize = (Math.random() * 11 + 10) + 'px';
     s.style.animationDuration = (Math.random() * 6 + 6) + 's';
