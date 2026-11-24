@@ -115,6 +115,13 @@ db.exec(`
     status TEXT DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
+  CREATE TABLE IF NOT EXISTS auction_holds (
+    auction_id INTEGER PRIMARY KEY,
+    user_id INTEGER,
+    amount REAL,
+    currency TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
 `);
 
 module.exports = db;
