@@ -6,6 +6,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Отдаём index.html на главной
+app.get('/', (req, res) => res.sendFile(__dirname + '/index.html'));
+
+// Вход по нику
 app.post('/api/login', (req, res) => {
     const { username } = req.body;
     if (!username) return res.status(400).json({ error: 'Введите ник' });
@@ -17,6 +21,7 @@ app.post('/api/login', (req, res) => {
     res.json(user);
 });
 
+// Все активные лоты
 app.get('/api/listings', (req, res) => {
     const listings = db.prepare(`
         SELECT l.*, u.username as seller_name
@@ -26,22 +31,24 @@ app.get('/api/listings', (req, res) => {
     res.json(listings);
 });
 
+// Выставить NFT
 app.post('/api/listings', (req, res) => {
     const { userId, nft_slug, nft_name, nft_emoji, price_ton } = req.body;
     const item = db.prepare('SELECT * FROM inventory WHERE user_id = ? AND nft_slug = ?').get(userId, nft_slug);
-    if (!item) return res.status(400).json({ error: 'NFT не найден' });
+    if (!item) return res.status(400).json({ error: 'NFT не найден в инвентаре' });
     db.prepare('INSERT INTO listings (seller_id, nft_slug, nft_name, nft_emoji, price_ton) VALUES (?,?,?,?,?)')
       .run(userId, nft_slug, nft_name, nft_emoji, price_ton);
     db.prepare('DELETE FROM inventory WHERE id = ?').run(item.id);
     res.json({ success: true });
 });
 
+// Купить лот
 app.post('/api/listings/:id/buy', (req, res) => {
     const { buyerId } = req.body;
     const listing = db.prepare('SELECT * FROM listings WHERE id = ? AND status = ?').get(req.params.id, 'active');
     if (!listing) return res.status(404).json({ error: 'Лот не найден' });
     const buyer = db.prepare('SELECT * FROM users WHERE id = ?').get(buyerId);
-    if (!buyer || buyer.ton_balance < listing.price_ton) return res.status(400).json({ error: 'Мало TON' });
+    if (!buyer || buyer.ton_balance < listing.price_ton) return res.status(400).json({ error: 'Недостаточно TON' });
 
     const transaction = db.transaction(() => {
         db.prepare('UPDATE users SET ton_balance = ton_balance - ? WHERE id = ?').run(listing.price_ton, buyerId);
@@ -51,19 +58,28 @@ app.post('/api/listings/:id/buy', (req, res) => {
         db.prepare('UPDATE listings SET status = ? WHERE id = ?').run('sold', listing.id);
     });
     try { transaction(); res.json({ success: true }); }
-    catch(e) { res.status(500).json({ error: 'Ошибка транзакции' }); }
+    catch (e) { res.status(500).json({ error: 'Ошибка транзакции' }); }
 });
 
+// Инвентарь пользователя
 app.get('/api/inventory/:userId', (req, res) => {
     const items = db.prepare('SELECT * FROM inventory WHERE user_id = ?').all(req.params.userId);
     res.json(items);
 });
 
+// Выдать тестовый NFT
 app.post('/api/give-nft', (req, res) => {
     const { userId, slug, name, emoji } = req.body;
     db.prepare('INSERT INTO inventory (user_id, nft_slug, nft_name, nft_emoji) VALUES (?,?,?,?)')
       .run(userId, slug, name, emoji);
     res.json({ success: true });
+});
+
+// Баланс пользователя
+app.get('/api/user/:id', (req, res) => {
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
+    if (!user) return res.status(404).json({ error: 'Нет пользователя' });
+    res.json(user);
 });
 
 const PORT = process.env.PORT || 3000;
