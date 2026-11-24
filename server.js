@@ -7,18 +7,23 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const ADMIN_USERNAME = 'tagen';
+const SUPER_ADMIN = 'tagen';
 const SALT_ROUNDS = 12;
-const SELL_TON_TO_STARS = 200;   // продать 1 TON → 200 ⭐
-const BUY_TON_FOR_STARS = 2500;  // купить 1 TON ← 2500 ⭐
+const SELL_TON_TO_STARS = 200;
+const BUY_TON_FOR_STARS = 2500;
 
 function logAction(uid, action, details) {
-    try { db.prepare('INSERT INTO logs (user_id, action, details) VALUES (?,?,?)').run(uid, action, details); } catch(e) {}
+    try {
+        const u = db.prepare('SELECT role FROM users WHERE id = ?').get(uid);
+        db.prepare('INSERT INTO logs (user_id, role, action, details) VALUES (?,?,?,?)').run(uid, u?.role || 'user', action, details);
+    } catch(e) {}
 }
 function notify(uid, title, text) {
     try { db.prepare('INSERT INTO notifications (user_id, title, text) VALUES (?,?,?)').run(uid, title, text); } catch(e) {}
 }
 function getUser(id) { return db.prepare('SELECT * FROM users WHERE id = ?').get(id); }
+function isAdmin(id) { const u = getUser(id); return u && (u.role === 'super' || u.role === 'moder'); }
+function isSuper(id) { const u = getUser(id); return u && u.role === 'super'; }
 
 app.get('/', (req, res) => res.sendFile(__dirname + '/index.html'));
 
@@ -28,8 +33,8 @@ app.post('/api/register', async (req, res) => {
     if (!username || !password || password.length < 6) return res.status(400).json({ error: 'Ник и пароль (мин. 6)' });
     if (db.prepare('SELECT id FROM users WHERE username = ?').get(username)) return res.status(400).json({ error: 'Ник занят' });
     const hash = await bcrypt.hash(password, SALT_ROUNDS);
-    const isAdmin = username === ADMIN_USERNAME ? 1 : 0;
-    const info = db.prepare('INSERT INTO users (username, password_hash, is_admin, ref_by) VALUES (?,?,?,?)').run(username, hash, isAdmin, ref || null);
+    const role = username === SUPER_ADMIN ? 'super' : 'user';
+    const info = db.prepare('INSERT INTO users (username, password_hash, role, ref_by) VALUES (?,?,?,?)').run(username, hash, role, ref || null);
     const user = getUser(info.lastInsertRowid);
     if (ref && ref !== user.id) {
         db.prepare('UPDATE users SET ton_balance = ton_balance + 5 WHERE id = ?').run(ref);
@@ -37,7 +42,7 @@ app.post('/api/register', async (req, res) => {
         notify(ref, '🤝 Реферал', `${username} зарегистрировался. +5 TON`);
     }
     logAction(user.id, 'register', 'Новый аккаунт');
-    res.json({ id: user.id, username: user.username, ton_balance: user.ton_balance, stars_balance: user.stars_balance, is_admin: user.is_admin });
+    res.json({ id: user.id, username: user.username, ton_balance: user.ton_balance, stars_balance: user.stars_balance, role: user.role });
 });
 
 app.post('/api/login', async (req, res) => {
@@ -47,13 +52,13 @@ app.post('/api/login', async (req, res) => {
     if (!(await bcrypt.compare(password, user.password_hash))) return res.status(401).json({ error: 'Неверный ник или пароль' });
     if (user.is_banned) return res.status(403).json({ error: 'Вы забанены' });
     logAction(user.id, 'login', 'Вход');
-    res.json({ id: user.id, username: user.username, ton_balance: user.ton_balance, stars_balance: user.stars_balance, is_admin: user.is_admin });
+    res.json({ id: user.id, username: user.username, ton_balance: user.ton_balance, stars_balance: user.stars_balance, role: user.role });
 });
 
 app.get('/api/user/:id', (req, res) => {
     const u = getUser(req.params.id);
     if (!u) return res.status(404).json({ error: 'Нет' });
-    res.json({ id: u.id, username: u.username, ton_balance: u.ton_balance, stars_balance: u.stars_balance, is_admin: u.is_admin, is_banned: u.is_banned });
+    res.json({ id: u.id, username: u.username, ton_balance: u.ton_balance, stars_balance: u.stars_balance, role: u.role, is_banned: u.is_banned });
 });
 
 // ОБМЕН
@@ -77,12 +82,10 @@ app.post('/api/exchange', (req, res) => {
     res.json({ success: true });
 });
 
-// ИНВЕНТАРЬ
+// ИНВЕНТАРЬ / ИЗБРАННОЕ
 app.get('/api/inventory/:userId', (req, res) => {
     res.json(db.prepare('SELECT * FROM inventory WHERE user_id = ?').all(req.params.userId));
 });
-
-// ИЗБРАННОЕ
 app.get('/api/favorites/:userId', (req, res) => {
     res.json(db.prepare('SELECT nft_slug FROM favorites WHERE user_id = ?').all(req.params.userId).map(f=>f.nft_slug));
 });
@@ -96,12 +99,8 @@ app.post('/api/favorites', (req, res) => {
 
 // ЛОТЫ
 app.get('/api/listings', (req, res) => {
-    res.json(db.prepare(`
-        SELECT l.*, u.username as seller_name FROM listings l JOIN users u ON l.seller_id = u.id
-        WHERE l.status = 'active' ORDER BY l.id DESC
-    `).all());
+    res.json(db.prepare(`SELECT l.*, u.username as seller_name FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.status = 'active' ORDER BY l.id DESC`).all());
 });
-
 app.post('/api/listings', (req, res) => {
     const { userId, nft_slug, nft_name, nft_emoji, price, currency } = req.body;
     if (!price || price <= 0) return res.status(400).json({ error: 'Цена > 0' });
@@ -114,18 +113,16 @@ app.post('/api/listings', (req, res) => {
     logAction(userId, 'listing', `${nft_name} за ${price} ${currency}`);
     res.json({ success: true });
 });
-
 app.delete('/api/listings/:id', (req, res) => {
     const { userId } = req.query;
     const l = db.prepare("SELECT * FROM listings WHERE id = ? AND status = 'active'").get(req.params.id);
     if (!l) return res.status(404).json({ error: 'Нет' });
-    if (l.seller_id !== Number(userId)) return res.status(403).json({ error: 'Не ваш' });
+    if (l.seller_id !== Number(userId) && !isAdmin(userId)) return res.status(403).json({ error: 'Нет доступа' });
     db.prepare("UPDATE listings SET status = 'cancelled' WHERE id = ?").run(req.params.id);
     db.prepare('INSERT INTO inventory (user_id, nft_slug, nft_name, nft_emoji) VALUES (?,?,?,?)').run(l.seller_id, l.nft_slug, l.nft_name, l.nft_emoji);
     logAction(userId, 'cancel_listing', l.nft_name);
     res.json({ success: true });
 });
-
 app.post('/api/listings/:id/buy', (req, res) => {
     const { buyerId } = req.body;
     const l = db.prepare("SELECT * FROM listings WHERE id = ? AND status = 'active'").get(req.params.id);
@@ -160,15 +157,9 @@ app.post('/api/offers', (req, res) => {
     notify(l.seller_id, '📩 Оффер', `${l.nft_name} за ${price} ${cur}`);
     res.json({ success: true });
 });
-
 app.get('/api/offers/incoming/:userId', (req, res) => {
-    res.json(db.prepare(`
-        SELECT o.*, u.username as buyer_name, l.nft_name, l.nft_emoji FROM offers o
-        JOIN listings l ON o.listing_id = l.id JOIN users u ON o.buyer_id = u.id
-        WHERE l.seller_id = ? AND o.status = 'pending' AND l.status = 'active' ORDER BY o.id DESC
-    `).all(req.params.userId));
+    res.json(db.prepare(`SELECT o.*, u.username as buyer_name, l.nft_name, l.nft_emoji FROM offers o JOIN listings l ON o.listing_id = l.id JOIN users u ON o.buyer_id = u.id WHERE l.seller_id = ? AND o.status = 'pending' AND l.status = 'active' ORDER BY o.id DESC`).all(req.params.userId));
 });
-
 app.post('/api/offers/:id/accept', (req, res) => {
     const { sellerId } = req.body;
     const o = db.prepare("SELECT * FROM offers WHERE id = ? AND status = 'pending'").get(req.params.id);
@@ -190,7 +181,6 @@ app.post('/api/offers/:id/accept', (req, res) => {
     try { trx(); notify(sellerId, '✅ Оффер принят', l.nft_name); notify(o.buyer_id, '✅ Оффер принят', l.nft_name); res.json({ success: true }); }
     catch(e) { res.status(500).json({ error: 'Ошибка' }); }
 });
-
 app.post('/api/offers/:id/reject', (req, res) => {
     const { sellerId } = req.body;
     const o = db.prepare("SELECT * FROM offers WHERE id = ? AND status = 'pending'").get(req.params.id);
@@ -227,12 +217,8 @@ app.get('/api/auctions', (req, res) => {
             db.prepare('INSERT INTO inventory (user_id, nft_slug, nft_name, nft_emoji) VALUES (?,?,?,?)').run(a.seller_id, a.nft_slug, a.nft_name, a.nft_emoji);
         }
     }
-    res.json(db.prepare(`
-        SELECT a.*, u.username as seller_name, (SELECT COUNT(*) FROM bids WHERE auction_id = a.id) as bids_count
-        FROM auctions a JOIN users u ON a.seller_id = u.id WHERE a.status = 'active' ORDER BY a.end_time ASC
-    `).all());
+    res.json(db.prepare(`SELECT a.*, u.username as seller_name, (SELECT COUNT(*) FROM bids WHERE auction_id = a.id) as bids_count FROM auctions a JOIN users u ON a.seller_id = u.id WHERE a.status = 'active' ORDER BY a.end_time ASC`).all());
 });
-
 app.post('/api/auctions', (req, res) => {
     const { userId, nft_slug, nft_name, nft_emoji, start_price, hours, currency } = req.body;
     if (!start_price || start_price <= 0 || !hours || hours <= 0) return res.status(400).json({ error: 'Параметры' });
@@ -244,7 +230,6 @@ app.post('/api/auctions', (req, res) => {
     logAction(userId, 'auction_start', `${nft_name} ${start_price} ${currency}`);
     res.json({ success: true });
 });
-
 app.post('/api/auctions/:id/bid', (req, res) => {
     const { bidderId, amount } = req.body;
     const a = db.prepare("SELECT * FROM auctions WHERE id = ? AND status = 'active'").get(req.params.id);
@@ -264,29 +249,17 @@ app.post('/api/auctions/:id/bid', (req, res) => {
     notify(a.seller_id, '💸 Новая ставка', `${a.nft_name} — ${amount} ${a.currency}`);
     res.json({ success: true });
 });
-
 app.get('/api/auctions/:id/bids', (req, res) => {
-    res.json(db.prepare(`
-        SELECT b.*, u.username as bidder_name FROM bids b JOIN users u ON b.bidder_id = u.id
-        WHERE b.auction_id = ? ORDER BY b.id DESC LIMIT 20
-    `).all(req.params.id));
+    res.json(db.prepare(`SELECT b.*, u.username as bidder_name FROM bids b JOIN users u ON b.bidder_id = u.id WHERE b.auction_id = ? ORDER BY b.id DESC LIMIT 20`).all(req.params.id));
 });
 
-// ИСТОРИЯ ЦЕН
-app.get('/api/history/prices/:slug', (req, res) => {
-    res.json(db.prepare('SELECT price, currency, created_at FROM sales_history WHERE nft_slug = ? ORDER BY id DESC LIMIT 5').all(req.params.slug));
-});
-
-// ТОП ПРОДАВЦОВ
+// ТОП / ИСТОРИЯ / УВЕДОМЛЕНИЯ
 app.get('/api/top-sellers', (req, res) => {
-    res.json(db.prepare(`
-        SELECT u.username, COUNT(s.id) as sold, COALESCE(SUM(s.price),0) as total
-        FROM users u LEFT JOIN sales_history s ON s.seller_id = u.id
-        GROUP BY u.id HAVING sold > 0 ORDER BY sold DESC LIMIT 10
-    `).all());
+    res.json(db.prepare(`SELECT u.username, COUNT(s.id) as sold, COALESCE(SUM(s.price),0) as total FROM users u LEFT JOIN sales_history s ON s.seller_id = u.id GROUP BY u.id HAVING sold > 0 ORDER BY sold DESC LIMIT 10`).all());
 });
-
-// УВЕДОМЛЕНИЯ
+app.get('/api/history/sales/:userId', (req, res) => {
+    res.json(db.prepare(`SELECT s.*, su.username as seller_name, bu.username as buyer_name FROM sales_history s LEFT JOIN users su ON s.seller_id = su.id LEFT JOIN users bu ON s.buyer_id = bu.id WHERE s.seller_id = ? OR s.buyer_id = ? ORDER BY s.id DESC LIMIT 50`).all(req.params.userId, req.params.userId));
+});
 app.get('/api/notifications/:userId', (req, res) => {
     res.json(db.prepare('SELECT * FROM notifications WHERE user_id = ? ORDER BY id DESC LIMIT 30').all(req.params.userId));
 });
@@ -295,71 +268,58 @@ app.post('/api/notifications/read', (req, res) => {
     res.json({ success: true });
 });
 
-// ПРОМОКОДЫ
-app.post('/api/promo', (req, res) => {
-    const { userId, code } = req.body;
-    const c = (code || '').toUpperCase();
-    if (!c) return res.status(400).json({ error: 'Код' });
-    if (db.prepare('SELECT id FROM promos WHERE user_id = ? AND code = ?').get(userId, c)) return res.status(400).json({ error: 'Уже активирован' });
-    if (c === 'NEWYEAR2026') { db.prepare('UPDATE users SET ton_balance = ton_balance + 15 WHERE id = ?').run(userId); db.prepare('INSERT INTO promos (user_id, code) VALUES (?,?)').run(userId, c); return res.json({ success: true, msg: '+15 TON' }); }
-    if (c === 'FROST') { db.prepare('UPDATE users SET stars_balance = stars_balance + 1000 WHERE id = ?').run(userId); db.prepare('INSERT INTO promos (user_id, code) VALUES (?,?)').run(userId, c); return res.json({ success: true, msg: '+1000 ⭐' }); }
-    if (c === 'TAGEN') { db.prepare('INSERT INTO inventory (user_id, nft_slug, nft_name, nft_emoji) VALUES (?,?,?,?)').run(userId, 'frostcrown', 'Frost Crown', '👑'); db.prepare('INSERT INTO promos (user_id, code) VALUES (?,?)').run(userId, c); return res.json({ success: true, msg: 'Frost Crown 👑' }); }
-    res.status(400).json({ error: 'Неверный' });
-});
-
-// ЕЖЕДНЕВНЫЙ БОНУС
-app.post('/api/daily-bonus', (req, res) => {
-    const { userId } = req.body;
-    const u = getUser(userId);
-    if (!u) return res.status(404).json({ error: 'Нет' });
-    const now = Date.now();
-    if (now - (u.last_bonus || 0) < 24 * 3600 * 1000) {
-        const left = Math.ceil((24 * 3600 * 1000 - (now - u.last_bonus)) / 3600000);
-        return res.status(400).json({ error: `Через ${left} ч` });
-    }
-    db.prepare('UPDATE users SET ton_balance = ton_balance + 1, last_bonus = ? WHERE id = ?').run(now, userId);
-    res.json({ success: true, msg: '+1 TON' });
-});
-
-// ИСТОРИЯ
-app.get('/api/history/sales/:userId', (req, res) => {
-    res.json(db.prepare(`
-        SELECT s.*, su.username as seller_name, bu.username as buyer_name FROM sales_history s
-        LEFT JOIN users su ON s.seller_id = su.id LEFT JOIN users bu ON s.buyer_id = bu.id
-        WHERE s.seller_id = ? OR s.buyer_id = ? ORDER BY s.id DESC LIMIT 50
-    `).all(req.params.userId, req.params.userId));
-});
-
 // АДМИН
-function checkAdmin(id) { const u = getUser(id); return u && u.is_admin === 1; }
-
 app.get('/api/admin/users', (req, res) => {
-    if (!checkAdmin(req.query.adminId)) return res.status(403).json({ error: 'Нет доступа' });
-    res.json(db.prepare('SELECT id, username, ton_balance, stars_balance, is_admin, is_banned FROM users').all());
+    if (!isAdmin(req.query.adminId)) return res.status(403).json({ error: 'Нет доступа' });
+    res.json(db.prepare('SELECT id, username, ton_balance, stars_balance, role, is_banned FROM users').all());
 });
 app.get('/api/admin/stats', (req, res) => {
-    if (!checkAdmin(req.query.adminId)) return res.status(403).json({ error: 'Нет доступа' });
+    if (!isAdmin(req.query.adminId)) return res.status(403).json({ error: 'Нет доступа' });
     const users = db.prepare('SELECT COUNT(*) as c FROM users').get().c;
     const listings = db.prepare("SELECT COUNT(*) as c FROM listings WHERE status = 'active'").get().c;
     const auctions = db.prepare("SELECT COUNT(*) as c FROM auctions WHERE status = 'active'").get().c;
     const sales = db.prepare('SELECT COUNT(*) as c, COALESCE(SUM(price),0) as vol FROM sales_history').get();
-    res.json({ users, listings, auctions, sales: sales.c, volume: sales.vol });
+    const salesTon = db.prepare("SELECT COALESCE(SUM(price),0) as v FROM sales_history WHERE currency='TON'").get().v;
+    const salesStars = db.prepare("SELECT COALESCE(SUM(price),0) as v FROM sales_history WHERE currency='STARS'").get().v;
+    res.json({ users, listings, auctions, sales: sales.c, volume: sales.vol, salesTon, salesStars });
 });
 app.get('/api/admin/logs', (req, res) => {
-    if (!checkAdmin(req.query.adminId)) return res.status(403).json({ error: 'Нет доступа' });
-    res.json(db.prepare('SELECT l.*, u.username FROM logs l LEFT JOIN users u ON l.user_id = u.id ORDER BY l.id DESC LIMIT 100').all());
+    if (!isAdmin(req.query.adminId)) return res.status(403).json({ error: 'Нет доступа' });
+    res.json(db.prepare(`SELECT l.*, u.username FROM logs l LEFT JOIN users u ON l.user_id = u.id ORDER BY l.id DESC LIMIT 200`).all());
+});
+app.get('/api/admin/listings', (req, res) => {
+    if (!isAdmin(req.query.adminId)) return res.status(403).json({ error: 'Нет доступа' });
+    res.json(db.prepare(`SELECT l.*, u.username as seller_name FROM listings l JOIN users u ON l.seller_id = u.id WHERE l.status = 'active' ORDER BY l.id DESC`).all());
+});
+app.get('/api/admin/auctions', (req, res) => {
+    if (!isAdmin(req.query.adminId)) return res.status(403).json({ error: 'Нет доступа' });
+    res.json(db.prepare(`SELECT a.*, u.username as seller_name FROM auctions a JOIN users u ON a.seller_id = u.id WHERE a.status = 'active' ORDER BY a.id DESC`).all());
+});
+app.post('/api/admin/role', (req, res) => {
+    const { adminId, userId, role } = req.body;
+    if (!isSuper(adminId)) return res.status(403).json({ error: 'Только super' });
+    if (userId === adminId) return res.status(400).json({ error: 'Себя нельзя' });
+    if (!['user','moder','super'].includes(role)) return res.status(400).json({ error: 'Роль' });
+    const target = getUser(userId);
+    if (target?.role === 'super') return res.status(400).json({ error: 'Нельзя менять super' });
+    db.prepare('UPDATE users SET role = ? WHERE id = ?').run(role, userId);
+    logAction(adminId, 'set_role', `user ${userId} → ${role}`);
+    res.json({ success: true });
 });
 app.post('/api/admin/ban', (req, res) => {
     const { adminId, userId, ban } = req.body;
-    if (!checkAdmin(adminId)) return res.status(403).json({ error: 'Нет доступа' });
+    if (!isAdmin(adminId)) return res.status(403).json({ error: 'Нет доступа' });
     if (userId === adminId) return res.status(400).json({ error: 'Себя нельзя' });
+    const target = getUser(userId);
+    if (target?.role === 'super') return res.status(400).json({ error: 'Нельзя банить super' });
+    if (!isSuper(adminId) && target?.role === 'moder') return res.status(403).json({ error: 'Нельзя банить модератора' });
     db.prepare('UPDATE users SET is_banned = ? WHERE id = ?').run(ban ? 1 : 0, userId);
     logAction(adminId, ban ? 'ban' : 'unban', `user ${userId}`);
     res.json({ success: true });
 });
 app.post('/api/admin/balance', (req, res) => {
     const { adminId, userId, amount, currency } = req.body;
-    if (!checkAdmin(adminId)) return res.status(403).json({ error: 'Нет доступа' });
+    if (!isAdmin(adminId)) return res.status(403).json({ error: 'Нет доступа' });
     const field = currency === 'STARS' ? 'stars_balance' : 'ton_balance';
     db.prepare(`UPDATE users SET ${field} = ${field} + ? WHERE id = ?`).run(amount, userId);
     logAction(adminId, 'add_balance', `user ${userId} ${amount} ${currency}`);
@@ -367,15 +327,55 @@ app.post('/api/admin/balance', (req, res) => {
 });
 app.post('/api/admin/give-nft', (req, res) => {
     const { adminId, userId, slug, name, emoji } = req.body;
-    if (!checkAdmin(adminId)) return res.status(403).json({ error: 'Нет доступа' });
+    if (!isAdmin(adminId)) return res.status(403).json({ error: 'Нет доступа' });
     db.prepare('INSERT INTO inventory (user_id, nft_slug, nft_name, nft_emoji) VALUES (?,?,?,?)').run(userId, slug, name, emoji);
     logAction(adminId, 'give_nft', `user ${userId} → ${name}`);
     res.json({ success: true });
 });
-app.delete('/api/admin/listings/:id', (req, res) => {
-    if (!checkAdmin(req.query.adminId)) return res.status(403).json({ error: 'Нет доступа' });
-    db.prepare("UPDATE listings SET status = 'cancelled' WHERE id = ?").run(req.params.id);
+app.post('/api/admin/give-nft-mass', (req, res) => {
+    const { adminId, userId, items } = req.body;
+    if (!isAdmin(adminId)) return res.status(403).json({ error: 'Нет доступа' });
+    const trx = db.transaction(() => {
+        for (const it of items) db.prepare('INSERT INTO inventory (user_id, nft_slug, nft_name, nft_emoji) VALUES (?,?,?,?)').run(userId, it.slug, it.name, it.emoji);
+    });
+    try { trx(); logAction(adminId, 'give_nft_mass', `user ${userId} × ${items.length}`); res.json({ success: true }); }
+    catch(e) { res.status(500).json({ error: 'Ошибка' }); }
+});
+app.post('/api/admin/balance-mass', (req, res) => {
+    const { adminId, amount, currency } = req.body;
+    if (!isSuper(adminId)) return res.status(403).json({ error: 'Только super' });
+    const field = currency === 'STARS' ? 'stars_balance' : 'ton_balance';
+    db.prepare(`UPDATE users SET ${field} = ${field} + ?`).run(amount);
+    logAction(adminId, 'balance_mass', `all +${amount} ${currency}`);
     res.json({ success: true });
+});
+app.delete('/api/admin/auctions/:id', (req, res) => {
+    if (!isSuper(req.query.adminId)) return res.status(403).json({ error: 'Только super' });
+    const a = db.prepare('SELECT * FROM auctions WHERE id = ?').get(req.params.id);
+    if (!a) return res.status(404).json({ error: 'Нет' });
+    db.prepare("UPDATE auctions SET status = 'cancelled' WHERE id = ?").run(req.params.id);
+    db.prepare('INSERT INTO inventory (user_id, nft_slug, nft_name, nft_emoji) VALUES (?,?,?,?)').run(a.seller_id, a.nft_slug, a.nft_name, a.nft_emoji);
+    logAction(req.query.adminId, 'cancel_auction', a.nft_name);
+    res.json({ success: true });
+});
+app.delete('/api/admin/users/:id', (req, res) => {
+    if (!isSuper(req.query.adminId)) return res.status(403).json({ error: 'Только super' });
+    const u = getUser(req.params.id);
+    if (!u) return res.status(404).json({ error: 'Нет' });
+    if (u.role === 'super') return res.status(400).json({ error: 'Нельзя удалить super' });
+    db.prepare('DELETE FROM users WHERE id = ?').run(req.params.id);
+    logAction(req.query.adminId, 'delete_user', u.username);
+    res.json({ success: true });
+});
+app.post('/api/admin/reset-password', (req, res) => {
+    const { adminId, userId, newPassword } = req.body;
+    if (!isSuper(adminId)) return res.status(403).json({ error: 'Только super' });
+    if (!newPassword || newPassword.length < 6) return res.status(400).json({ error: 'Пароль мин. 6' });
+    bcrypt.hash(newPassword, SALT_ROUNDS).then(hash => {
+        db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hash, userId);
+        logAction(adminId, 'reset_password', `user ${userId}`);
+        res.json({ success: true });
+    });
 });
 
 const PORT = process.env.PORT || 3000;
