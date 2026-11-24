@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>FROST MARKET</title>
+<title>FROST MARKET — Telegram Gifts</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 :root {
@@ -12,263 +12,774 @@
     --red: #ff6b8b; --text: #f3f7ff; --muted: #8b9bb5;
 }
 body { background: radial-gradient(circle at 50% 0%, #11223d 0%, var(--bg) 55%); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; min-height: 100vh; padding-bottom: 84px; overflow-x: hidden; }
+.snow { position: fixed; top: -20px; color: #fff; pointer-events: none; z-index: 4; animation: fall linear infinite; opacity: 0.35; user-select: none; }
+@keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
 header { position: sticky; top: 0; z-index: 30; height: 62px; padding: 0 4%; background: rgba(9,14,26,0.92); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.brand { font-size: 17px; font-weight: 900; color: var(--text); display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.brand { font-size: 17px; font-weight: 900; letter-spacing: 0.5px; color: var(--text); display: flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap; }
 .brand span { color: var(--blue); }
+.top-links { display: flex; gap: 14px; }
+.top-links button { background: none; border: none; color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer; }
+.top-links button.active { color: var(--blue); }
 .header-actions { display: flex; align-items: center; gap: 7px; }
-.pill { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 11px; font-size: 12.5px; font-weight: 700; cursor: pointer; }
-.container { width: 92%; max-width: 1120px; margin: auto; padding-top: 16px; }
-.section { display: none; }
+.fav-pill, .bal-pill, .curr-pill { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 11px; font-size: 12.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+.bal-pill .plus { background: var(--blue); color: #060b14; width: 17px; height: 17px; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font-weight: 900; }
+.curr-pill { color: var(--blue); border-color: rgba(88,180,255,0.45); }
+.container { width: 92%; max-width: 1120px; margin: auto; position: relative; z-index: 10; }
+.section { display: none; animation: fade 0.18s ease; }
 .section.active { display: block; }
-h2 { font-size: 18px; margin: 18px 0 10px; }
+@keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.hero { margin-top: 16px; padding: 26px 22px; border-radius: 22px; border: 1px solid #2b4369; background: radial-gradient(circle at 88% 18%, rgba(88,180,255,0.28) 0%, transparent 48%), linear-gradient(135deg, #102342, #121b30 60%, #192642); position: relative; overflow: hidden; }
+.hero::after { content: "❄"; position: absolute; right: 4%; top: 10px; font-size: 96px; color: rgba(140,224,255,0.18); pointer-events: none; }
+.hero h1 { font-size: clamp(23px, 5vw, 34px); margin-bottom: 8px; line-height: 1.15; }
+.hero p { color: #bdd0eb; font-size: 13.5px; line-height: 1.5; max-width: 520px; margin-bottom: 16px; }
+.hero-btns { display: flex; flex-wrap: wrap; gap: 9px; }
 .btn-primary { background: linear-gradient(100deg, #3b8ee8, #6c63ff); color: #fff; border: none; padding: 11px 18px; border-radius: 12px; font-size: 13.5px; font-weight: 700; cursor: pointer; }
-.btn-glass { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.16); color: #fff; padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; }
-.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 11px; }
-.card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 10px; display: flex; flex-direction: column; }
-.card-img { height: 120px; border-radius: 12px; background: radial-gradient(circle, #28466e, #111b2e); display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 9px; }
+.btn-glass { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.16); color: #fff; padding: 11px 15px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+.stat-card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 14px 12px; text-align: center; }
+.stat-card strong { display: block; font-size: 17px; color: var(--cyan); margin-bottom: 3px; }
+.stat-card span { font-size: 11.5px; color: var(--muted); }
+.catalog-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 22px 0 12px; }
+.catalog-head h2 { font-size: 18px; }
+.sort-select { background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 8px 10px; border-radius: 10px; font-size: 12.5px; outline: none; }
+.search-box { width: 100%; background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 11px 14px; border-radius: 12px; font-size: 14px; outline: none; margin-bottom: 10px; }
+.filters { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 8px; scrollbar-width: none; }
+.filters::-webkit-scrollbar { display: none; }
+.filter-btn { background: var(--panel); border: 1px solid var(--border); color: var(--muted); padding: 8px 14px; border-radius: 11px; font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.filter-btn.active { background: #1f4678; border-color: var(--blue); color: #fff; }
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 11px; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 10px; position: relative; display: flex; flex-direction: column; transition: transform 0.14s ease, border-color 0.14s ease; cursor: pointer; }
+.card:hover { border-color: #3a5d91; transform: translateY(-2px); }
+.card-img { height: 138px; border-radius: 12px; background: radial-gradient(circle, #28466e, #111b2e); display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 9px; }
 .card-img img { width: 100%; height: 100%; object-fit: cover; }
-.card-emoji { font-size: 48px; }
-.card h3 { font-size: 14px; margin-bottom: 4px; }
+.card-emoji { font-size: 54px; }
+.fav-btn { position: absolute; top: 15px; right: 15px; width: 30px; height: 30px; border-radius: 50%; background: rgba(11,18,32,0.85); border: 1px solid var(--border); color: #fff; font-size: 13px; cursor: pointer; z-index: 3; }
+.card h3 { font-size: 14px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card-tag { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
-.card-price { font-size: 14px; font-weight: 800; color: var(--gold); margin-bottom: 8px; }
+.card-price { font-size: 14px; font-weight: 800; color: var(--gold); margin-top: auto; margin-bottom: 8px; }
 .card-btn { width: 100%; background: #274d80; border: none; color: #fff; padding: 8px; border-radius: 9px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
-.row { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
-.row button { flex: 1; min-width: 60px; padding: 8px 4px; border-radius: 8px; font-size: 11px; font-weight: 700; border: none; cursor: pointer; }
-.btn-list { background: #4a2c5a; color: #d8a8ff; }
-.btn-give { background: #194538; color: var(--green); }
-.btn-buy { background: #274d80; color: #fff; }
-.empty { grid-column: 1/-1; text-align: center; padding: 30px; color: var(--muted); font-size: 13px; background: var(--panel); border: 1px dashed var(--border); border-radius: 16px; }
-.modal { display: none; position: fixed; inset: 0; z-index: 50; background: rgba(3,6,14,0.85); align-items: center; justify-content: center; padding: 16px; }
-.modal-box { background: #142036; border: 1px solid var(--border); border-radius: 22px; padding: 20px; width: 100%; max-width: 370px; text-align: center; }
-.m-input { width: 100%; background: #0b1220; border: 1px solid var(--border); color: #fff; padding: 11px 12px; border-radius: 11px; font-size: 14px; margin-bottom: 10px; outline: none; text-align: center; }
-.toast { position: fixed; top: 72px; left: 50%; transform: translateX(-50%); background: #1b2f50; border: 1px solid var(--blue); color: #fff; padding: 9px 16px; border-radius: 12px; font-size: 12.5px; font-weight: 600; z-index: 70; display: none; }
-.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 64px; background: rgba(9,14,26,0.96); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 35; }
-.b-nav-btn { background: none; border: none; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; cursor: pointer; padding: 5px 8px; }
+.empty-box { grid-column: 1/-1; background: var(--panel); border: 1px dashed var(--border); border-radius: 16px; padding: 36px 16px; text-align: center; color: var(--muted); font-size: 13.5px; }
+.inv-row { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.btn-buyback { flex: 1; min-width: 60px; background: #243654; color: var(--gold); border: none; padding: 8px 4px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; }
+.btn-send { flex: 1; min-width: 60px; background: #194538; color: var(--green); border: none; padding: 8px 4px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; }
+.btn-list { flex: 1; min-width: 60px; background: #4a2c5a; color: #d8a8ff; border: none; padding: 8px 4px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; }
+.btn-swap { flex: 1; min-width: 60px; background: #3a2c5a; color: #c8a8ff; border: none; padding: 8px 4px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; }
+.profile-header { margin-top: 16px; background: linear-gradient(140deg, #14223b, #0e1626); border: 1px solid var(--border); border-radius: 20px; padding: 18px; display: flex; align-items: center; gap: 14px; }
+.avatar { width: 58px; height: 58px; border-radius: 50%; background: linear-gradient(135deg, #3b8ee8, #6c63ff); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; overflow: hidden; flex-shrink: 0; border: 2px solid var(--blue); }
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.wallet-strip { margin-top: 12px; background: var(--panel); border: 1px solid var(--border); border-radius: 15px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.wallet-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.w-card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 14px; }
+.w-card small { color: var(--muted); font-size: 12px; display: block; margin-bottom: 4px; }
+.w-card strong { font-size: 19px; display: block; margin-bottom: 10px; }
+.w-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.w-in { flex: 1; min-width: 60px; background: #214575; color: #8cc5ff; border: none; padding: 8px; border-radius: 9px; font-size: 12px; font-weight: 700; cursor: pointer; }
+.w-out { flex: 1; min-width: 60px; background: #19253d; color: var(--gold); border: 1px solid #32486e; padding: 8px; border-radius: 9px; font-size: 12px; font-weight: 700; cursor: pointer; }
+.promo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.promo-box { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 13px; }
+.promo-box h4 { font-size: 13px; color: var(--gold); margin-bottom: 4px; }
+.promo-box p { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+.input-row { display: flex; gap: 6px; }
+.sm-input { flex: 1; min-width: 0; background: #0a101d; border: 1px solid var(--border); color: #fff; padding: 8px 10px; border-radius: 9px; font-size: 12px; outline: none; }
+.sm-btn { background: var(--blue); color: #060b14; border: none; padding: 8px 12px; border-radius: 9px; font-size: 12px; font-weight: 800; cursor: pointer; }
+.tx-list { display: flex; flex-direction: column; gap: 8px; }
+.tx-item { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 11px 13px; display: flex; justify-content: space-between; align-items: center; }
+.tx-plus { color: var(--green); font-weight: 700; font-size: 13px; }
+.tx-minus { color: var(--red); font-weight: 700; font-size: 13px; }
+footer { margin-top: 28px; padding: 18px 12px; border-top: 1px solid var(--border); text-align: center; color: var(--muted); font-size: 12px; line-height: 1.6; }
+footer strong { color: var(--text); }
+.modal { display: none; position: fixed; inset: 0; z-index: 50; background: rgba(3,6,14,0.85); backdrop-filter: blur(5px); align-items: center; justify-content: center; padding: 16px; }
+.modal-box { background: #142036; border: 1px solid var(--border); border-radius: 22px; padding: 20px; width: 100%; max-width: 370px; text-align: center; max-height: 90vh; overflow-y: auto; }
+.modal-preview { width: 135px; height: 135px; margin: 6px auto 12px; border-radius: 18px; background: radial-gradient(circle, #2d4e7a, #121c30); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.modal-preview img { width: 100%; height: 100%; object-fit: cover; }
+.badge { display: inline-block; background: #203252; color: var(--blue); font-size: 11.5px; padding: 4px 10px; border-radius: 8px; margin-bottom: 8px; }
+.modal-box h3 { font-size: 18px; margin-bottom: 6px; }
+.modal-box p { color: var(--muted); font-size: 12.5px; line-height: 1.45; margin-bottom: 14px; }
+.m-input { width: 100%; background: #0b1220; border: 1px solid var(--border); color: #fff; padding: 11px 12px; border-radius: 11px; font-size: 14px; font-weight: 600; margin-bottom: 10px; outline: none; }
+.presets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; }
+.preset { background: #1d2e4c; border: 1px solid var(--border); color: #fff; padding: 8px 4px; border-radius: 9px; font-size: 12px; font-weight: 700; cursor: pointer; }
+.pay-opt { display: flex; align-items: center; gap: 10px; background: #1a2945; border: 1px solid var(--border); padding: 9px 11px; border-radius: 11px; margin-bottom: 7px; text-align: left; font-size: 12.5px; cursor: pointer; }
+.pay-opt.active { border-color: var(--blue); background: #22385e; }
+.m-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.btn-close { background: #24344f; color: var(--muted); border: none; padding: 10px; border-radius: 11px; cursor: pointer; font-size: 13px; }
+.listings-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.listing-item { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; gap: 8px; }
+.listing-item .price { color: var(--gold); font-weight: 700; }
+.offer-badge { background: #1f4678; color: var(--blue); font-size: 10px; padding: 2px 6px; border-radius: 5px; margin-left: 6px; display: inline-block; }
+.notif-panel { margin-top: 12px; }
+.notif-item { background: linear-gradient(90deg, #1a2945, #142036); border: 1px solid var(--blue); border-radius: 12px; padding: 10px 12px; font-size: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.notif-item .close-n { background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; }
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 64px; background: rgba(9,14,26,0.96); border-top: 1px solid var(--border); backdrop-filter: blur(14px); display: flex; justify-content: space-around; align-items: center; z-index: 35; }
+.b-nav-btn { background: none; border: none; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; cursor: pointer; position: relative; padding: 5px 8px; }
 .b-nav-btn.active { color: var(--blue); }
-.b-nav-btn .ico { font-size: 18px; }
-@media (max-width: 600px) { .grid { grid-template-columns: repeat(2, 1fr); gap: 9px; } .card-img { height: 110px; } }
+.b-nav-btn span.ico { font-size: 18px; }
+.b-badge { position: absolute; top: 1px; right: 4px; background: var(--gold); color: #060b14; font-size: 10px; font-weight: 800; padding: 1px 5px; border-radius: 9px; }
+.toast { position: fixed; top: 72px; left: 50%; transform: translateX(-50%); background: #1b2f50; border: 1px solid var(--blue); color: #fff; padding: 9px 16px; border-radius: 12px; font-size: 12.5px; font-weight: 600; z-index: 70; display: none; white-space: nowrap; }
+@media (max-width: 860px) { .grid { grid-template-columns: repeat(3, 1fr); } .top-links { display: none; } }
+@media (max-width: 600px) { .grid { grid-template-columns: repeat(2, 1fr); gap: 9px; } .wallet-cards, .promo-grid { grid-template-columns: 1fr; } .card-img { height: 125px; } .b-nav-btn { font-size: 10px; padding: 5px 4px; } }
 </style>
-</head>
-<body>
+</head><body>
 
 <div class="toast" id="toast">Готово</div>
 
 <header>
-    <div class="brand" onclick="goTab('catalog')">❄ <span>FROST</span></div>
+    <div class="brand" onclick="goTab('catalog')">❄ <span>FROST</span> MARKET</div>
+    <div class="top-links">
+        <button id="tlink-catalog" class="active" onclick="goTab('catalog')">Главная</button>
+        <button id="tlink-favs" onclick="goTab('favs')">Избранное</button>
+        <button id="tlink-inventory" onclick="goTab('inventory')">Мои NFT</button>
+        <button id="tlink-market" onclick="goTab('market')">Рынок</button>
+        <button id="tlink-profile" onclick="goTab('profile')">Профиль</button>
+    </div>
     <div class="header-actions">
-        <span class="pill" id="balancePill">0 TON</span>
-        <button class="pill" onclick="login()" id="loginBtn">👤 Войти</button>
+        <button class="fav-pill" onclick="goTab('favs')">❤ <span id="favCountTop">0</span></button>
+        <div class="bal-pill" onclick="openTopup()"><span id="balTop">0 TON</span><span class="plus">+</span></div>
+        <button class="curr-pill" onclick="login()" id="loginBtn">👤 Войти</button>
     </div>
 </header>
 
 <div class="container">
     <div id="sec-catalog" class="section active">
-        <h2>🎁 Каталог подарков</h2>
+        <section class="hero">
+            <h1>Зимняя коллекция 2026 ❄</h1>
+            <p>Полноценный маркетплейс: покупка, продажа, лоты, офферы, аукционы, обмен и пополнение NFT.</p>
+            <div class="hero-btns">
+                <button class="btn-primary" onclick="document.getElementById('catalogAnchor').scrollIntoView({behavior:'smooth'})">Открыть каталог →</button>
+                <button class="btn-glass" onclick="openTopup()">💳 Пополнить баланс</button>
+                <button class="btn-glass" onclick="giveTestNft()">🎁 Тестовый NFT</button>
+                <button class="btn-glass" onclick="goTab('market')">📊 Мой рынок</button>
+            </div>
+        </section>
+
+        <div class="stats-row">
+            <div class="stat-card"><strong>124</strong><span>NFT-коллекций</span></div>
+            <div class="stat-card"><strong>❄ 2026</strong><span>Зимний сезон</span></div>
+            <div class="stat-card"><strong id="totalInvStat">0</strong><span>В вашем инвентаре</span></div>
+        </div>
+
+        <div class="catalog-head" id="catalogAnchor">
+            <h2>🎁 Каталог подарков (<span id="shownCount">124</span>)</h2>
+            <select class="sort-select" id="sortSel" onchange="renderCatalog()">
+                <option value="default">По популярности</option>
+                <option value="desc">Сначала дорогие</option>
+                <option value="asc">Сначала дешёвые</option>
+            </select>
+        </div>
+
+        <input type="text" class="search-box" id="searchInp" placeholder="🔍 Поиск среди подарков..." oninput="renderCatalog()">
+
+        <div class="filters">
+            <button class="filter-btn active" onclick="setFilter('all', this)">Все</button>
+            <button class="filter-btn" onclick="setFilter('nft', this)">💎 NFT</button>
+            <button class="filter-btn" onclick="setFilter('winter', this)">❄ Зима</button>
+            <button class="filter-btn" onclick="setFilter('rare', this)">👑 Редкие</button>
+            <button class="filter-btn" onclick="setFilter('classic', this)">🎁 Доступные</button>
+        </div>
+
         <div class="grid" id="catalogGrid"></div>
     </div>
 
+    <div id="sec-favs" class="section">
+        <div class="catalog-head">
+            <h2>❤ Избранное (<span id="favCountHead">0</span>)</h2>
+            <button class="btn-glass" onclick="goTab('catalog')">← В каталог</button>
+        </div>
+        <div class="grid" id="favsGrid"></div>
+    </div>
+
     <div id="sec-inventory" class="section">
-        <h2>🎒 Мои NFT</h2>
-        <div class="row" style="margin-bottom:12px">
-            <button class="btn-primary" onclick="giveTestNft()" style="flex:1">🎁 Получить тестовый NFT</button>
+        <div class="catalog-head">
+            <h2>🎒 Мои NFT-подарки (<span id="invCountHead">0</span>)</h2>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button class="btn-glass" onclick="giveTestNft()">🎁 Тестовый NFT</button>
+                <button class="btn-glass" onclick="goTab('catalog')">+ Купить</button>
+            </div>
         </div>
         <div class="grid" id="invGrid"></div>
     </div>
 
     <div id="sec-market" class="section">
-        <h2>📊 Рынок — лоты пользователей</h2>
+        <div class="catalog-head">
+            <h2>📊 Рынок</h2>
+            <button class="btn-glass" onclick="loadMarket()">🔄 Обновить</button>
+        </div>
+
+        <div id="notifBox" class="notif-panel"></div>
+
+        <div class="catalog-head"><h2>📌 Лоты пользователей</h2></div>
         <div class="grid" id="marketGrid"></div>
+
+        <div class="catalog-head"><h2>📥 Входящие офферы</h2></div>
+        <div class="listings-list" id="incomingOffersList"></div>
+
+        <div class="catalog-head"><h2>📤 Мои офферы (исходящие)</h2></div>
+        <div class="listings-list" id="outgoingOffersList"></div>
+
+        <div class="catalog-head"><h2>💰 История продаж</h2></div>
+        <div class="listings-list" id="soldHistoryList"></div>
+    </div>
+
+    <div id="sec-profile" class="section">
+        <div class="profile-header">
+            <div class="avatar" id="uAvatar">❄</div>
+            <div>
+                <h3 id="uName">Коллекционер Frost</h3>
+                <p id="uMeta" style="font-size:12px;color:var(--muted)">@telegram_user • ID: 100000</p>
+            </div>
+        </div>
+
+        <div class="wallet-strip">
+            <div>
+                <div style="font-size:12px;font-weight:700">💎 TON-кошелёк для выплат</div>
+                <div id="wAddrTxt" style="font-size:12px;color:var(--muted);font-family:monospace">Не привязан</div>
+            </div>
+            <button class="sm-btn" id="wLinkBtn" onclick="linkWallet()">Привязать</button>
+        </div>
+
+        <div class="wallet-cards">
+            <div class="w-card">
+                <small>💎 Баланс TON</small>
+                <strong id="pTon">0 TON</strong>
+                <div class="w-actions">
+                    <button class="w-in" onclick="openTopup('TON')">+ Пополнить</button>
+                    <button class="w-out" onclick="openWithdraw('TON')">↑ Вывести</button>
+                </div>
+            </div>
+            <div class="w-card">
+                <small>⭐ Баланс Stars</small>
+                <strong id="pStars">0 ⭐</strong>
+                <div class="w-actions">
+                    <button class="w-in" onclick="openTopup('STARS')">+ Пополнить</button>
+                    <button class="w-out" onclick="openWithdraw('STARS')">↑ Вывести</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="promo-grid">
+            <div class="promo-box">
+                <h4>🤝 Реферальная ссылка</h4>
+                <p>Получай <b>10%</b> с комиссий приглашённых.</p>
+                <div class="input-row">
+                    <input class="sm-input" id="refInp" readonly value="https://t.me">
+                    <button class="sm-btn" onclick="copyRef()">Копия</button>
+                </div>
+            </div>
+            <div class="promo-box">
+                <h4>🎟 Промокод</h4>
+                <p>Коды: <b>NEWYEAR2026</b>, <b>FROST</b>, <b>NFTGIFT</b>.</p>
+                <div class="input-row">
+                    <input class="sm-input" id="promoInp" placeholder="Введите код...">
+                    <button class="sm-btn" onclick="usePromo()">ОК</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="catalog-head"><h2>📜 История операций</h2></div>
+        <div class="tx-list" id="txList"></div>
+    </div>
+
+    <footer>
+        <strong>❄ FROST MARKET</strong><br>
+        Полноценный маркетплейс Telegram Gifts<br>
+        Покупка · Продажа · Лоты · Офферы · Аукционы · Обмен · Пополнение NFT
+    </footer>
+</div>
+
+<div class="modal" id="buyModal" onclick="if(event.target===this) closeM('buyModal')">
+    <div class="modal-box">
+        <div class="modal-preview" id="mPreview"></div>
+        <span class="badge" id="mTag">NFT</span>
+        <h3 id="mTitle">Подарок</h3>
+        <p id="mDesc">Описание</p>
+        <div class="m-actions">
+            <button class="btn-primary" id="mConfirmBuy">Купить с баланса</button>
+            <button class="btn-close" onclick="closeM('buyModal')">Закрыть</button>
+        </div>
     </div>
 </div>
 
-<div class="modal" id="listModal">
+<div class="modal" id="listModal" onclick="if(event.target===this) closeM('listModal')">
     <div class="modal-box">
-        <h3>Выставить NFT</h3>
-        <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="listSub"></p>
-        <input type="number" class="m-input" id="listPrice" placeholder="Цена в TON">
-        <button class="btn-primary" onclick="confirmListing()" style="width:100%;margin-bottom:8px">Выставить</button>
-        <button class="btn-glass" onclick="closeM('listModal')" style="width:100%">Отмена</button>
+        <span class="badge">📌 Выставить на продажу</span>
+        <h3 id="listTitle">Новый лот</h3>
+        <p id="listSub">Укажите цену. Комиссия маркета 0%.</p>
+        <input type="number" class="m-input" id="listPrice" placeholder="Цена в TON" style="text-align:center">
+        <div class="m-actions">
+            <button class="btn-primary" onclick="confirmListing()">Выставить лот</button>
+            <button class="btn-close" onclick="closeM('listModal')">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="topupModal" onclick="if(event.target===this) closeM('topupModal')">
+    <div class="modal-box">
+        <span class="badge" id="tuBadge">💎 Пополнение</span>
+        <h3>Пополнение баланса</h3>
+        <p>Выберите сумму и способ оплаты:</p>
+        <div class="presets" id="tuPresets"></div>
+        <input type="number" class="m-input" id="tuAmount" placeholder="Сумма" style="text-align:center;font-size:16px">
+        <div class="pay-opt active" onclick="pickPay(this, 'TON Wallet')">💎 <div><strong>TON Wallet / Tonkeeper</strong><div style="font-size:11px;color:var(--muted)">Перевод в сети TON</div></div></div>
+        <div class="pay-opt" onclick="pickPay(this, 'Telegram Stars')">⭐ <div><strong>Telegram Stars</strong><div style="font-size:11px;color:var(--muted)">Оплата счётом Telegram</div></div></div>
+        <div class="pay-opt" onclick="pickPay(this, 'CryptoBot')">🤖 <div><strong>CryptoBot (@send)</strong><div style="font-size:11px;color:var(--muted)">Оплата через крипто-чек</div></div></div>
+        <div class="m-actions">
+            <button class="btn-primary" onclick="doTopup()">Пополнить</button>
+            <button class="btn-close" onclick="closeM('topupModal')">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="wdModal" onclick="if(event.target===this) closeM('wdModal')">
+    <div class="modal-box">
+        <span class="badge" id="wdBadge">📤 Вывод</span>
+        <h3 id="wdTitle">Вывод средств</h3>
+        <p id="wdSub">Укажите реквизиты и сумму:</p>
+        <input type="text" class="m-input" id="wdTarget" placeholder="Адрес кошелька / @username">
+        <input type="number" class="m-input" id="wdAmount" placeholder="Сумма вывода" style="text-align:center">
+        <div class="m-actions">
+            <button class="btn-primary" onclick="doWithdraw()">Создать заявку</button>
+            <button class="btn-close" onclick="closeM('wdModal')">Отмена</button>
+        </div>
     </div>
 </div>
 
 <nav class="bottom-nav">
     <button class="b-nav-btn active" id="bnav-catalog" onclick="goTab('catalog')"><span class="ico">❄</span><span>Каталог</span></button>
-    <button class="b-nav-btn" id="bnav-inventory" onclick="goTab('inventory')"><span class="ico">🎒</span><span>Мои NFT</span></button>
-    <button class="b-nav-btn" id="bnav-market" onclick="goTab('market')"><span class="ico">📊</span><span>Рынок</span></button>
+    <button class="b-nav-btn" id="bnav-favs" onclick="goTab('favs')"><span class="ico">❤</span><span>Избранное</span><span class="b-badge" id="favBadgeBot">0</span></button>
+    <button class="b-nav-btn" id="bnav-inventory" onclick="goTab('inventory')"><span class="ico">🎒</span><span>Мои NFT</span><span class="b-badge" id="invBadgeBot">0</span></button>
+    <button class="b-nav-btn" id="bnav-market" onclick="goTab('market')"><span class="ico">📊</span><span>Рынок</span><span class="b-badge" id="marketBadgeBot">0</span></button>
+    <button class="b-nav-btn" id="bnav-profile" onclick="goTab('profile')"><span class="ico">👤</span><span>Профиль</span></button>
 </nav>
 
 <script>
 const API = 'https://твой-сервер.onrender.com'; // ← ЗАМЕНИ ПОСЛЕ ДЕПЛОЯ
 let currentUser = null;
-let curListingItem = null;
+let curGift = null, curListingItem = null, tuCurr = 'TON', wdCurr = 'TON', payMethod = 'TON Wallet';
 
-const RAW = `Plush Pepe|plushpepe|2500|🐸
-Durov's Cap|durovscap|455|🧢
-Heart Locket|heartlocket|890|💖
-Precious Peach|preciouspeach|320|🍑
-Santa Hat|santahat|9.5|🎅
-Snow Globe|snowglobe|17|🔮
-Snow Mittens|snowmittens|15.5|🧤
-Frost Crown|frostcrown|19.5|👑
-Crystal Ball|crystalball|19|🔮
-Eternal Rose|eternalrose|12|🥀
-Snoop Dogg|snoopdogg|4.95|🐕
-Ice Cream|icecream|4.82|🍦
-Sakura Flower|sakuraflower|6.1|🌸
-Magic Wand|magicwand|7.5|🪄
-Royal Goblet|royalgoblet|20.5|🏆
-Aurora Bear|aurorabear|21.5|🐻‍❄️
-Cosmic Pearl|cosmicpearl|24|🦪
-Secret Key|secretkey|17.2|🗝️
-Winter Owl|winterowl|12.9|🦉
-Ginger Cookie|gingercookie|6.8|🍪`;
-const gifts = RAW.trim().split('\n').map((l, i) => {
-    const p = l.split('|');
-    return { id: i+1, name: p[0], slug: p[1], ton: parseFloat(p[2]), emoji: p[3] };
+const RAW = `Plush Pepe|plushpepe|nft|2500|🐸
+Algorithm Cup|algorithmcup|nft|1450|🏆
+Intelligence Cup|intelligencecup|nft|1320|🧠
+Heart Locket|heartlocket|nft|890|💖
+Resistance Dog|resistancedog|nft|640|🐶
+Durov's Cap|durovscap|nft|455|🧢
+Durov's Glasses|durovsglasses|nft|380|🕶️
+Precious Peach|preciouspeach|nft|320|🍑
+Heroic Helmet|heroichelmet|nft|210|🪖
+Mighty Arm|mightyarm|nft|175|💪
+Nail Bracelet|nailbracelet|nft|145|📿
+Artisan Brick|artisanbrick|nft|120|🧱
+Ion Gem|iongem|nft|95|💎
+Astral Shard|astralshard|nft|89|🔮
+Perfume Bottle|perfumebottle|nft|85|🧴
+Mini Oscar|minioscar|nft|78|🏆
+Gem Signet|gemsignet|nft|72|💍
+Westside Sign|westsidesign|nft|68|🤟
+Low Rider|lowrider|nft|64|🚗
+Magic Potion|magicpotion|nft|55|🧪
+Sharp Tongue|sharptongue|nft|52|👅
+Voodoo Doll|voodoodoll|nft|49|🪆
+Loot Bag|lootbag|rare|44|💰
+Genie Lamp|genielamp|rare|39|🪔
+Bond Peach|bondpeach|rare|37|🍑
+Electric Skull|electricskull|rare|35|💀
+Swiss Watch|swisswatch|rare|32|⌚
+Signet Ring|signetring|rare|28|💍
+Neko Helmet|nekohelmet|rare|27|🐱
+Scared Cat|scaredcat|rare|25|🙀
+Kissed Frog|kissedfrog|rare|22|🐸
+Diamond Ring|diamondring|rare|21|💎
+Crystal Ball|crystalball|rare|19|🔮
+Cupid Charm|cupidcharm|rare|18.5|💘
+Toy Bear|toybear|rare|18|🧸
+Khabib's Papakha|khabibspapakha|rare|17.5|🐑
+Snow Globe|snowglobe|winter|17|🔮
+Love Potion|lovepotion|rare|16.5|🍷
+Mad Pumpkin|madpumpkin|rare|16|🎃
+Snow Mittens|snowmittens|winter|15.5|🧤
+Top Hat|tophat|rare|15|🎩
+Vintage Cigar|vintagecigar|rare|14.5|🚬
+Trapped Heart|trappedheart|rare|14|❤️‍🔥
+Sleigh Bell|sleighbell|winter|13.5|🔔
+Sky Stilettos|skystilettos|rare|13|👠
+Hanging Star|hangingstar|winter|12.5|⭐
+Eternal Rose|eternalrose|rare|12|🥀
+Jingle Bells|jinglebells|winter|11.5|🛎️
+Record Player|recordplayer|rare|11|📻
+Skull Flower|skullflower|rare|10.5|💀
+Ionic Dryer|ionicdryer|rare|10.2|💨
+Joyful Bundle|joyfulbundle|winter|10|🎁
+Santa Hat|santahat|winter|9.5|🎅
+UFC Strike|ufcstrike|rare|9.4|🥊
+Evil Eye|evileye|rare|9.2|🧿
+Bunny Muffin|bunnymuffin|rare|9.0|🧁
+Witch Hat|witchhat|classic|8.8|🧙‍♀️
+Bow Tie|bowtie|classic|8.6|🎀
+Snoop Cigar|snoopcigar|classic|8.5|🌿
+Winter Wreath|winterwreath|winter|8.2|🎄
+Valentine Box|valentinebox|classic|8.0|💝
+Hex Pot|hexpot|classic|7.8|🧪
+Lush Bouquet|lushbouquet|classic|7.6|💐
+Spiced Wine|spicedwine|winter|7.4|🍷
+Light Sword|lightsword|classic|7.3|⚔️
+Flying Broom|flyingbroom|classic|7.1|🧹
+Restless Jar|restlessjar|classic|7.0|🫙
+Jester Hat|jesterhat|classic|6.9|🃏
+Ginger Cookie|gingercookie|winter|6.8|🍪
+Money Pot|moneypot|classic|6.7|🍯
+Star Notepad|starnotepad|winter|6.5|📓
+Berry Box|berrybox|classic|6.4|🫐
+Party Sparkler|partysparkler|winter|6.3|🎇
+Homemade Cake|homemadecake|classic|6.2|🎂
+Sakura Flower|sakuraflower|classic|6.1|🌸
+Jelly Bunny|jellybunny|classic|6.0|🐰
+Candy Cane|candycane|winter|5.9|🍬
+Love Candle|lovecandle|classic|5.8|🕯️
+Spring Basket|springbasket|classic|5.7|🧺
+Clover Pin|cloverpin|classic|5.6|🍀
+Cookie Heart|cookieheart|winter|5.5|🤎
+Hypno Lollipop|hypnolollipop|classic|5.45|🍭
+Pet Snake|petsnake|classic|5.4|🐍
+Desk Calendar|deskcalendar|classic|5.35|📅
+Tama Gadget|tamagadget|classic|5.3|👾
+Easter Egg|easteregg|classic|5.25|🥚
+Stellar Rocket|stellarrocket|classic|5.2|🚀
+Whip Cupcake|whipcupcake|classic|5.18|🧁
+Moon Pendant|moonpendant|classic|5.15|🌙
+Lol Pop|lolpop|classic|5.12|🍭
+B-Day Candle|bdaycandle|classic|5.1|🕯️
+Xmas Stocking|xmasstocking|winter|5.08|🧦
+Lunar Snake|lunarsnake|winter|5.05|🐉
+Snake Box|snakebox|classic|5.02|📦
+Big Year|bigyear|winter|5.0|2️⃣
+Holiday Drink|holidaydrink|winter|4.98|☕
+Snoop Dogg|snoopdogg|classic|4.95|🐕
+Swag Bag|swagbag|classic|4.92|🎒
+Input Key|inputkey|classic|4.9|⌨️
+Happy Brownie|happybrownie|classic|4.88|🍫
+Instant Ramen|instantramen|classic|4.85|🍜
+Ice Cream|icecream|classic|4.82|🍦
+Faith Amulet|faithamulet|classic|4.8|🧿
+Bling Binky|blingbinky|classic|4.78|🍼
+Fresh Socks|freshsocks|winter|4.75|🧦
+Pretty Posy|prettyposy|classic|4.72|🌼
+Mousse Cake|moussecake|classic|4.7|🍰
+BDay Candle Gold|bdaycandlegold|classic|5.5|✨
+Crystal Eagle|crystaleagle|rare|14.2|🦅
+Golden Star|goldenstar|winter|11.8|🌟
+Neon Cat|neoncat|rare|16.2|🐈
+Cyber Mask|cybermask|rare|13.8|🎭
+Frost Crown|frostcrown|winter|19.5|👑
+Velvet Box|velvetbox|classic|6.1|🎁
+Magic Wand|magicwand|classic|7.5|🪄
+Diamond Dice|diamonddice|rare|15.8|🎲
+Royal Goblet|royalgoblet|rare|20.5|🏆
+Winter Owl|winterowl|winter|12.9|🦉
+Lucky Horseshoe|luckyhorseshoe|classic|6.6|🧲
+Cosmic Pearl|cosmicpearl|rare|24.0|🦪
+Silver Bell|silverbell|winter|9.8|🔔
+Secret Key|secretkey|rare|17.2|🗝️
+Frost Crystal|frostcrystal|winter|14.8|💠
+Aurora Bear|aurorabear|winter|21.5|🐻‍❄️`;
+
+const TAGS = { nft: '💎 Легендарный NFT', winter: '❄ Зимняя коллекция 2026', rare: '👑 Редкий подарок', classic: '🎁 Классический подарок' };
+const gifts = RAW.trim().split('\n').map((line, i) => {
+    const p = line.split('|');
+    return { id: i+1, name: p[0], slug: p[1], cat: p[2], tag: TAGS[p[2]], ton: parseFloat(p[3]), stars: Math.round(parseFloat(p[3])*125), emoji: p[4] };
 });
 
-function toast(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.display = 'block'; setTimeout(()=>t.style.display='none',2500); }
-function closeM(id) { document.getElementById(id).style.display = 'none'; }
-function goTab(tab) {
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.b-nav-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('sec-' + tab).classList.add('active');
-    document.getElementById('bnav-' + tab).classList.add('active');
-}
-function imgTag(slug, emoji) {
-    return `<img src="https://nft.fragment.com/gift/${slug}-1.webp" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="card-emoji" style="display:none">${emoji}</span>`;
+let state = {
+    favs: JSON.parse(localStorage.getItem('frost_favs')) || [],
+    tx: JSON.parse(localStorage.getItem('frost_tx')) || [],
+    notifications: JSON.parse(localStorage.getItem('frost_notif')) || [],
+    promos: JSON.parse(localStorage.getItem('frost_promos')) || [],
+    wallet: localStorage.getItem('frost_wallet') || '',
+    stars: Number(localStorage.getItem('frost_stars')) || 2500,
+    inv: [], listings: [], myListings: [], soldHistory: []
+};
+
+function saveLocal() {
+    localStorage.setItem('frost_favs', JSON.stringify(state.favs));
+    localStorage.setItem('frost_tx', JSON.stringify(state.tx));
+    localStorage.setItem('frost_notif', JSON.stringify(state.notifications));
+    localStorage.setItem('frost_promos', JSON.stringify(state.promos));
+    localStorage.setItem('frost_wallet', state.wallet);
+    localStorage.setItem('frost_stars', state.stars);
 }
 
+function toast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2500); }
+function closeM(id) { document.getElementById(id).style.display='none'; }
+function timeNow() { return new Date().toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'}); }
+function notif(title, text) { state.notifications.unshift({id:Date.now(),title,text,time:timeNow()}); if(state.notifications.length>20) state.notifications.pop(); saveLocal(); renderNotifs(); }
+
+function goTab(tab) {
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('.b-nav-btn, .top-links button').forEach(b=>b.classList.remove('active'));
+    document.getElementById('sec-'+tab).classList.add('active');
+    document.getElementById('bnav-'+tab)?.classList.add('active');
+    document.getElementById('tlink-'+tab)?.classList.add('active');
+    if (tab === 'market') { loadMarket(); }
+    if (tab === 'inventory') { loadInventory(); }
+    window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function imgTag(slug, emoji, alt='') {
+    return `<img src="https://nft.fragment.com/gift/${encodeURIComponent(slug)}-1.webp" alt="${alt}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="card-emoji" style="display:none">${emoji}</span>`;
+}
+
+// --- Вход ---
 async function login() {
     const username = prompt('Введите ник (латиницей):');
     if (!username) return;
-    const res = await fetch(API + '/api/login', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username.trim() })
-    });
+    const res = await fetch(API + '/api/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username: username.trim()}) });
     currentUser = await res.json();
     if (currentUser.error) return toast('❌ ' + currentUser.error);
     document.getElementById('loginBtn').innerText = '👤 ' + currentUser.username;
-    document.getElementById('balancePill').innerText = currentUser.ton_balance.toFixed(2) + ' TON';
+    document.getElementById('uName').innerText = currentUser.username;
+    document.getElementById('uMeta').innerText = 'ID: ' + currentUser.id;
+    updateBalanceUI();
     toast('Вы вошли как ' + currentUser.username);
-    await loadInventory();
-    await loadMarket();
+    await loadInventory(); await loadMarket();
+}
+
+function updateBalanceUI() {
+    if (!currentUser) return;
+    document.getElementById('balTop').innerText = currentUser.ton_balance.toFixed(2) + ' TON';
+    document.getElementById('pTon').innerText = currentUser.ton_balance.toFixed(2) + ' TON';
+    document.getElementById('pStars').innerText = state.stars.toLocaleString('ru-RU') + ' ⭐';
 }
 
 async function refreshBalance() {
     if (!currentUser) return;
     const res = await fetch(API + '/api/user/' + currentUser.id);
     currentUser = await res.json();
-    document.getElementById('balancePill').innerText = currentUser.ton_balance.toFixed(2) + ' TON';
+    updateBalanceUI();
 }
 
+// --- Инвентарь ---
 async function loadInventory() {
-    if (!currentUser) return;
+    if (!currentUser) { document.getElementById('invGrid').innerHTML = '<div class="empty-box">Войдите, чтобы увидеть инвентарь</div>'; return; }
     const res = await fetch(API + '/api/inventory/' + currentUser.id);
-    const items = await res.json();
+    state.inv = await res.json();
+    document.getElementById('invCountHead').innerText = state.inv.length;
+    document.getElementById('invBadgeBot').innerText = state.inv.length;
+    document.getElementById('totalInvStat').innerText = state.inv.length;
     const grid = document.getElementById('invGrid');
-    if (!items.length) {
-        grid.innerHTML = '<div class="empty">Нет NFT. Нажмите «Получить тестовый NFT»</div>';
-        return;
-    }
-    grid.innerHTML = items.map(item => `
+    if (!state.inv.length) { grid.innerHTML = '<div class="empty-box">Нет NFT 🎒<br><br><button class="btn-primary" onclick="giveTestNft()">🎁 Получить тестовый NFT</button></div>'; return; }
+    grid.innerHTML = state.inv.map(item => `
         <div class="card">
-            <div class="card-img">${imgTag(item.nft_slug, item.nft_emoji)}</div>
+            <div class="card-img">${imgTag(item.nft_slug, item.nft_emoji, item.nft_name)}</div>
             <h3>${item.nft_name}</h3>
             <div class="card-tag">ID: ${item.id}</div>
-            <div class="row"><button class="btn-list" onclick='openListModal(${JSON.stringify(item)})'>Выставить</button></div>
-        </div>
-    `).join('');
-}
-
-async function loadMarket() {
-    const res = await fetch(API + '/api/listings');
-    const listings = await res.json();
-    const grid = document.getElementById('marketGrid');
-    if (!listings.length) {
-        grid.innerHTML = '<div class="empty">Пока нет лотов на продаже</div>';
-        return;
-    }
-    grid.innerHTML = listings.map(l => `
-        <div class="card">
-            <div class="card-img">${imgTag(l.nft_slug, l.nft_emoji)}</div>
-            <h3>${l.nft_name}</h3>
-            <div class="card-tag">Продавец: ${l.seller_name}</div>
-            <div class="card-price">${l.price_ton} TON</div>
-            ${currentUser && l.seller_id !== currentUser.id
-                ? `<button class="card-btn" onclick="buyListing(${l.id})">Купить</button>`
-                : '<div class="card-tag" style="color:var(--gold)">Ваш лот</div>'}
-        </div>
-    `).join('');
-}
-
-function openListModal(item) {
-    if (!currentUser) return toast('⚠️ Сначала войдите');
-    curListingItem = item;
-    document.getElementById('listSub').innerText = item.nft_name + ' (' + item.nft_emoji + ')';
-    document.getElementById('listPrice').value = '';
-    document.getElementById('listModal').style.display = 'flex';
-}
-
-async function confirmListing() {
-    const price = parseFloat(document.getElementById('listPrice').value);
-    if (!price || price <= 0) return toast('⚠️ Введите цену');
-    const res = await fetch(API + '/api/listings', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            userId: currentUser.id,
-            nft_slug: curListingItem.nft_slug,
-            nft_name: curListingItem.nft_name,
-            nft_emoji: curListingItem.nft_emoji,
-            price_ton: price
-        })
-    });
-    const data = await res.json();
-    if (data.error) return toast('❌ ' + data.error);
-    closeM('listModal');
-    toast('📌 Лот выставлен за ' + price + ' TON');
-    await loadInventory();
-    await loadMarket();
-}
-
-async function buyListing(id) {
-    if (!currentUser) return toast('⚠️ Сначала войдите');
-    const res = await fetch(API + '/api/listings/' + id + '/buy', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ buyerId: currentUser.id })
-    });
-    const data = await res.json();
-    if (data.error) return toast('❌ ' + data.error);
-    toast('✅ Куплено!');
-    await refreshBalance();
-    await loadInventory();
-    await loadMarket();
+            <div class="inv-row">
+                <button class="btn-list" onclick='openListModal(${JSON.stringify(item)})'>Выставить</button>
+                <button class="btn-send" onclick="openWdNft('${item.nft_slug}','${item.nft_name}')">Вывести</button>
+            </div>
+        </div>`).join('');
 }
 
 async function giveTestNft() {
     if (!currentUser) return toast('⚠️ Сначала войдите');
-    const g = gifts[Math.floor(Math.random() * gifts.length)];
-    await fetch(API + '/api/give-nft', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: currentUser.id, slug: g.slug, name: g.name, emoji: g.emoji })
-    });
+    const g = gifts[Math.floor(Math.random()*gifts.length)];
+    await fetch(API + '/api/give-nft', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({userId:currentUser.id, slug:g.slug, name:g.name, emoji:g.emoji}) });
     toast('🎁 Получен ' + g.name);
     await loadInventory();
 }
 
+// --- Каталог ---
+function cardHTML(g) {
+    return `<div class="card" onclick="openBuy(${g.id})">
+        <button class="fav-btn" onclick="toggleFav(${g.id}, event)">${state.favs.includes(g.id)?'❤️':'🤍'}</button>
+        <div class="card-img">${imgTag(g.slug, g.emoji, g.name)}</div>
+        <h3>${g.name}</h3>
+        <div class="card-tag">${g.tag}</div>
+        <div class="card-price">${g.ton} TON</div>
+        <button class="card-btn">Купить</button>
+    </div>`;
+}
 function renderCatalog() {
-    document.getElementById('catalogGrid').innerHTML = gifts.map(g => `
-        <div class="card">
-            <div class="card-img">${imgTag(g.slug, g.emoji)}</div>
-            <h3>${g.name}</h3>
-            <div class="card-tag">Коллекционный подарок</div>
-            <div class="card-price">${g.ton} TON</div>
-        </div>
-    `).join('');
+    const q = document.getElementById('searchInp').value.toLowerCase().trim();
+    const sort = document.getElementById('sortSel').value;
+    let list = gifts.filter(g => g.name.toLowerCase().includes(q) || g.tag.toLowerCase().includes(q));
+    if (sort==='desc') list.sort((a,b)=>b.ton-a.ton);
+    if (sort==='asc') list.sort((a,b)=>a.ton-b.ton);
+    document.getElementById('shownCount').innerText = list.length;
+    document.getElementById('catalogGrid').innerHTML = list.length ? list.map(cardHTML).join('') : '<div class="empty-box">Не найдено ❄</div>';
+}
+function setFilter(f, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderCatalog();
+}
+function toggleFav(id, e) {
+    e.stopPropagation();
+    state.favs = state.favs.includes(id) ? state.favs.filter(x=>x!==id) : state.favs.concat(id);
+    saveLocal(); renderCatalog(); renderFavs();
+    document.getElementById('favCountTop').innerText = state.favs.length;
+    document.getElementById('favCountHead').innerText = state.favs.length;
+    document.getElementById('favBadgeBot').innerText = state.favs.length;
+}
+function renderFavs() {
+    const list = gifts.filter(g=>state.favs.includes(g.id));
+    document.getElementById('favsGrid').innerHTML = list.length ? list.map(cardHTML).join('') : '<div class="empty-box">В избранном пусто ❤</div>';
 }
 
-renderCatalog();
-loadMarket();
+function openBuy(id) {
+    curGift = gifts.find(g=>g.id===id);
+    if (!curGift) return;
+    document.getElementById('mPreview').innerHTML = imgTag(curGift.slug, curGift.emoji, curGift.name);
+    document.getElementById('mTag').innerText = curGift.tag;
+    document.getElementById('mTitle').innerText = curGift.name;
+    document.getElementById('mDesc').innerText = `«${curGift.name}». Покупка спишет TON с баланса.`;
+    document.getElementById('mConfirmBuy').innerText = `Купить за ${curGift.ton} TON`;
+    document.getElementById('buyModal').style.display='flex';
+}
+document.getElementById('mConfirmBuy').onclick = async () => {
+    if (!curGift) return;
+    if (!currentUser) { closeM('buyModal'); return toast('⚠️ Сначала войдите'); }
+    if (currentUser.ton_balance < curGift.ton) { closeM('buyModal'); return toast('❌ Недостаточно TON'); }
+    // Покупка с каталога = выдача NFT + списание (упрощённо через give-nft и локальный баланс)
+    await fetch(API + '/api/give-nft', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({userId:currentUser.id, slug:curGift.slug, name:curGift.name, emoji:curGift.emoji}) });
+    currentUser.ton_balance -= curGift.ton;
+    state.tx.unshift({plus:false,ico:curGift.emoji,title:`Покупка: ${curGift.name}`,val:`-${curGift.ton} TON`,time:timeNow()});
+    saveLocal(); updateBalanceUI(); renderTx(); closeM('buyModal');
+    toast(`✅ ${curGift.name} в инвентаре!`); await loadInventory();
+};
+
+// --- Выставить лот ---
+function openListModal(item) {
+    if (!currentUser) return toast('⚠️ Сначала войдите');
+    curListingItem = item;
+    document.getElementById('listTitle').innerText = 'Лот: ' + item.nft_name;
+    document.getElementById('listSub').innerText = item.nft_name + ' (' + item.nft_emoji + '). Комиссия 0%.';
+    document.getElementById('listPrice').value = '';
+    document.getElementById('listModal').style.display='flex';
+}
+async function confirmListing() {
+    const price = parseFloat(document.getElementById('listPrice').value);
+    if (!price || price<=0) return toast('⚠️ Введите цену');
+    const res = await fetch(API + '/api/listings', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+        userId: currentUser.id, nft_slug: curListingItem.nft_slug, nft_name: curListingItem.nft_name, nft_emoji: curListingItem.nft_emoji, price_ton: price
+    })});
+    const data = await res.json();
+    if (data.error) return toast('❌ ' + data.error);
+    closeM('listModal'); toast('📌 Лот выставлен за ' + price + ' TON');
+    await loadInventory(); await loadMarket();
+}
+
+// --- Рынок ---
+async function loadMarket() {
+    const res = await fetch(API + '/api/listings');
+    state.listings = await res.json();
+    const grid = document.getElementById('marketGrid');
+    document.getElementById('marketBadgeBot').innerText = state.listings.length;
+    if (!state.listings.length) { grid.innerHTML = '<div class="empty-box">Пока нет лотов</div>'; }
+    else {
+        grid.innerHTML = state.listings.map(l => `
+            <div class="card">
+                <div class="card-img">${imgTag(l.nft_slug, l.nft_emoji, l.nft_name)}</div>
+                <h3>${l.nft_name}</h3>
+                <div class="card-tag">Продавец: ${l.seller_name}</div>
+                <div class="card-price">${l.price_ton} TON</div>
+                ${currentUser && l.seller_id !== currentUser.id
+                    ? `<button class="card-btn" onclick="buyListing(${l.id})">Купить</button>`
+                    : '<div class="card-tag" style="color:var(--gold)">Ваш лот</div>'}
+            </div>`).join('');
+    }
+    renderMarketExtras();
+}
+async function buyListing(id) {
+    if (!currentUser) return toast('⚠️ Сначала войдите');
+    const res = await fetch(API + '/api/listings/' + id + '/buy', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({buyerId: currentUser.id}) });
+    const data = await res.json();
+    if (data.error) return toast('❌ ' + data.error);
+    toast('✅ Куплено!');
+    await refreshBalance(); await loadInventory(); await loadMarket();
+}
+function renderMarketExtras() {
+    document.getElementById('incomingOffersList').innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px">Офферы появятся после добавления NFT</div>';
+    document.getElementById('outgoingOffersList').innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px">Нет исходящих</div>';
+    document.getElementById('soldHistoryList').innerHTML = state.soldHistory.length ? state.soldHistory.map(s=>`<div class="listing-item"><div>${s.name}</div><span class="price">+${s.price} TON</span></div>`).join('') : '<div style="color:var(--muted);font-size:12px;padding:8px">История пуста</div>';
+}
+function renderNotifs() {
+    const box = document.getElementById('notifBox'); if (!box) return;
+    box.innerHTML = state.notifications.length ? state.notifications.slice(0,5).map(n=>`<div class="notif-item"><div><strong>${n.title}</strong><br><span style="font-size:11px;color:var(--muted)">${n.text}</span></div><button class="close-n" onclick="dismissNotif(${n.id})">✕</button></div>`).join('') : '';
+}
+function dismissNotif(id) { state.notifications = state.notifications.filter(n=>n.id!==id); saveLocal(); renderNotifs(); }
+
+// --- Пополнение/вывод ---
+function openTopup(c='TON') {
+    tuCurr = c;
+    document.getElementById('tuBadge').innerText = c==='TON'?'💎 Пополнение TON':'⭐ Пополнение Stars';
+    const list = c==='TON'?[5,10,25,100]:[500,1000,2500,5000];
+    document.getElementById('tuAmount').value = 10;
+    document.getElementById('tuPresets').innerHTML = list.map(v=>`<button class="preset" onclick="document.getElementById('tuAmount').value=${v}">+${v}</button>`).join('');
+    document.getElementById('topupModal').style.display='flex';
+}
+function pickPay(el,m) { document.querySelectorAll('.pay-opt').forEach(x=>x.classList.remove('active')); el.classList.add('active'); payMethod=m; }
+function doTopup() {
+    const val = parseFloat(document.getElementById('tuAmount').value);
+    if (!val||val<=0) return toast('⚠️ Введите сумму');
+    if (tuCurr==='TON') { if (currentUser) { currentUser.ton_balance += val; } state.tx.unshift({plus:true,ico:'💳',title:`Пополнение (${payMethod})`,val:`+${val.toFixed(2)} TON`,time:timeNow()}); }
+    else { state.stars += Math.round(val); state.tx.unshift({plus:true,ico:'💳',title:`Пополнение Stars`,val:`+${Math.round(val)} ⭐`,time:timeNow()}); }
+    saveLocal(); updateBalanceUI(); renderTx(); closeM('topupModal'); toast('✅ Пополнено!');
+}
+function openWithdraw(c='TON') {
+    wdCurr = c;
+    document.getElementById('wdAmount').value = '';
+    if (c==='TON') { document.getElementById('wdSub').innerText = 'Доступно: ' + (currentUser?currentUser.ton_balance.toFixed(2):'0') + ' TON'; document.getElementById('wdTarget').placeholder='Адрес TON'; }
+    else { document.getElementById('wdSub').innerText = 'Доступно: ' + state.stars + ' ⭐'; document.getElementById('wdTarget').placeholder='@username'; }
+    document.getElementById('wdModal').style.display='flex';
+}
+function doWithdraw() {
+    const target = document.getElementById('wdTarget').value.trim();
+    const val = parseFloat(document.getElementById('wdAmount').value);
+    if (target.length<4) return toast('⚠️ Укажите реквизиты');
+    if (wdCurr==='TON') {
+        if (!val||val<1) return toast('⚠️ Минимум 1 TON');
+        if (!currentUser || currentUser.ton_balance < val) return toast('❌ Мало TON');
+        currentUser.ton_balance -= val;
+        state.tx.unshift({plus:false,ico:'📤',title:`Вывод TON → ${target.slice(0,6)}...`,val:`-${val.toFixed(2)} TON`,time:timeNow()});
+    } else {
+        if (!val||val<100) return toast('⚠️ Минимум 100 ⭐');
+        if (state.stars < val) return toast('❌ Мало Stars');
+        state.stars -= val;
+        state.tx.unshift({plus:false,ico:'⭐',title:`Вывод Stars → ${target}`,val:`-${val} ⭐`,time:timeNow()});
+    }
+    saveLocal(); updateBalanceUI(); renderTx(); closeM('wdModal'); toast('✅ Заявка создана');
+}
+function openWdNft(slug, name) {
+    state.tx.unshift({plus:false,ico:'📤',title:`Вывод NFT: ${name}`,val:'-0.10 TON',time:timeNow()});
+    saveLocal(); renderTx(); toast('📤 Заявка на вывод ' + name + ' создана');
+}
+
+function linkWallet() {
+    if (state.wallet) { state.wallet=''; saveLocal(); toast('🔌 Отвязан'); }
+    else { const a = prompt('Адрес TON:'); if (a && a.length>20) { state.wallet=a; saveLocal(); toast('💎 Привязан'); } }
+    document.getElementById('wAddrTxt').innerText = state.wallet ? state.wallet.slice(0,6)+'...'+state.wallet.slice(-5) : 'Не привязан';
+    document.getElementById('wLinkBtn').innerText = state.wallet ? 'Отвязать' : 'Привязать';
+}
+function copyRef() { navigator.clipboard?.writeText(document.getElementById('refInp').value); toast('📋 Скопировано'); }
+function usePromo() {
+    const code = document.getElementById('promoInp').value.trim().toUpperCase();
+    if (!code) return;
+    if (state.promos.includes(code)) return toast('⚠️ Уже активирован');
+    if (code==='NEWYEAR2026') { state.promos.push(code); if(currentUser) currentUser.ton_balance+=15; state.tx.unshift({plus:true,ico:'🎟',title:'Промокод NEWYEAR2026',val:'+15 TON',time:timeNow()}); saveLocal(); updateBalanceUI(); renderTx(); toast('🎉 +15 TON!'); }
+    else if (code==='FROST'||code==='MRKT') { state.promos.push(code); state.stars+=1000; state.tx.unshift({plus:true,ico:'🎟',title:`Промокод ${code}`,val:'+1000 ⭐',time:timeNow()}); saveLocal(); updateBalanceUI(); renderTx(); toast('🎉 +1000 ⭐!'); }
+    else if (code==='NFTGIFT') { state.promos.push(code); const g = gifts[Math.floor(Math.random()*gifts.length)]; if(currentUser) fetch(API+'/api/give-nft',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,slug:g.slug,name:g.name,emoji:g.emoji})}); state.tx.unshift({plus:true,ico:'🎁',title:`Промокод NFTGIFT: ${g.name}`,val:'NFT',time:timeNow()}); saveLocal(); renderTx(); toast('🎁 ' + g.name + '!'); loadInventory(); }
+    else toast('❌ Неверный код');
+    document.getElementById('promoInp').value='';
+}
+function renderTx() {
+    document.getElementById('txList').innerHTML = state.tx.length ? state.tx.map(t=>`<div class="tx-item"><div><strong>${t.ico} ${t.title}</strong><div style="font-size:11px;color:var(--muted)">${t.time}</div></div><div class="${t.plus?'tx-plus':'tx-minus'}">${t.val}</div></div>`).join('') : '<div class="empty-box">История пуста</div>';
+}
+
+// --- Инициализация ---
+document.getElementById('favCountTop').innerText = state.favs.length;
+document.getElementById('favCountHead').innerText = state.favs.length;
+document.getElementById('favBadgeBot').innerText = state.favs.length;
+document.getElementById('wAddrTxt').innerText = state.wallet ? state.wallet.slice(0,6)+'...'+state.wallet.slice(-5) : 'Не привязан';
+document.getElementById('wLinkBtn').innerText = state.wallet ? 'Отвязать' : 'Привязать';
+renderCatalog(); renderFavs(); renderTx(); renderNotifs(); renderMarketExtras();
+loadInventory(); loadMarket();
 </script>
 </body>
 </html>
