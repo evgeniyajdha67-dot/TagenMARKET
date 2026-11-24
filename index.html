@@ -65,8 +65,6 @@ h2 { font-size:18px; margin:18px 0 10px; }
 .avatar { width:58px; height:58px; border-radius:50%; background:linear-gradient(135deg,#3b8ee8,#6c63ff); display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:800; border:2px solid var(--blue); }
 .tx-list { display:flex; flex-direction:column; gap:8px; }
 .tx-item { background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:11px 13px; display:flex; justify-content:space-between; align-items:center; }
-.tx-plus { color:var(--green); font-weight:700; font-size:13px; }
-.tx-minus { color:var(--red); font-weight:700; font-size:13px; }
 .search-box { width:100%; background:var(--panel); border:1px solid var(--border); color:var(--text); padding:11px 14px; border-radius:12px; font-size:14px; outline:none; margin-bottom:10px; }
 .filters { display:flex; gap:7px; overflow-x:auto; padding-bottom:8px; margin-bottom:8px; }
 .filter-btn { background:var(--panel); border:1px solid var(--border); color:var(--muted); padding:8px 14px; border-radius:11px; font-size:12.5px; font-weight:600; cursor:pointer; white-space:nowrap; }
@@ -98,16 +96,16 @@ h2 { font-size:18px; margin:18px 0 10px; }
     <div id="sec-catalog" class="section active">
         <section class="hero">
             <h1>Зимняя коллекция 2026 ❄</h1>
-            <p>Витрина коллекций. Купить можно только лоты игроков на «Рынке».</p>
+            <p>Витрина. Купить можно только лоты на «Рынке».</p>
             <div class="hero-btns">
-                <button class="btn-primary" onclick="document.getElementById('catalogAnchor').scrollIntoView({behavior:'smooth'})">Открыть витрину →</button>
+                <button class="btn-primary" onclick="document.getElementById('catalogAnchor').scrollIntoView({behavior:'smooth'})">Витрина →</button>
                 <button class="btn-glass" onclick="goTab('market')">📊 На рынок</button>
             </div>
         </section>
         <div class="catalog-head" id="catalogAnchor">
             <h2>🎁 Витрина (<span id="shownCount">124</span>)</h2>
             <select class="sort-select" id="sortSel" onchange="renderCatalog()">
-                <option value="default">По популярности</option>
+                <option value="default">Популярные</option>
                 <option value="desc">Дорогие</option>
                 <option value="asc">Дешёвые</option>
             </select>
@@ -169,13 +167,13 @@ h2 { font-size:18px; margin:18px 0 10px; }
                 <small>⭐ Stars</small>
                 <strong id="pStars">0 ⭐</strong>
                 <div class="w-actions">
-                    <button class="w-in" onclick="openTopup('STARS')">+ Пополнить</button>
+                    <button class="w-in" onclick="openTopup()">+ Пополнить</button>
                     <button class="w-out" onclick="openWithdraw('STARS')">↑ Вывести</button>
                 </div>
             </div>
         </div>
         <div class="row" style="margin-top:10px">
-            <button class="btn-list" onclick="openExchange()">🔄 Обмен TON↔Stars</button>
+            <button class="btn-list" onclick="openExchange()">🔄 Обмен</button>
             <button class="btn-send" onclick="dailyBonus()">🎁 Бонус дня</button>
         </div>
         <div class="catalog-head"><h2>🎟 Промокод</h2></div>
@@ -195,66 +193,53 @@ h2 { font-size:18px; margin:18px 0 10px; }
     </div>
 </div>
 
-<!-- АВТОРИЗАЦИЯ -->
+<!-- МОДАЛКИ -->
 <div class="modal" id="authModal">
     <div class="modal-box">
         <h3 id="authTitle">Регистрация</h3>
         <p style="color:var(--muted);font-size:12px;margin-bottom:14px" id="authSub">Создайте аккаунт</p>
         <input type="text" class="m-input" id="authUsername" placeholder="Ник">
         <input type="password" class="m-input" id="authPassword" placeholder="Пароль (мин. 6)">
-        <input type="password" class="m-input" id="authPassword2" placeholder="Повторите пароль">
+        <input type="password" class="m-input" id="authPassword2" placeholder="Повторите">
         <button class="btn-primary" id="authBtn" onclick="submitAuth()" style="width:100%;margin-bottom:8px">Зарегистрироваться</button>
         <button class="btn-glass" onclick="toggleAuthMode()" style="width:100%;font-size:12px" id="authSwitch">Уже есть аккаунт? Войти</button>
     </div>
 </div>
 
-<!-- ЛОТ -->
 <div class="modal" id="listModal">
     <div class="modal-box">
         <h3>Выставить лот</h3>
         <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="listSub"></p>
         <input type="number" class="m-input" id="listPrice" placeholder="Цена">
-        <select class="m-input" id="listCurrency">
-            <option value="TON">💎 TON</option>
-            <option value="STARS">⭐ Stars</option>
-        </select>
+        <select class="m-input" id="listCurrency"><option value="TON">💎 TON</option><option value="STARS">⭐ Stars</option></select>
         <button class="btn-primary" onclick="confirmListing()" style="width:100%;margin-bottom:8px">Выставить</button>
         <button class="btn-glass" onclick="closeM('listModal')" style="width:100%">Отмена</button>
     </div>
 </div>
 
-<!-- АУКЦИОН -->
 <div class="modal" id="auctionModal">
     <div class="modal-box">
         <h3>Аукцион</h3>
         <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="aucSub"></p>
         <input type="number" class="m-input" id="aucStart" placeholder="Старт">
         <input type="number" class="m-input" id="aucHours" placeholder="Часы" value="1">
-        <select class="m-input" id="aucCurrency">
-            <option value="TON">💎 TON</option>
-            <option value="STARS">⭐ Stars</option>
-        </select>
+        <select class="m-input" id="aucCurrency"><option value="TON">💎 TON</option><option value="STARS">⭐ Stars</option></select>
         <button class="btn-primary" onclick="confirmAuction()" style="width:100%;margin-bottom:8px">Запустить</button>
         <button class="btn-glass" onclick="closeM('auctionModal')" style="width:100%">Отмена</button>
     </div>
 </div>
 
-<!-- ОФФЕР -->
 <div class="modal" id="offerModal">
     <div class="modal-box">
         <h3>Оффер</h3>
         <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="offerSub"></p>
         <input type="number" class="m-input" id="offerPrice" placeholder="Цена">
-        <select class="m-input" id="offerCurrency">
-            <option value="TON">💎 TON</option>
-            <option value="STARS">⭐ Stars</option>
-        </select>
+        <select class="m-input" id="offerCurrency"><option value="TON">💎 TON</option><option value="STARS">⭐ Stars</option></select>
         <button class="btn-primary" onclick="submitOffer()" style="width:100%;margin-bottom:8px">Отправить</button>
         <button class="btn-glass" onclick="closeM('offerModal')" style="width:100%">Отмена</button>
     </div>
 </div>
 
-<!-- СТАВКА -->
 <div class="modal" id="bidModal">
     <div class="modal-box">
         <h3>Ставка</h3>
@@ -266,7 +251,6 @@ h2 { font-size:18px; margin:18px 0 10px; }
     </div>
 </div>
 
-<!-- ПОПОЛНЕНИЕ -->
 <div class="modal" id="topupModal">
     <div class="modal-box">
         <h3>Пополнение</h3>
@@ -275,7 +259,6 @@ h2 { font-size:18px; margin:18px 0 10px; }
     </div>
 </div>
 
-<!-- ВЫВОД -->
 <div class="modal" id="wdModal">
     <div class="modal-box">
         <h3>Вывод</h3>
@@ -287,14 +270,13 @@ h2 { font-size:18px; margin:18px 0 10px; }
     </div>
 </div>
 
-<!-- ОБМЕН -->
 <div class="modal" id="exchangeModal">
     <div class="modal-box">
         <h3>Обмен валют</h3>
-        <p style="color:var(--muted);font-size:12px;margin-bottom:10px">1 TON = 125 ⭐</p>
+        <p style="color:var(--muted);font-size:12px;margin-bottom:10px">Продать 1 TON → 200 ⭐<br>Купить 1 TON ← 2500 ⭐</p>
         <select class="m-input" id="exFrom">
-            <option value="TON">💎 TON → ⭐ Stars</option>
-            <option value="STARS">⭐ Stars → 💎 TON</option>
+            <option value="TON">💎 TON → ⭐ Stars (×200)</option>
+            <option value="STARS">⭐ Stars → 💎 TON (÷2500)</option>
         </select>
         <input type="number" class="m-input" id="exAmount" placeholder="Сумма">
         <button class="btn-primary" onclick="doExchange()" style="width:100%;margin-bottom:8px">Обменять</button>
@@ -302,7 +284,6 @@ h2 { font-size:18px; margin:18px 0 10px; }
     </div>
 </div>
 
-<!-- АДМИН: ВЫДАТЬ NFT -->
 <div class="modal" id="giveNftModal">
     <div class="modal-box">
         <h3>Выдать NFT</h3>
@@ -313,16 +294,12 @@ h2 { font-size:18px; margin:18px 0 10px; }
     </div>
 </div>
 
-<!-- АДМИН: БАЛАНС -->
 <div class="modal" id="balanceModal">
     <div class="modal-box">
         <h3>Изменить баланс</h3>
         <select class="m-input" id="balUserId"></select>
-        <select class="m-input" id="balCurrency">
-            <option value="TON">💎 TON</option>
-            <option value="STARS">⭐ Stars</option>
-        </select>
-        <input type="number" class="m-input" id="balAmount" placeholder="+ пополнить / - списать">
+        <select class="m-input" id="balCurrency"><option value="TON">💎 TON</option><option value="STARS">⭐ Stars</option></select>
+        <input type="number" class="m-input" id="balAmount" placeholder="+/- сумма">
         <button class="btn-primary" onclick="adminBalance()" style="width:100%;margin-bottom:8px">Применить</button>
         <button class="btn-glass" onclick="closeM('balanceModal')" style="width:100%">Отмена</button>
     </div>
@@ -528,7 +505,7 @@ async function submitAuth() {
     document.getElementById('uMeta').innerText = 'ID: '+currentUser.id+(currentUser.is_admin?' • 👑 Админ':'');
     updateBalance();
     toast('✅ '+currentUser.username);
-    await loadInventory(); await loadMarket(); await loadFavorites();
+    await loadInventory(); await loadMarket(); await loadFavorites(); await loadNotifications();
 }
 async function initAuth() {
     const savedId = localStorage.getItem('frost_userId');
@@ -542,7 +519,7 @@ async function initAuth() {
                 document.getElementById('uMeta').innerText = 'ID: '+currentUser.id+(currentUser.is_admin?' • 👑 Админ':'');
                 updateBalance();
                 closeM('authModal');
-                await loadInventory(); await loadMarket(); await loadFavorites();
+                await loadInventory(); await loadMarket(); await loadFavorites(); await loadNotifications();
                 return;
             }
         }catch(e){}
@@ -570,11 +547,20 @@ async function loadFavorites() {
     favorites = await r.json();
     renderCatalog();
 }
-async function toggleFav(slug, e) {
+async function toggleFav(slug,e) {
     e.stopPropagation();
     if(!currentUser) return toast('⚠️ Войдите');
     await fetch(API+'/api/favorites',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,slug})});
     await loadFavorites();
+}
+
+async function loadNotifications() {
+    if(!currentUser) return;
+    const r = await fetch(API+'/api/notifications/'+currentUser.id);
+    const list = await r.json();
+    const unread = list.filter(n=>!n.is_read).length;
+    const b = document.getElementById('notifBadge');
+    if(unread>0){ b.style.display='inline-block'; b.innerText=unread; } else b.style.display='none';
 }
 
 async function loadInventory() {
@@ -611,7 +597,7 @@ function cardHTML(g) {
         <h3>${g.name}</h3>
         <div class="card-tag">${rarityBadge(g.ton)} ${g.tag}</div>
         <div class="card-price">${g.ton} TON</div>
-        <div class="card-tag" style="font-size:10px">Ориентир (купить нельзя — только лоты)</div>
+        <div class="card-tag" style="font-size:10px">Ориентир</div>
     </div>`;
 }
 function renderCatalog() {
@@ -659,7 +645,7 @@ async function buyListing(id) {
     const r = await fetch(API+'/api/listings/'+id+'/buy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({buyerId:currentUser.id})});
     const d = await r.json();
     if(d.error) return toast('❌ '+d.error);
-    toast('✅ Куплено'); await refreshBalance(); await loadInventory(); await loadMarket();
+    toast('✅ Куплено'); await refreshBalance(); await loadInventory(); await loadMarket(); await loadNotifications();
 }
 async function cancelListing(id) {
     const r = await fetch(API+'/api/listings/'+id+'?userId='+currentUser.id,{method:'DELETE'});
@@ -810,7 +796,7 @@ function doWithdraw() {
     if(!v||v<1) return toast('⚠️ Сумма');
     closeM('wdModal'); toast('✅ Заявка создана');
 }
-function openWd(slug,name) { toast('📤 Заявка на вывод '+name+' (комиссия 0.10 TON)'); }
+function openWd(slug,name) { toast('📤 Заявка на вывод '+name); }
 
 function openExchange() {
     document.getElementById('exAmount').value='';
