@@ -1,16 +1,75 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FROST MARKET — Telegram Gifts</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>МРКТ — Новогодние подарки Telegram</title>
+<script src="https://telegram.org"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-<style>
+<header>
+    <div class="logo">❄ МРКТ<span>GIFT</span></div>
+    <button class="header-btn" id="favToggleBtn" onclick="toggleFavoritesView()">
+        ❤️ <span id="favCount">0</span>
+    </button>
+</header>
+
+<div class="container">
+    <section class="hero">
+        <h1>Новогодний <span>МРКТ ❄</span></h1>
+        <p>Магазин цифровых подарков Telegram. Выбирай редкие праздничные NFT-подарки и отправляй друзьям в один клик!</p>
+        <button class="primary-btn" onclick="document.getElementById('catalog').scrollIntoView({behavior:'smooth'})">
+            Смотреть подарки ↓
+        </button>
+    </section>
+
+    <div class="stats">
+        <div class="stat"><strong id="totalCount">8</strong><span>В наличии</span></div>
+        <div class="stat"><strong>⚡ Мгновенно</strong><span>Выдача ботом</span></div>
+        <div class="stat"><strong>⭐ Stars / TON</strong><span>Удобная оплата</span></div>
+    </div>
+
+    <div class="section-head" id="catalog">
+        <h2 id="catalogTitle">Каталог подарков</h2>
+    </div>
+
+    <input type="text" class="search" id="searchInput" placeholder="🔍 Найти подарок..." oninput="renderProducts()">
+
+    <div class="categories">
+        <button class="category active" onclick="setCategory('all', this)">Все подарки</button>
+        <button class="category" onclick="setCategory('newyear', this)">🎄 Новогодние</button>
+        <button class="category" onclick="setCategory('rare', this)">💎 Редкие</button>
+        <button class="category" onclick="setCategory('limited', this)">🔥 Лимитированные</button>
+    </div>
+
+    <div class="products" id="productsGrid"></div>
+
+    <footer>❄ МРКТ — Официальный мини-магазин подарков в Telegram</footer>
+</div>
+
+<div class="modal" id="productModal" onclick="if(event.target===this) closeModal()">
+    <div class="modal-box">
+        <div class="modal-emoji" id="modalEmoji">🎁</div>
+        <span class="modal-tag" id="modalTag">Коллекция</span>
+        <h2 id="modalTitle">Название</h2>
+        <p id="modalDesc">Описание</p>
+        <div class="modal-actions">
+            <button class="buy-btn" id="modalBuyBtn">Купить</button>
+            <button class="close" onclick="closeModal()">Закрыть</button>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
 :root {
@@ -27,8 +86,9 @@
 body {
     background: var(--bg);
     color: var(--text);
-    font-family: Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
     overflow-x: hidden;
+    padding-bottom: 30px;
 }
 
 .snow {
@@ -38,85 +98,65 @@ body {
     pointer-events: none;
     z-index: 20;
     animation: fall linear infinite;
-    opacity: .65;
+    opacity: 0.65;
+    user-select: none;
 }
 
 @keyframes fall {
-    to {
-        transform: translateY(110vh) rotate(360deg);
-    }
+    to { transform: translateY(110vh) rotate(360deg); }
 }
 
 header {
-    height: 75px;
-    padding: 0 6%;
-    background: rgba(13,20,35,.96);
+    height: 68px;
+    padding: 0 5%;
+    background: rgba(13, 20, 35, 0.92);
     border-bottom: 1px solid var(--border);
     display: flex;
     justify-content: space-between;
     align-items: center;
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 15;
     backdrop-filter: blur(15px);
 }
 
 .logo {
-    font-size: 23px;
+    font-size: 21px;
     font-weight: 900;
     color: var(--blue);
     letter-spacing: 1px;
 }
 
-.logo span {
-    color: var(--gold);
-}
-
-nav {
-    display: flex;
-    gap: 25px;
-}
-
-nav a {
-    color: var(--muted);
-    text-decoration: none;
-    font-size: 14px;
-}
-
-nav a:hover {
-    color: white;
-}
-
-.header-right {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
+.logo span { color: var(--gold); }
 
 .header-btn {
     background: #1d2b44;
     border: 1px solid var(--border);
-    padding: 11px 16px;
+    padding: 9px 14px;
     border-radius: 11px;
     color: white;
     cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.header-btn.active {
+    background: #3b243b;
+    border-color: #ff6b8b;
 }
 
 .container {
     width: 92%;
-    max-width: 1250px;
+    max-width: 1100px;
     margin: auto;
 }
 
 .hero {
-    margin-top: 30px;
-    padding: 55px 45px;
-    min-height: 300px;
+    margin-top: 20px;
+    padding: 36px 28px;
     border: 1px solid #344c71;
-    border-radius: 23px;
-    background:
-      radial-gradient(circle at 85% 20%, #326da1 0%, transparent 35%),
-      linear-gradient(120deg, #132d50, #17203a 65%, #202b48);
+    border-radius: 22px;
+    background: radial-gradient(circle at 85% 20%, #326da1 0%, transparent 45%), linear-gradient(120deg, #132d50, #17203a 65%, #202b48);
     position: relative;
     overflow: hidden;
 }
@@ -124,112 +164,109 @@ nav a:hover {
 .hero:after {
     content: "🎄";
     position: absolute;
-    right: 8%;
-    top: 35px;
-    font-size: 145px;
+    right: 6%;
+    top: 25px;
+    font-size: 115px;
     filter: drop-shadow(0 0 25px #5aaaff);
+    pointer-events: none;
 }
 
 .hero h1 {
-    font-size: clamp(28px, 5vw, 45px);
-    max-width: 650px;
-    margin-bottom: 15px;
+    font-size: clamp(24px, 5vw, 38px);
+    max-width: 550px;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 2;
 }
 
-.hero h1 span {
-    color: var(--gold);
-}
+.hero h1 span { color: var(--gold); }
 
 .hero p {
     color: #bdcce2;
-    line-height: 1.7;
-    max-width: 490px;
-    margin-bottom: 25px;
+    line-height: 1.55;
+    font-size: 14px;
+    max-width: 440px;
+    margin-bottom: 22px;
+    position: relative;
+    z-index: 2;
 }
 
 .primary-btn {
     background: linear-gradient(100deg, #438fe9, #7469eb);
     color: white;
     border: 0;
-    border-radius: 11px;
-    padding: 14px 23px;
+    border-radius: 12px;
+    padding: 13px 22px;
     cursor: pointer;
     font-weight: bold;
-}
-
-.primary-btn:hover {
-    filter: brightness(1.15);
+    font-size: 14px;
+    position: relative;
+    z-index: 2;
 }
 
 .stats {
     display: grid;
-    grid-template-columns: repeat(3,1fr);
-    gap: 15px;
-    margin: 23px 0 35px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 18px 0 28px;
 }
 
 .stat {
-    padding: 20px;
+    padding: 15px 10px;
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 14px;
+    text-align: center;
 }
 
 .stat strong {
     display: block;
-    font-size: 22px;
+    font-size: 18px;
     color: var(--gold);
-    margin-bottom: 7px;
+    margin-bottom: 4px;
 }
 
 .stat span {
     color: var(--muted);
-    font-size: 13px;
+    font-size: 12px;
 }
 
-.section-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 35px 0 20px;
-    gap: 10px;
-}
-
-.section-head h2 {
-    font-size: 22px;
-}
+.section-head { margin: 25px 0 15px; }
+.section-head h2 { font-size: 20px; }
 
 .search {
     width: 100%;
     background: var(--panel);
     border: 1px solid var(--border);
-    padding: 16px;
+    padding: 14px 16px;
     border-radius: 13px;
     color: white;
     font-size: 15px;
     outline: none;
-    margin-bottom: 18px;
-}
-
-.search:focus {
-    border-color: var(--blue);
+    margin-bottom: 14px;
 }
 
 .categories {
     display: flex;
-    gap: 9px;
+    gap: 8px;
     overflow-x: auto;
-    padding-bottom: 10px;
+    padding-bottom: 12px;
+    margin-bottom: 10px;
+    scrollbar-width: none;
 }
+
+.categories::-webkit-scrollbar { display: none; }
 
 .category {
     background: var(--panel);
     border: 1px solid var(--border);
     color: var(--muted);
     border-radius: 10px;
-    padding: 11px 18px;
+    padding: 10px 16px;
     cursor: pointer;
     white-space: nowrap;
+    font-size: 13px;
+    font-weight: 600;
 }
 
 .category.active {
@@ -240,87 +277,66 @@ nav a:hover {
 
 .products {
     display: grid;
-    grid-template-columns: repeat(4,1fr);
-    gap: 17px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
 }
 
 .card {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 16px;
-    padding: 12px;
+    padding: 11px;
     position: relative;
-    transition: .2s;
-    min-width: 0;
-}
-
-.card:hover {
-    transform: translateY(-4px);
-    border-color: var(--blue);
+    display: flex;
+    flex-direction: column;
 }
 
 .product-image {
-    height: 175px;
-    background:
-      radial-gradient(circle, #36577f, #1a2941);
+    height: 145px;
+    background: radial-gradient(circle, #36577f, #1a2941);
     border-radius: 12px;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 70px;
-    margin-bottom: 13px;
+    font-size: 62px;
+    margin-bottom: 11px;
 }
 
 .favorite {
     position: absolute;
-    top: 20px;
-    right: 20px;
-    background: #101b2d;
-    border: none;
+    top: 18px;
+    right: 18px;
+    background: rgba(16, 27, 45, 0.85);
+    border: 1px solid var(--border);
     color: white;
     border-radius: 50%;
-    width: 35px;
-    height: 35px;
+    width: 32px;
+    height: 32px;
     cursor: pointer;
-    font-size: 18px;
-}
-
-.card h3 {
     font-size: 15px;
-    margin-bottom: 8px;
 }
 
-.collection {
-    color: var(--muted);
-    font-size: 12px;
-    margin-bottom: 13px;
-}
-
-.price {
-    color: var(--gold);
-    font-size: 17px;
-    font-weight: bold;
-    margin-bottom: 12px;
-}
+.card h3 { font-size: 14px; margin-bottom: 5px; }
+.collection { color: var(--muted); font-size: 11px; margin-bottom: 10px; }
+.price { color: var(--gold); font-size: 15px; font-weight: bold; margin-bottom: 10px; margin-top: auto; }
 
 .details {
     background: #315b91;
     border: 0;
     color: white;
     border-radius: 9px;
-    padding: 11px;
+    padding: 10px;
     width: 100%;
     cursor: pointer;
-}
-
-.details:hover {
-    background: #447fc0;
+    font-weight: 600;
+    font-size: 13px;
 }
 
 .empty {
     color: var(--muted);
-    grid-column: 1/-1;
-    padding: 30px 0;
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px 0;
 }
 
 .modal {
@@ -328,427 +344,192 @@ nav a:hover {
     position: fixed;
     inset: 0;
     z-index: 30;
-    background: rgba(0,0,0,.8);
+    background: rgba(0, 0, 0, 0.82);
+    backdrop-filter: blur(5px);
     justify-content: center;
     align-items: center;
-    padding: 15px;
+    padding: 16px;
 }
 
 .modal-box {
     background: #17243b;
     border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 25px;
+    border-radius: 22px;
+    padding: 24px;
     width: 100%;
-    max-width: 390px;
+    max-width: 360px;
     text-align: center;
 }
 
-.modal-emoji {
-    font-size: 85px;
-    margin: 15px;
-}
+.modal-emoji { font-size: 80px; margin: 10px 0 15px; }
+.modal-box h2 { font-size: 20px; margin-bottom: 8px; }
 
-.modal-box h2 {
+.modal-tag {
+    display: inline-block;
+    background: #233554;
+    color: var(--blue);
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 8px;
     margin-bottom: 12px;
 }
 
 .modal-box p {
     color: var(--muted);
-    line-height: 1.6;
+    font-size: 14px;
+    line-height: 1.5;
     margin-bottom: 20px;
+}
+
+.modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.buy-btn {
+    background: linear-gradient(100deg, #438fe9, #7469eb);
+    color: white;
+    border: none;
+    padding: 13px;
+    border-radius: 11px;
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
 }
 
 .close {
     background: #283953;
-    color: white;
+    color: var(--muted);
     border: none;
-    padding: 11px 20px;
-    border-radius: 9px;
+    padding: 11px;
+    border-radius: 11px;
     cursor: pointer;
-    margin-top: 12px;
+    font-size: 14px;
 }
 
 footer {
-    margin-top: 65px;
-    padding: 35px 15px;
+    margin-top: 45px;
+    padding: 25px 15px;
     text-align: center;
     border-top: 1px solid var(--border);
     color: var(--muted);
-    line-height: 2;
+    font-size: 13px;
 }
 
-@media(max-width:900px) {
-    .products {
-        grid-template-columns: repeat(3,1fr);
-    }
+@media (max-width: 600px) {
+    .products { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .hero:after { font-size: 70px; opacity: 0.45; }
+}
+const tg = window.Telegram?.WebApp;
+if (tg) {
+    tg.ready();
+    tg.expand();
+    tg.setHeaderColor('#090d18');
+    tg.setBackgroundColor('#090d18');
 }
 
-@media(max-width:650px) {
-    nav {
-        display: none;
-    }
-
-    header {
-        padding: 0 4%;
-    }
-
-    .hero {
-        padding: 35px 22px;
-    }
-
-    .hero:after {
-        font-size: 75px;
-        right: 5px;
-        top: 15px;
-        opacity: .6;
-    }
-
-    .products {
-        grid-template-columns: repeat(2,1fr);
-        gap: 10px;
-    }
-
-    .product-image {
-        height: 135px;
-        font-size: 55px;
-    }
-
-    .stats {
-        gap: 8px;
-    }
-
-    .stat {
-        padding: 13px 8px;
-    }
-
-    .stat strong {
-        font-size: 16px;
-    }
-
-    .stat span {
-        font-size: 11px;
-    }
-}
-
-@media(max-width:360px) {
-    .products {
-        grid-template-columns: 1fr;
-    }
-}
-</style>
-</head>
-
-<body>
-
-<header>
-    <div class="logo">❄ FROST<span>MARKET</span></div>
-
-    <nav>
-        <a href="#">Главная</a>
-        <a href="#catalog">Каталог</a>
-        <a href="#favorites">Избранное</a>
-    </nav>
-
-    <div class="header-right">
-        <button class="header-btn" onclick="showFavorites()">
-            ❤️ <span id="favCount">0</span>
-        </button>
-    </div>
-</header>
-
-<div class="container">
-
-    <section class="hero">
-        <h1>Зимняя коллекция <span>2026 ❄</span></h1>
-        <p>
-            Открой мир Telegram Gifts.
-            Исследуй коллекции, находи редкие цифровые подарки
-            и собирай свою коллекцию!
-        </p>
-        <button class="primary-btn"
-        onclick="document.getElementById('catalog').scrollIntoView({behavior:'smooth'})">
-            Открыть каталог →
-        </button>
-    </section>
-
-    <div class="stats">
-        <div class="stat">
-            <strong id="totalCount">12</strong>
-            <span>Подарков в каталоге</span>
-        </div>
-        <div class="stat">
-            <strong>❄ 2026</strong>
-            <span>Зимний сезон</span>
-        </div>
-        <div class="stat">
-            <strong>⭐ Gifts</strong>
-            <span>Цифровые коллекции</span>
-        </div>
-    </div>
-
-    <section id="catalog">
-
-        <div class="section-head">
-            <h2>🎁 Каталог подарков</h2>
-        </div>
-
-        <input
-            type="text"
-            class="search"
-            id="search"
-            placeholder="🔍 Найти подарок..."
-        >
-
-        <div class="categories">
-            <button class="category active" data-category="Все">Все</button>
-            <button class="category" data-category="Подарки">🎁 Подарки</button>
-            <button class="category" data-category="NFT">💎 NFT</button>
-            <button class="category" data-category="Зима">❄ Зима</button>
-            <button class="category" data-category="Редкие">👑 Редкие</button>
-        </div>
-
-        <div class="products" id="products"></div>
-
-    </section>
-
-    <section id="favorites">
-        <div class="section-head">
-            <h2>❤️ Избранное</h2>
-        </div>
-        <div class="products" id="favoritesList"></div>
-    </section>
-
-</div>
-
-<div class="modal" id="modal" onclick="closeOutside(event)">
-    <div class="modal-box">
-        <div class="modal-emoji" id="modalEmoji"></div>
-        <h2 id="modalName"></h2>
-        <p id="modalInfo"></p>
-        <div class="price" id="modalPrice"></div>
-        <button class="close" onclick="closeModal()">Закрыть</button>
-    </div>
-</div>
-
-<footer>
-    <strong>❄ FROST MARKET</strong><br>
-    Новогодний маркетплейс Telegram Gifts<br>
-    Демонстрационный проект © 2026
-</footer>
-
-<script>
-
-// Демонстрационные товары.
-// Цены и изображения не являются актуальными предложениями.
-
-const items = [
-    {id:1,name:"Plush Pepe",emoji:"🐸",price:150,category:"NFT",rarity:"Редкий"},
-    {id:2,name:"Durov's Cap",emoji:"🧢",price:90,category:"Подарки",rarity:"Обычный"},
-    {id:3,name:"Star Notepad",emoji:"📒",price:50,category:"Подарки",rarity:"Обычный"},
-    {id:4,name:"Diamond Ring",emoji:"💍",price:250,category:"Редкие",rarity:"Редкий"},
-    {id:5,name:"Toy Bear",emoji:"🧸",price:120,category:"Подарки",rarity:"Обычный"},
-    {id:6,name:"Magic Potion",emoji:"🧪",price:80,category:"NFT",rarity:"Обычный"},
-    {id:7,name:"Golden Star",emoji:"⭐",price:200,category:"Редкие",rarity:"Редкий"},
-    {id:8,name:"Crystal Ball",emoji:"🔮",price:175,category:"NFT",rarity:"Редкий"},
-    {id:9,name:"Snow Globe",emoji:"❄️",price:100,category:"Зима",rarity:"Обычный"},
-    {id:10,name:"Christmas Tree",emoji:"🎄",price:300,category:"Зима",rarity:"Редкий"},
-    {id:11,name:"Winter Gift",emoji:"🎁",price:110,category:"Зима",rarity:"Обычный"},
-    {id:12,name:"Santa Hat",emoji:"🎅",price:130,category:"Зима",rarity:"Обычный"}
+const gifts = [
+    { id: 1, name: "Волшебная Ёлка", category: "newyear", tag: "Новогодняя серия", price: 150, emoji: "🎄", desc: "Главный символ праздника с мерцающей гирляндой." },
+    { id: 2, name: "Хрустальный Шар", category: "rare", tag: "Редкий выпуск", price: 500, emoji: "🔮", desc: "Внутри кружится настоящая зимняя метель." },
+    { id: 3, name: "Санта-Клаус", category: "newyear", tag: "Новогодняя серия", price: 250, emoji: "🎅", desc: "Приносит удачу и праздничное настроение в любой чат." },
+    { id: 4, name: "Ледяной Король", category: "limited", tag: "Лимитированный", price: 1200, emoji: "👑", desc: "Эксклюзивная корона из вечного льда." },
+    { id: 5, name: "Снеговик Олаф", category: "newyear", tag: "Новогодняя серия", price: 100, emoji: "⛄", desc: "Добрый зимний друг, который никогда не растает." },
+    { id: 6, name: "Пряничный Человечек", category: "newyear", tag: "Новогодняя серия", price: 75, emoji: "🍪", desc: "Сладкий праздничный сувенир с ароматом корицы." },
+    { id: 7, name: "Северное Сияние", category: "rare", tag: "Редкий выпуск", price: 850, emoji: "🌌", desc: "Редчайший коллекционный подарок с переливающимся фоном." },
+    { id: 8, name: "Золотой Колокольчик", category: "limited", tag: "Лимитированный", price: 990, emoji: "🔔", desc: "Открывает доступ к закрытому клубу коллекционеров." }
 ];
 
-let activeCategory = "Все";
-let favorites = [];
-let favoritesMode = false;
+let currentCategory = 'all';
+let favorites = JSON.parse(localStorage.getItem('mrkt_favs')) || [];
+let showingOnlyFavs = false;
+let selectedGift = null;
 
-document.getElementById("totalCount").textContent = items.length;
+for (let i = 0; i < 20; i++) {
+    const s = document.createElement('div');
+    s.className = 'snow';
+    s.innerText = ['❄', '❅', '❆'][i % 3];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.fontSize = (Math.random() * 12 + 10) + 'px';
+    s.style.animationDuration = (Math.random() * 6 + 5) + 's';
+    document.body.appendChild(s);
+}
+
+function updateFavCounter() {
+    document.getElementById('favCount').innerText = favorites.length;
+}
+
+function toggleFavorite(id, e) {
+    e.stopPropagation();
+    favorites = favorites.includes(id) ? favorites.filter(x => x !== id) : [...favorites, id];
+    localStorage.setItem('mrkt_favs', JSON.stringify(favorites));
+    updateFavCounter();
+    renderProducts();
+}
+
+function toggleFavoritesView() {
+    showingOnlyFavs = !showingOnlyFavs;
+    document.getElementById('favToggleBtn').classList.toggle('active', showingOnlyFavs);
+    document.getElementById('catalogTitle').innerText = showingOnlyFavs ? '❤️ Избранное' : 'Каталог подарков';
+    renderProducts();
+}
+
+function setCategory(cat, btn) {
+    currentCategory = cat;
+    showingOnlyFavs = false;
+    document.getElementById('favToggleBtn').classList.remove('active');
+    document.querySelectorAll('.category').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderProducts();
+}
 
 function renderProducts() {
-
-    const search = document.getElementById("search")
-        .value.toLowerCase().trim();
-
-    let filtered = items.filter(item => {
-
-        const matchesSearch =
-            item.name.toLowerCase().includes(search);
-
-        const matchesCategory =
-            activeCategory === "Все" ||
-            item.category === activeCategory ||
-            (activeCategory === "Подарки" && item.category === "Подарки") ||
-            (activeCategory === "Редкие" && item.rarity === "Редкий");
-
-        const matchesFavorites =
-            !favoritesMode || favorites.includes(item.id);
-
-        return matchesSearch && matchesCategory && matchesFavorites;
-    });
-
-    const container = document.getElementById("products");
-
-    if (filtered.length === 0) {
-        container.innerHTML =
-            '<p class="empty">Подарки не найдены ❄</p>';
-        return;
-    }
-
-    container.innerHTML = filtered.map(item => `
-
-        <div class="card">
-
-            <button class="favorite"
-                onclick="toggleFavorite(${item.id})">
-                ${favorites.includes(item.id) ? "❤️" : "🤍"}
-            </button>
-
-            <div class="product-image">${item.emoji}</div>
-
-            <h3>${item.name}</h3>
-
-            <div class="collection">
-                ${item.rarity} • ${item.category}
-            </div>
-
-            <div class="price">${item.price} ⭐</div>
-
-            <button class="details"
-                onclick="showProduct(${item.id})">
-                Подробнее
-            </button>
-
-        </div>
-
-    `).join("");
-}
-
-function toggleFavorite(id) {
-
-    if (favorites.includes(id)) {
-        favorites = favorites.filter(x => x !== id);
-    } else {
-        favorites.push(id);
-    }
-
-    updateFavorites();
-    renderProducts();
-}
-
-function updateFavorites() {
-
-    document.getElementById("favCount").textContent =
-        favorites.length;
-
-    const container = document.getElementById("favoritesList");
-
-    const selected = items.filter(item =>
-        favorites.includes(item.id)
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const list = gifts.filter(g => 
+        g.name.toLowerCase().includes(q) && 
+        (currentCategory === 'all' || g.category === currentCategory) && 
+        (!showingOnlyFavs || favorites.includes(g.id))
     );
-
-    if (selected.length === 0) {
-        container.innerHTML =
-            '<p class="empty">Здесь пока нет подарков ❤️</p>';
-        return;
-    }
-
-    container.innerHTML = selected.map(item => `
-        <div class="card">
-            <div class="product-image">${item.emoji}</div>
-            <h3>${item.name}</h3>
-            <div class="price">${item.price} ⭐</div>
-            <button class="details"
-                onclick="showProduct(${item.id})">
-                Подробнее
-            </button>
-            <button class="close"
-                onclick="toggleFavorite(${item.id})">
-                Убрать из избранного
-            </button>
+    document.getElementById('totalCount').innerText = list.length;
+    document.getElementById('productsGrid').innerHTML = list.length ? list.map(g => `
+        <div class="card" onclick="openModal(${g.id})">
+            <button class="favorite" onclick="toggleFavorite(${g.id}, event)">${favorites.includes(g.id) ? '❤️' : '🤍'}</button>
+            <div class="product-image">${g.emoji}</div>
+            <h3>${g.name}</h3>
+            <div class="collection">${g.tag}</div>
+            <div class="price">${g.price} ⭐</div>
+            <button class="details">Подробнее</button>
         </div>
-    `).join("");
+    `).join('') : '<div class="empty">Ничего не найдено ❄️</div>';
 }
 
-function showFavorites() {
-
-    favoritesMode = !favoritesMode;
-
-    document.getElementById("catalog").scrollIntoView({
-        behavior:"smooth"
-    });
-
-    renderProducts();
-}
-
-function showProduct(id) {
-
-    const item = items.find(x => x.id === id);
-
-    if (!item) return;
-
-    document.getElementById("modalEmoji").textContent = item.emoji;
-    document.getElementById("modalName").textContent = item.name;
-    document.getElementById("modalInfo").textContent =
-        "Категория: " + item.category +
-        ". Редкость: " + item.rarity +
-        ". Демонстрационная карточка подарка.";
-
-    document.getElementById("modalPrice").textContent =
-        item.price + " ⭐";
-
-    document.getElementById("modal").style.display = "flex";
+function openModal(id) {
+    selectedGift = gifts.find(g => g.id === id);
+    document.getElementById('modalEmoji').innerText = selectedGift.emoji;
+    document.getElementById('modalTag').innerText = selectedGift.tag;
+    document.getElementById('modalTitle').innerText = selectedGift.name;
+    document.getElementById('modalDesc').innerText = selectedGift.desc;
+    document.getElementById('modalBuyBtn').innerText = `Купить за ${selectedGift.price} ⭐`;
+    document.getElementById('productModal').style.display = 'flex';
 }
 
 function closeModal() {
-    document.getElementById("modal").style.display = "none";
+    document.getElementById('productModal').style.display = 'none';
 }
 
-function closeOutside(event) {
-    if (event.target.id === "modal") closeModal();
-}
-
-document.getElementById("search")
-.addEventListener("input", renderProducts);
-
-document.querySelectorAll(".category").forEach(button => {
-
-    button.addEventListener("click", () => {
-
-        document.querySelector(".category.active")
-            .classList.remove("active");
-
-        button.classList.add("active");
-
-        activeCategory = button.dataset.category;
-        favoritesMode = false;
-
-        renderProducts();
+document.getElementById('modalBuyBtn').onclick = () => {
+    const data = JSON.stringify({
+        action: "buy_gift",
+        gift_id: selectedGift.id,
+        name: selectedGift.name,
+        price: selectedGift.price
     });
-});
+    if (tg?.initData) tg.sendData(data);
+    else {
+        alert('Заказ: ' + selectedGift.name);
+        closeModal();
+    }
+};
 
-// Снежинки
-
-function createSnow() {
-
-    const snow = document.createElement("div");
-
-    snow.className = "snow";
-    snow.textContent = "❄";
-
-    snow.style.left = Math.random() * 100 + "vw";
-    snow.style.fontSize = (10 + Math.random() * 15) + "px";
-    snow.style.animationDuration = (5 + Math.random() * 9) + "s";
-
-    document.body.appendChild(snow);
-
-    setTimeout(() => snow.remove(), 15000);
-}
-
-setInterval(createSnow, 350);
-
+updateFavCounter();
 renderProducts();
-updateFavorites();
-
-</script>
-
-</body>
-</html>
