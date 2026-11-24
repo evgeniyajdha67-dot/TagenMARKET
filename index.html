@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#070b14">
 <title>FROST MARKET</title>
+<link rel="manifest" href="/manifest.json">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 :root { --bg:#070b14; --panel:#0f1726; --card:#141f33; --border:#22334f; --blue:#58b4ff; --cyan:#8ce0ff; --gold:#ffd77a; --green:#34d399; --red:#ff6b8b; --text:#f3f7ff; --muted:#8b9bb5; --hero1:#102342; --hero2:#121b30; --hero3:#192642; --heroBorder:#2b4369; --accent:#3b8ee8; --accent2:#6c63ff; }
@@ -44,6 +46,7 @@ h2 { font-size:18px; margin:18px 0 10px; }
 .btn-boost { background:#5a3a1f; color:#ffd77a; }
 .btn-spin { background:linear-gradient(90deg,#ff6b35,#ffd77a); color:#000; }
 .empty { grid-column:1/-1; text-align:center; padding:30px; color:var(--muted); font-size:13px; background:var(--panel); border:1px dashed var(--border); border-radius:16px; }
+.empty-cta { display:inline-block; margin-top:10px; padding:8px 14px; background:var(--accent); color:#fff; border:none; border-radius:10px; font-size:12px; font-weight:700; cursor:pointer; }
 .modal { display:none; position:fixed; inset:0; z-index:50; background:rgba(3,6,14,0.85); align-items:center; justify-content:center; padding:16px; }
 .modal-box { background:var(--panel); border:1px solid var(--border); border-radius:22px; padding:20px; width:100%; max-width:370px; text-align:center; max-height:90vh; overflow-y:auto; }
 .m-input { width:100%; background:var(--card); border:1px solid var(--border); color:#fff; padding:11px 12px; border-radius:11px; font-size:14px; margin-bottom:10px; outline:none; text-align:center; }
@@ -94,6 +97,22 @@ h2 { font-size:18px; margin:18px 0 10px; }
 @keyframes spinPulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
 .toggle-row { display:flex; align-items:center; justify-content:space-between; background:var(--card); border:1px solid var(--border); border-radius:11px; padding:10px 12px; margin-bottom:10px; font-size:13px; }
 .toggle-row input { width:auto; accent-color:var(--accent); }
+.skeleton { background:linear-gradient(90deg,var(--card) 25%,var(--border) 50%,var(--card) 75%); background-size:200% 100%; animation:sk 1.2s infinite; border-radius:16px; height:200px; }
+@keyframes sk { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.notif-item { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:10px; margin-bottom:8px; text-align:left; }
+.notif-item.unread { border-color:var(--blue); background:rgba(88,180,255,0.08); }
+.notif-item strong { display:block; font-size:13px; margin-bottom:3px; }
+.notif-item .text { font-size:12px; color:var(--muted); }
+.notif-item .date { font-size:10px; color:var(--muted); margin-top:4px; }
+.profile-public-header { margin-top:16px; background:linear-gradient(140deg,var(--hero1),var(--hero2)); border:1px solid var(--border); border-radius:20px; padding:22px; text-align:center; }
+.rating { font-size:18px; color:var(--gold); margin:6px 0; }
+.stars-row { display:flex; justify-content:center; gap:4px; margin:8px 0; }
+.star-btn { background:none; border:none; color:var(--gold); font-size:24px; cursor:pointer; }
+.tx-row { display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid var(--border); font-size:12px; }
+.tx-row .plus { color:var(--green); }
+.tx-row .minus { color:var(--red); }
+.watch-btn { position:absolute; top:8px; left:8px; width:28px; height:28px; border-radius:50%; background:rgba(11,18,32,0.85); border:1px solid var(--border); color:#fff; cursor:pointer; z-index:3; font-size:13px; }
+.seller-link { cursor:pointer; color:var(--blue); text-decoration:underline; }
 @media (max-width:860px) { .grid { grid-template-columns:repeat(3,1fr); } }
 @media (max-width:600px) { .grid { grid-template-columns:repeat(2,1fr); gap:9px; } .card-img { height:110px; } .wallet-cards { grid-template-columns:1fr; } .b-nav-btn { font-size:10px; padding:5px 3px; } .roulette-prizes { grid-template-columns:repeat(2,1fr); } }
 </style>
@@ -107,7 +126,8 @@ h2 { font-size:18px; margin:18px 0 10px; }
     <div class="header-actions">
         <span class="pill" id="balancePill">0 TON</span>
         <span class="pill" id="starsPill">0 ⭐</span>
-        <button class="pill" onclick="goTab('profile')">👤<span id="notifBadge" class="notif-badge" style="display:none">0</span></button>
+        <button class="pill" onclick="openNotifModal()">🔔<span id="notifBadge" class="notif-badge" style="display:none">0</span></button>
+        <button class="pill" onclick="goTab('profile')">👤</button>
     </div>
 </header>
 
@@ -144,6 +164,8 @@ h2 { font-size:18px; margin:18px 0 10px; }
     <div id="sec-inventory" class="section">
         <div class="catalog-head"><h2>🎒 Мои NFT</h2></div>
         <div class="grid" id="invGrid"></div>
+        <div class="catalog-head"><h2>🏷 Мои активные лоты</h2></div>
+        <div class="listings-list" id="myListingsList"></div>
         <div class="catalog-head"><h2>📦 Мои пакеты</h2></div>
         <div class="listings-list" id="bundlesList"></div>
         <div class="catalog-head"><h2>👗 Примерка (24ч)</h2></div>
@@ -151,9 +173,22 @@ h2 { font-size:18px; margin:18px 0 10px; }
     </div>
 
     <div id="sec-market" class="section">
-        <div class="catalog-head">
-            <h2>📊 Рынок</h2>
-            <button class="btn-glass" onclick="loadMarket(); loadIncomingOffers(); loadSalesHistory();">🔄</button>
+        <div class="catalog-head"><h2>📊 Рынок</h2><button class="btn-glass" onclick="loadMarket(); loadIncomingOffers(); loadSalesHistory();">🔄</button></div>
+        <input type="text" class="search-box" id="marketSearch" placeholder="🔍 Поиск по названию..." oninput="renderMarket()">
+        <div class="filters">
+            <select class="sort-select" id="marketSort" onchange="renderMarket()">
+                <option value="new">Новые</option>
+                <option value="boost">С бустом</option>
+                <option value="asc">Дешёвые</option>
+                <option value="desc">Дорогие</option>
+            </select>
+            <select class="sort-select" id="marketCurrency" onchange="renderMarket()">
+                <option value="all">Все валюты</option>
+                <option value="TON">💎 TON</option>
+                <option value="STARS">⭐ Stars</option>
+            </select>
+            <input type="number" class="sort-select" id="marketMin" placeholder="Мин" oninput="renderMarket()" style="width:80px">
+            <input type="number" class="sort-select" id="marketMax" placeholder="Макс" oninput="renderMarket()" style="width:80px">
         </div>
         <div class="grid" id="marketGrid"></div>
         <div class="catalog-head"><h2>📥 Входящие офферы</h2></div>
@@ -163,10 +198,7 @@ h2 { font-size:18px; margin:18px 0 10px; }
     </div>
 
     <div id="sec-auctions" class="section">
-        <div class="catalog-head">
-            <h2>⏳ Аукционы</h2>
-            <button class="btn-glass" onclick="loadAuctions();">🔄</button>
-        </div>
+        <div class="catalog-head"><h2>⏳ Аукционы</h2><button class="btn-glass" onclick="loadAuctions();">🔄</button></div>
         <div class="grid" id="auctionGrid"></div>
     </div>
 
@@ -174,40 +206,29 @@ h2 { font-size:18px; margin:18px 0 10px; }
         <div class="profile-header">
             <div class="avatar" id="uAvatar">❄</div>
             <div>
-                <h3 id="uName">Гость <span id="uVerif"></span></h3>
+                <h3 id="uName">Гость</h3>
                 <p id="uMeta" style="font-size:12px;color:var(--muted)">Не авторизован</p>
             </div>
         </div>
         <div class="wallet-cards">
-            <div class="w-card">
-                <small>💎 TON</small>
-                <strong id="pTon">0 TON</strong>
-                <div class="w-actions">
-                    <button class="w-in" onclick="openTopup()">+ Пополнить</button>
-                    <button class="w-out" onclick="openWithdraw('TON')">↑ Вывести</button>
-                </div>
-            </div>
-            <div class="w-card">
-                <small>⭐ Stars</small>
-                <strong id="pStars">0 ⭐</strong>
-                <div class="w-actions">
-                    <button class="w-in" onclick="openTopup()">+ Пополнить</button>
-                    <button class="w-out" onclick="openWithdraw('STARS')">↑ Вывести</button>
-                </div>
-            </div>
+            <div class="w-card"><small>💎 TON</small><strong id="pTon">0 TON</strong><div class="w-actions"><button class="w-in" onclick="openTopup()">+ Пополнить</button><button class="w-out" onclick="openWithdraw('TON')">↑ Вывести</button></div></div>
+            <div class="w-card"><small>⭐ Stars</small><strong id="pStars">0 ⭐</strong><div class="w-actions"><button class="w-in" onclick="openTopup()">+ Пополнить</button><button class="w-out" onclick="openWithdraw('STARS')">↑ Вывести</button></div></div>
         </div>
         <div class="row" style="margin-top:10px">
             <button class="btn-list" onclick="openExchange()">🔄 Обмен</button>
             <button class="btn-boost" onclick="openRoulette()">🎰 Рулетка</button>
             <button class="btn-buy" onclick="openVerify()">✅ Верификация</button>
+            <button class="btn-swap" onclick="openPromo()">🎟 Промокод</button>
         </div>
-        <div class="catalog-head"><h2>🎨 Тема оформления</h2></div>
+        <div class="catalog-head"><h2>🎨 Тема</h2></div>
         <div class="theme-row">
             <button class="theme-btn" data-theme-btn="dark" onclick="setTheme('dark')">🌙 Тёмная</button>
             <button class="theme-btn" data-theme-btn="winter" onclick="setTheme('winter')">❄ Зима</button>
             <button class="theme-btn" data-theme-btn="newyear" onclick="setTheme('newyear')">🎄 Новый год</button>
             <button class="theme-btn" data-theme-btn="halloween" onclick="setTheme('halloween')">🎃 Хэллоуин</button>
         </div>
+        <div class="catalog-head"><h2>📜 История транзакций</h2></div>
+        <div class="listings-list" id="txList"></div>
         <div class="catalog-head"><h2>🏆 Топ продавцов</h2></div>
         <div class="listings-list" id="topSellersList"></div>
         <div id="adminSection" style="display:none">
@@ -217,6 +238,7 @@ h2 { font-size:18px; margin:18px 0 10px; }
                 <button class="btn-buy" onclick="openGiveNft()">🎁 Выдать NFT</button>
                 <button class="btn-buy" onclick="openBalance()">💎 Баланс</button>
                 <button class="btn-send" onclick="exportLogs()">📥 Логи</button>
+                <button class="btn-swap" onclick="openPromoAdmin()">🎟 Промокоды</button>
             </div>
             <div class="listings-list" id="adminStatsList"></div>
             <div class="catalog-head"><h2>📤 Заявки на вывод</h2></div>
@@ -228,7 +250,7 @@ h2 { font-size:18px; margin:18px 0 10px; }
             <div class="listings-list" id="adminListingsList"></div>
             <div class="catalog-head"><h2>⏳ Активные аукционы</h2></div>
             <div class="listings-list" id="adminAuctionsList"></div>
-            <div class="catalog-head"><h2>🎰 Рулетка (последние 200)</h2></div>
+            <div class="catalog-head"><h2>🎰 Рулетка</h2></div>
             <div class="listings-list" id="adminRouletteList"></div>
             <div class="catalog-head"><h2>💰 Финансы</h2></div>
             <div class="listings-list" id="adminFinanceList"></div>
@@ -238,7 +260,7 @@ h2 { font-size:18px; margin:18px 0 10px; }
             <div class="listings-list" id="adminChartReg"></div>
             <div class="catalog-head"><h2>📈 Продажи (30 дней)</h2></div>
             <div class="listings-list" id="adminChartSales"></div>
-            <div class="catalog-head"><h2>🛡 Гаранты (ожидают)</h2></div>
+            <div class="catalog-head"><h2>🛡 Гаранты</h2></div>
             <div class="listings-list" id="adminGuaranteesList"></div>
             <div class="catalog-head"><h2>📢 Массовые операции</h2></div>
             <div class="row" style="margin-bottom:10px">
@@ -253,201 +275,29 @@ h2 { font-size:18px; margin:18px 0 10px; }
 </div>
 
 <!-- МОДАЛКИ -->
-<div class="modal" id="authModal">
-    <div class="modal-box">
-        <h3 id="authTitle">Регистрация</h3>
-        <p style="color:var(--muted);font-size:12px;margin-bottom:14px" id="authSub">Создайте аккаунт</p>
-        <input type="text" class="m-input" id="authUsername" placeholder="Ник">
-        <input type="password" class="m-input" id="authPassword" placeholder="Пароль (мин. 6)">
-        <input type="password" class="m-input" id="authPassword2" placeholder="Повторите">
-        <button class="btn-primary" id="authBtn" onclick="submitAuth()" style="width:100%;margin-bottom:8px">Зарегистрироваться</button>
-        <button class="btn-glass" onclick="toggleAuthMode()" style="width:100%;font-size:12px" id="authSwitch">Уже есть аккаунт? Войти</button>
-    </div>
-</div>
-
-<div class="modal" id="listModal">
-    <div class="modal-box">
-        <h3>Выставить лот</h3>
-        <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="listSub"></p>
-        <input type="number" class="m-input" id="listPrice" placeholder="Цена">
-        <select class="m-input" id="listCurrency"><option value="TON">💎 TON</option><option value="STARS">⭐ Stars</option></select>
-        <div class="toggle-row"><span>🔒 Приватный лот (0.5 TON)</span><input type="checkbox" id="listPrivate"></div>
-        <button class="btn-primary" onclick="confirmListing()" style="width:100%;margin-bottom:8px">Выставить</button>
-        <button class="btn-glass" onclick="closeM('listModal')" style="width:100%">Отмена</button>
-    </div>
-</div>
-
-<div class="modal" id="auctionModal">
-    <div class="modal-box">
-        <h3>Аукцион</h3>
-        <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="aucSub"></p>
-        <input type="number" class="m-input" id="aucStart" placeholder="Старт">
-        <input type="number" class="m-input" id="aucHours" placeholder="Часы" value="24">
-        <select class="m-input" id="aucCurrency"><option value="TON">💎 TON</option><option value="STARS">⭐ Stars</option></select>
-        <div class="toggle-row"><span>⚡ Срочный аукцион 1ч (2 TON)</span><input type="checkbox" id="aucUrgent"></div>
-        <div class="toggle-row"><span>🛡 Резервная цена (1 TON)</span><input type="checkbox" id="aucReserve"></div>
-        <button class="btn-primary" onclick="confirmAuction()" style="width:100%;margin-bottom:8px">Запустить</button>
-        <button class="btn-glass" onclick="closeM('auctionModal')" style="width:100%">Отмена</button>
-    </div>
-</div>
-
-<div class="modal" id="offerModal">
-    <div class="modal-box">
-        <h3>Оффер</h3>
-        <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="offerSub"></p>
-        <input type="number" class="m-input" id="offerPrice" placeholder="Цена">
-        <select class="m-input" id="offerCurrency"><option value="TON">💎 TON</option><option value="STARS">⭐ Stars</option></select>
-        <div class="toggle-row"><span>⚡ Быстрый оффер (0.1 TON)</span><input type="checkbox" id="offerFast"></div>
-        <button class="btn-primary" onclick="submitOffer()" style="width:100%;margin-bottom:8px">Отправить</button>
-        <button class="btn-glass" onclick="closeM('offerModal')" style="width:100%">Отмена</button>
-    </div>
-</div>
-
-<div class="modal" id="bidModal">
-    <div class="modal-box">
-        <h3>Ставка</h3>
-        <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="bidSub"></p>
-        <input type="number" class="m-input" id="bidAmount" placeholder="Сумма">
-        <div class="toggle-row"><span>⚡ Поднять ставку вне очереди (0.3 TON)</span><input type="checkbox" id="bidFast"></div>
-        <div class="bids-list" id="bidsList"></div>
-        <button class="btn-primary" onclick="submitBid()" style="width:100%;margin-bottom:8px;margin-top:10px">Поставить</button>
-        <button class="btn-glass" onclick="closeM('bidModal')" style="width:100%">Отмена</button>
-    </div>
-</div>
-
-<div class="modal" id="topupModal">
-    <div class="modal-box">
-        <h3>Пополнение</h3>
-        <p style="color:var(--muted);font-size:12px;margin-bottom:10px">Без комиссии</p>
-        <div id="adminContactBox" style="background:#1a2945;border:1px solid var(--gold);border-radius:12px;padding:10px;margin-bottom:10px;font-size:12.5px;text-align:left"></div>
-        <button class="btn-glass" onclick="closeM('topupModal')" style="width:100%">Закрыть</button>
-    </div>
-</div>
-
-<div class="modal" id="wdModal">
-    <div class="modal-box">
-        <h3>Вывод</h3>
-        <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="wdSub"></p>
-        <input type="text" class="m-input" id="wdTarget" placeholder="Реквизиты">
-        <input type="number" class="m-input" id="wdAmount" placeholder="Сумма (на руки)">
-        <div class="toggle-row"><span>⚡ Срочный вывод 1ч (15%)</span><input type="checkbox" id="wdUrgent"></div>
-        <button class="btn-primary" onclick="doWithdraw()" style="width:100%;margin-bottom:8px">Отправить заявку</button>
-        <button class="btn-glass" onclick="closeM('wdModal')" style="width:100%">Отмена</button>
-    </div>
-</div>
-
-<div class="modal" id="wdNftModal">
-    <div class="modal-box">
-        <h3>Вывод NFT</h3>
-        <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="wdNftSub"></p>
-        <input type="text" class="m-input" id="wdNftTarget" placeholder="@username получателя">
-        <button class="btn-primary" onclick="doWithdrawNft()" style="width:100%;margin-bottom:8px">Отправить заявку</button>
-        <button class="btn-glass" onclick="closeM('wdNftModal')" style="width:100%">Отмена</button>
-    </div>
-</div>
-
-<div class="modal" id="exchangeModal">
-    <div class="modal-box">
-        <h3>Обмен валют</h3>
-        <p style="color:var(--muted);font-size:12px;margin-bottom:10px">Комиссия обмена 2%</p>
-        <select class="m-input" id="exFrom">
-            <option value="TON">💎 TON → ⭐ Stars (×200)</option>
-            <option value="STARS">⭐ Stars → 💎 TON (÷2500)</option>
-        </select>
-        <input type="number" class="m-input" id="exAmount" placeholder="Сумма">
-        <button class="btn-primary" onclick="doExchange()" style="width:100%;margin-bottom:8px">Обменять</button>
-        <button class="btn-glass" onclick="closeM('exchangeModal')" style="width:100%">Отмена</button>
-    </div>
-</div>
-
-<div class="modal" id="rouletteModal">
-    <div class="modal-box" style="max-width:420px">
-        <h3>🎰 Рулетка</h3>
-        <p style="color:var(--muted);font-size:12px;margin-bottom:10px">Стоимость прокрутки: 10 TON</p>
-        <div class="roulette-prizes">
-            <div class="roulette-prize">1 TON</div>
-            <div class="roulette-prize">3 TON</div>
-            <div class="roulette-prize">5 TON</div>
-            <div class="roulette-prize">20 TON</div>
-        </div>
-        <div class="roulette-result" id="rouletteResult">Нажмите «Крутить»</div>
-        <button class="btn-spin" id="rouletteBtn" onclick="spinRoulette()" style="width:100%;padding:14px;font-size:15px;margin-bottom:8px">Крутить (10 TON)</button>
-        <button class="btn-glass" onclick="closeM('rouletteModal')" style="width:100%">Закрыть</button>
-    </div>
-</div>
-
-<div class="modal" id="verifyModal">
-    <div class="modal-box">
-        <h3>✅ Верификация продавца</h3>
-        <p style="color:var(--muted);font-size:12px;margin-bottom:10px">50 TON разово. Галочка «Проверен» и приоритет в сортировке.</p>
-        <button class="btn-primary" onclick="doVerify()" style="width:100%;margin-bottom:8px">Оплатить 50 TON</button>
-        <button class="btn-glass" onclick="closeM('verifyModal')" style="width:100%">Отмена</button>
-    </div>
-</div>
-
-<div class="modal" id="giveNftModal">
-    <div class="modal-box">
-        <h3>Выдать NFT</h3>
-        <select class="m-input" id="giveUserId"></select>
-        <select class="m-input" id="giveNftSlug"></select>
-        <input type="number" class="m-input" id="giveNftCount" value="1" placeholder="Кол-во">
-        <button class="btn-primary" onclick="adminGiveNft()" style="width:100%;margin-bottom:8px">Выдать</button>
-        <button class="btn-glass" onclick="closeM('giveNftModal')" style="width:100%">Отмена</button>
-    </div>
-</div>
-
-<div class="modal" id="balanceModal">
-    <div class="modal-box">
-        <h3>Изменить баланс</h3>
-        <select class="m-input" id="balUserId"></select>
-        <select class="m-input" id="balCurrency"><option value="TON">💎 TON</option><option value="STARS">⭐ Stars</option></select>
-        <input type="number" class="m-input" id="balAmount" placeholder="+/- сумма">
-        <button class="btn-primary" onclick="adminBalance()" style="width:100%;margin-bottom:8px">Применить</button>
-        <button class="btn-glass" onclick="closeM('balanceModal')" style="width:100%">Отмена</button>
-    </div>
-</div>
-
-<div class="modal" id="roleModal">
-    <div class="modal-box">
-        <h3>Изменить роль</h3>
-        <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="roleSub"></p>
-        <select class="m-input" id="roleSelect">
-            <option value="user">👤 Пользователь</option>
-            <option value="moder">🛡 Модератор</option>
-        </select>
-        <button class="btn-primary" onclick="adminSetRole()" style="width:100%;margin-bottom:8px">Применить</button>
-        <button class="btn-glass" onclick="closeM('roleModal')" style="width:100%">Отмена</button>
-    </div>
-</div>
-
-<div class="modal" id="broadcastModal">
-    <div class="modal-box">
-        <h3>📢 Рассылка всем</h3>
-        <input type="text" class="m-input" id="bcTitle" placeholder="Заголовок">
-        <input type="text" class="m-input" id="bcText" placeholder="Текст">
-        <button class="btn-primary" onclick="doBroadcast()" style="width:100%;margin-bottom:8px">Отправить</button>
-        <button class="btn-glass" onclick="closeM('broadcastModal')" style="width:100%">Отмена</button>
-    </div>
-</div>
-
-<div class="modal" id="massBalanceModal">
-    <div class="modal-box">
-        <h3>💰 Начислить всем</h3>
-        <select class="m-input" id="mbCurrency"><option value="TON">💎 TON</option><option value="STARS">⭐ Stars</option></select>
-        <input type="number" class="m-input" id="mbAmount" placeholder="Сумма (+/-)">
-        <button class="btn-primary" onclick="doMassBalance()" style="width:100%;margin-bottom:8px">Применить</button>
-        <button class="btn-glass" onclick="closeM('massBalanceModal')" style="width:100%">Отмена</button>
-    </div>
-</div>
-
-<div class="modal" id="massGiveNftModal">
-    <div class="modal-box">
-        <h3>🎁 NFT всем</h3>
-        <select class="m-input" id="mgnNft"></select>
-        <button class="btn-primary" onclick="doMassGiveNft()" style="width:100%;margin-bottom:8px">Выдать</button>
-        <button class="btn-glass" onclick="closeM('massGiveNftModal')" style="width:100%">Отмена</button>
-    </div>
-</div>
+<div class="modal" id="authModal"><div class="modal-box"><h3 id="authTitle">Регистрация</h3><p style="color:var(--muted);font-size:12px;margin-bottom:14px" id="authSub">Создайте аккаунт</p><input type="text" class="m-input" id="authUsername" placeholder="Ник (a-z0-9_, 3-20)"><input type="password" class="m-input" id="authPassword" placeholder="Пароль (мин. 6)"><input type="password" class="m-input" id="authPassword2" placeholder="Повторите"><button class="btn-primary" id="authBtn" onclick="submitAuth()" style="width:100%;margin-bottom:8px">Зарегистрироваться</button><button class="btn-glass" onclick="toggleAuthMode()" style="width:100%;font-size:12px" id="authSwitch">Уже есть аккаунт? Войти</button></div></div>
+<div class="modal" id="notifModal"><div class="modal-box" style="max-width:450px"><h3>🔔 Уведомления</h3><div id="notifList" style="max-height:60vh;overflow-y:auto;margin:10px 0"></div><button class="btn-glass" onclick="markNotifsRead(); closeM('notifModal')" style="width:100%;margin-bottom:6px">Прочитать все</button><button class="btn-glass" onclick="closeM('notifModal')" style="width:100%">Закрыть</button></div></div>
+<div class="modal" id="listModal"><div class="modal-box"><h3>Выставить лот</h3><p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="listSub"></p><input type="number" class="m-input" id="listPrice" placeholder="Цена"><select class="m-input" id="listCurrency"><option value="TON">💎 TON</option><option value="STARS">⭐ Stars</option></select><div class="toggle-row"><span>🔒 Приватный лот (0.5 TON)</span><input type="checkbox" id="listPrivate"></div><button class="btn-primary" onclick="confirmListing()" style="width:100%;margin-bottom:8px">Выставить</button><button class="btn-glass" onclick="closeM('listModal')" style="width:100%">Отмена</button></div></div>
+<div class="modal" id="auctionModal"><div class="modal-box"><h3>Аукцион</h3><p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="aucSub"></p><input type="number" class="m-input" id="aucStart" placeholder="Старт"><input type="number" class="m-input" id="aucHours" placeholder="Часы" value="24"><select class="m-input" id="aucCurrency"><option value="TON">💎 TON</option><option value="STARS">⭐ Stars</option></select><div class="toggle-row"><span>⚡ Срочный аукцион 1ч (2 TON)</span><input type="checkbox" id="aucUrgent"></div><div class="toggle-row"><span>🛡 Резервная цена (1 TON)</span><input type="checkbox" id="aucReserve"></div><button class="btn-primary" onclick="confirmAuction()" style="width:100%;margin-bottom:8px">Запустить</button><button class="btn-glass" onclick="closeM('auctionModal')" style="width:100%">Отмена</button></div></div>
+<div class="modal" id="offerModal"><div class="modal-box"><h3>Оффер</h3><p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="offerSub"></p><input type="number" class="m-input" id="offerPrice" placeholder="Цена"><select class="m-input" id="offerCurrency"><option value="TON">💎 TON</option><option value="STARS">⭐ Stars</option></select><div class="toggle-row"><span>⚡ Быстрый оффер (0.1 TON)</span><input type="checkbox" id="offerFast"></div><button class="btn-primary" onclick="submitOffer()" style="width:100%;margin-bottom:8px">Отправить</button><button class="btn-glass" onclick="closeM('offerModal')" style="width:100%">Отмена</button></div></div>
+<div class="modal" id="bidModal"><div class="modal-box"><h3>Ставка</h3><p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="bidSub"></p><input type="number" class="m-input" id="bidAmount" placeholder="Сумма"><div class="toggle-row"><span>⚡ Поднять ставку вне очереди (0.3 TON)</span><input type="checkbox" id="bidFast"></div><div class="bids-list" id="bidsList"></div><button class="btn-primary" onclick="submitBid()" style="width:100%;margin-bottom:8px;margin-top:10px">Поставить</button><button class="btn-glass" onclick="closeM('bidModal')" style="width:100%">Отмена</button></div></div>
+<div class="modal" id="topupModal"><div class="modal-box"><h3>Пополнение</h3><p style="color:var(--muted);font-size:12px;margin-bottom:10px">Без комиссии</p><div id="adminContactBox" style="background:#1a2945;border:1px solid var(--gold);border-radius:12px;padding:10px;margin-bottom:10px;font-size:12.5px;text-align:left"></div><button class="btn-glass" onclick="closeM('topupModal')" style="width:100%">Закрыть</button></div></div>
+<div class="modal" id="wdModal"><div class="modal-box"><h3>Вывод</h3><p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="wdSub"></p><input type="text" class="m-input" id="wdTarget" placeholder="Реквизиты"><input type="number" class="m-input" id="wdAmount" placeholder="Сумма (на руки)"><div class="toggle-row"><span>⚡ Срочный вывод 1ч (15%)</span><input type="checkbox" id="wdUrgent"></div><button class="btn-primary" onclick="doWithdraw()" style="width:100%;margin-bottom:8px">Отправить заявку</button><button class="btn-glass" onclick="closeM('wdModal')" style="width:100%">Отмена</button></div></div>
+<div class="modal" id="wdNftModal"><div class="modal-box"><h3>Вывод NFT</h3><p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="wdNftSub"></p><input type="text" class="m-input" id="wdNftTarget" placeholder="@username получателя"><button class="btn-primary" onclick="doWithdrawNft()" style="width:100%;margin-bottom:8px">Отправить заявку</button><button class="btn-glass" onclick="closeM('wdNftModal')" style="width:100%">Отмена</button></div></div>
+<div class="modal" id="exchangeModal"><div class="modal-box"><h3>Обмен валют</h3><p style="color:var(--muted);font-size:12px;margin-bottom:10px">Комиссия обмена 2%</p><select class="m-input" id="exFrom"><option value="TON">💎 TON → ⭐ Stars (×200)</option><option value="STARS">⭐ Stars → 💎 TON (÷2500)</option></select><input type="number" class="m-input" id="exAmount" placeholder="Сумма"><button class="btn-primary" onclick="doExchange()" style="width:100%;margin-bottom:8px">Обменять</button><button class="btn-glass" onclick="closeM('exchangeModal')" style="width:100%">Отмена</button></div></div>
+<div class="modal" id="rouletteModal"><div class="modal-box" style="max-width:420px"><h3>🎰 Рулетка</h3><p style="color:var(--muted);font-size:12px;margin-bottom:10px">Стоимость прокрутки: 10 TON</p><div class="roulette-prizes"><div class="roulette-prize">1 TON</div><div class="roulette-prize">3 TON</div><div class="roulette-prize">5 TON</div><div class="roulette-prize">20 TON</div></div><div class="roulette-result" id="rouletteResult">Нажмите «Крутить»</div><button class="btn-spin" id="rouletteBtn" onclick="spinRoulette()" style="width:100%;padding:14px;font-size:15px;margin-bottom:8px">Крутить (10 TON)</button><button class="btn-glass" onclick="closeM('rouletteModal')" style="width:100%">Закрыть</button></div></div>
+<div class="modal" id="verifyModal"><div class="modal-box"><h3>✅ Верификация продавца</h3><p style="color:var(--muted);font-size:12px;margin-bottom:10px">50 TON разово. Галочка «Проверен» и приоритет в сортировке + лимит лотов 50.</p><button class="btn-primary" onclick="doVerify()" style="width:100%;margin-bottom:8px">Оплатить 50 TON</button><button class="btn-glass" onclick="closeM('verifyModal')" style="width:100%">Отмена</button></div></div>
+<div class="modal" id="promoModal"><div class="modal-box"><h3>🎟 Промокод</h3><input type="text" class="m-input" id="promoCode" placeholder="Введите код"><button class="btn-primary" onclick="doRedeemPromo()" style="width:100%;margin-bottom:8px">Активировать</button><button class="btn-glass" onclick="closeM('promoModal')" style="width:100%">Отмена</button></div></div>
+<div class="modal" id="promoAdminModal"><div class="modal-box"><h3>🎟 Создать промокод</h3><input type="text" class="m-input" id="paCode" placeholder="Код"><select class="m-input" id="paCurrency"><option value="TON">💎 TON</option><option value="STARS">⭐ Stars</option></select><input type="number" class="m-input" id="paAmount" placeholder="Сумма"><input type="number" class="m-input" id="paMax" placeholder="Макс. использований" value="1"><input type="number" class="m-input" id="paHours" placeholder="Часов до истечения (0 = бессрочно)" value="0"><button class="btn-primary" onclick="doCreatePromo()" style="width:100%;margin-bottom:8px">Создать</button><button class="btn-glass" onclick="closeM('promoAdminModal')" style="width:100%">Отмена</button></div></div>
+<div class="modal" id="giveNftModal"><div class="modal-box"><h3>Выдать NFT</h3><select class="m-input" id="giveUserId"></select><select class="m-input" id="giveNftSlug"></select><input type="number" class="m-input" id="giveNftCount" value="1" placeholder="Кол-во"><button class="btn-primary" onclick="adminGiveNft()" style="width:100%;margin-bottom:8px">Выдать</button><button class="btn-glass" onclick="closeM('giveNftModal')" style="width:100%">Отмена</button></div></div>
+<div class="modal" id="balanceModal"><div class="modal-box"><h3>Изменить баланс</h3><select class="m-input" id="balUserId"></select><select class="m-input" id="balCurrency"><option value="TON">💎 TON</option><option value="STARS">⭐ Stars</option></select><input type="number" class="m-input" id="balAmount" placeholder="+/- сумма"><button class="btn-primary" onclick="adminBalance()" style="width:100%;margin-bottom:8px">Применить</button><button class="btn-glass" onclick="closeM('balanceModal')" style="width:100%">Отмена</button></div></div>
+<div class="modal" id="roleModal"><div class="modal-box"><h3>Изменить роль</h3><p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="roleSub"></p><select class="m-input" id="roleSelect"><option value="user">👤 Пользователь</option><option value="moder">🛡 Модератор</option></select><button class="btn-primary" onclick="adminSetRole()" style="width:100%;margin-bottom:8px">Применить</button><button class="btn-glass" onclick="closeM('roleModal')" style="width:100%">Отмена</button></div></div>
+<div class="modal" id="broadcastModal"><div class="modal-box"><h3>📢 Рассылка всем</h3><input type="text" class="m-input" id="bcTitle" placeholder="Заголовок"><input type="text" class="m-input" id="bcText" placeholder="Текст"><button class="btn-primary" onclick="doBroadcast()" style="width:100%;margin-bottom:8px">Отправить</button><button class="btn-glass" onclick="closeM('broadcastModal')" style="width:100%">Отмена</button></div></div>
+<div class="modal" id="massBalanceModal"><div class="modal-box"><h3>💰 Начислить всем</h3><select class="m-input" id="mbCurrency"><option value="TON">💎 TON</option><option value="STARS">⭐ Stars</option></select><input type="number" class="m-input" id="mbAmount" placeholder="Сумма (+/-)"><button class="btn-primary" onclick="doMassBalance()" style="width:100%;margin-bottom:8px">Применить</button><button class="btn-glass" onclick="closeM('massBalanceModal')" style="width:100%">Отмена</button></div></div>
+<div class="modal" id="massGiveNftModal"><div class="modal-box"><h3>🎁 NFT всем</h3><select class="m-input" id="mgnNft"></select><button class="btn-primary" onclick="doMassGiveNft()" style="width:100%;margin-bottom:8px">Выдать</button><button class="btn-glass" onclick="closeM('massGiveNftModal')" style="width:100%">Отмена</button></div></div>
+<div class="modal" id="sellerModal"><div class="modal-box" style="max-width:450px"><h3 id="sellerName">Продавец</h3><div id="sellerBody" style="text-align:left;font-size:13px;max-height:60vh;overflow-y:auto;margin:10px 0"></div><button class="btn-glass" onclick="closeM('sellerModal')" style="width:100%">Закрыть</button></div></div>
+<div class="modal" id="reviewModal"><div class="modal-box"><h3>Оставить отзыв</h3><p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="reviewSub"></p><div class="stars-row" id="reviewStars"></div><input type="text" class="m-input" id="reviewText" placeholder="Комментарий (необязательно)"><button class="btn-primary" onclick="submitReview()" style="width:100%;margin-bottom:8px">Отправить</button><button class="btn-glass" onclick="closeM('reviewModal')" style="width:100%">Отмена</button></div></div>
+<div class="modal" id="bundleModal"><div class="modal-box"><h3>📦 Создать пакет</h3><p style="color:var(--muted);font-size:12px;margin-bottom:10px">Мин. 3 NFT. Комиссия 5%.</p><div id="bundleItems" style="text-align:left;max-height:200px;overflow-y:auto;margin-bottom:10px"></div><input type="number" class="m-input" id="bundlePrice" placeholder="Общая цена"><select class="m-input" id="bundleCurrency"><option value="TON">💎 TON</option><option value="STARS">⭐ Stars</option></select><button class="btn-primary" onclick="doCreateBundle()" style="width:100%;margin-bottom:8px">Создать</button><button class="btn-glass" onclick="closeM('bundleModal')" style="width:100%">Отмена</button></div></div>
 
 <nav class="bottom-nav">
     <button class="b-nav-btn active" id="bnav-catalog" onclick="goTab('catalog')"><span class="ico">❄</span><span>Витрина</span></button>
@@ -465,6 +315,9 @@ let curListingItem = null, curAuctionItem = null, curOfferListing = null, curBid
 let favorites = [], allUsers = [], curRoleUser = null;
 let wdNftItem = null, wdCurrency = 'TON';
 let curFilter = 'all';
+let marketData = [], watchlist = [];
+let curSellerId = null, curReviewRating = 5;
+let sseConn = null;
 
 const RAW = `Plush Pepe|plushpepe|nft|2500|🐸
 Algorithm Cup|algorithmcup|nft|1450|🏆
@@ -595,6 +448,7 @@ const gifts = RAW.trim().split('\n').map((l,i)=>{const p=l.split('|');return{id:
 
 function toast(m) { const t=document.getElementById('toast'); t.innerText=m; t.style.display='block'; setTimeout(()=>t.style.display='none',2500); }
 function closeM(id) { document.getElementById(id).style.display='none'; }
+function fmt(d) { return new Date(d).toLocaleString('ru-RU'); }
 
 const IMG_NUMS = [1,2,10,100,1000,5000,10000];
 function imgUrl(slug,n){ return `https://nft.fragment.com/gift/${encodeURIComponent(slug)}-${n}.webp`; }
@@ -618,9 +472,9 @@ function goTab(t) {
     document.getElementById('sec-'+t).classList.add('active');
     document.getElementById('bnav-'+t).classList.add('active');
     if(t==='market'){ loadMarket(); loadIncomingOffers(); loadSalesHistory(); }
-    if(t==='inventory'){ loadInventory(); loadBundles(); loadTrials(); }
+    if(t==='inventory'){ loadInventory(); loadMyListings(); loadBundles(); loadTrials(); }
     if(t==='auctions') loadAuctions();
-    if(t==='profile'){ loadTopSellers(); if(currentUser && (currentUser.role==='super'||currentUser.role==='moder')) renderAdmin(); }
+    if(t==='profile'){ loadTopSellers(); loadTransactions(); if(currentUser && (currentUser.role==='super'||currentUser.role==='moder')) renderAdmin(); }
     window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -659,8 +513,9 @@ async function submitAuth() {
     refreshProfileHeader();
     updateBalance();
     toast('✅ '+currentUser.username);
-    await loadInventory(); await loadMarket(); await loadFavorites(); await loadNotifications();
+    await loadInventory(); await loadMarket(); await loadFavorites(); await loadNotifications(); await loadWatchlist();
     if(currentUser.role==='super'||currentUser.role==='moder'){ document.getElementById('adminSection').style.display='block'; await renderAdmin(); }
+    startSSE();
 }
 async function initAuth() {
     const savedId = localStorage.getItem('frost_userId');
@@ -673,8 +528,9 @@ async function initAuth() {
                 refreshProfileHeader();
                 updateBalance();
                 closeM('authModal');
-                await loadInventory(); await loadMarket(); await loadFavorites(); await loadNotifications();
+                await loadInventory(); await loadMarket(); await loadFavorites(); await loadNotifications(); await loadWatchlist();
                 if(currentUser.role==='super'||currentUser.role==='moder'){ document.getElementById('adminSection').style.display='block'; await renderAdmin(); }
+                startSSE();
                 return;
             }
         }catch(e){}
@@ -699,6 +555,20 @@ async function refreshBalance() {
     currentUser = await r.json();
     updateBalance(); refreshProfileHeader();
 }
+function startSSE() {
+    if (!currentUser) return;
+    if (sseConn) { try { sseConn.close(); } catch(e){} }
+    try {
+        sseConn = new EventSource(API+'/api/notifications/stream/'+currentUser.id);
+        sseConn.onmessage = (ev) => {
+            try {
+                const d = JSON.parse(ev.data);
+                if (d.type === 'notification') { toast('🔔 '+d.title); loadNotifications(); }
+            } catch(e){}
+        };
+    } catch(e) { console.error('sse', e); }
+}
+
 async function loadFavorites() {
     if(!currentUser) return;
     const r = await fetch(API+'/api/favorites/'+currentUser.id);
@@ -711,6 +581,18 @@ async function toggleFav(slug,e) {
     await fetch(API+'/api/favorites',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,slug})});
     await loadFavorites();
 }
+async function loadWatchlist() {
+    if(!currentUser) return;
+    const r = await fetch(API+'/api/watchlist/'+currentUser.id);
+    watchlist = await r.json();
+}
+async function toggleWatch(slug, e) {
+    e.stopPropagation();
+    if(!currentUser) return toast('⚠️ Войдите');
+    await fetch(API+'/api/watchlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,slug})});
+    await loadWatchlist();
+    renderCatalog();
+}
 async function loadNotifications() {
     if(!currentUser) return;
     const r = await fetch(API+'/api/notifications/'+currentUser.id);
@@ -718,14 +600,34 @@ async function loadNotifications() {
     const unread = list.filter(n=>!n.is_read).length;
     const b = document.getElementById('notifBadge');
     if(unread>0){ b.style.display='inline-block'; b.innerText=unread; } else b.style.display='none';
+    window._lastNotifs = list;
+}
+async function openNotifModal() {
+    if(!currentUser) return toast('⚠️ Войдите');
+    const r = await fetch(API+'/api/notifications/'+currentUser.id);
+    const list = await r.json();
+    const box = document.getElementById('notifList');
+    box.innerHTML = list.length ? list.map(n=>`
+        <div class="notif-item ${n.is_read?'':'unread'}">
+            <strong>${n.title}</strong>
+            <div class="text">${n.text||''}</div>
+            <div class="date">${fmt(n.created_at)}</div>
+        </div>`).join('') : '<div style="padding:20px;color:var(--muted)">Нет уведомлений</div>';
+    document.getElementById('notifModal').style.display='flex';
+}
+async function markNotifsRead() {
+    if(!currentUser) return;
+    await fetch(API+'/api/notifications/read',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id})});
+    loadNotifications();
 }
 
 async function loadInventory() {
     if(!currentUser) return;
+    const g = document.getElementById('invGrid');
+    g.innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
     const r = await fetch(API+'/api/inventory/'+currentUser.id);
     const inv = await r.json();
-    const g = document.getElementById('invGrid');
-    if(!inv.length){ g.innerHTML='<div class="empty">Нет NFT. Купите на рынке.</div>'; return; }
+    if(!inv.length){ g.innerHTML='<div class="empty">Нет NFT. Купите на рынке.<br><button class="empty-cta" onclick="goTab(\'market\')">На рынок →</button></div>'; return; }
     g.innerHTML = inv.map(i=>`
         <div class="card">
             <div class="card-img">${imgTag(i.nft_slug,i.nft_emoji)}</div>
@@ -744,6 +646,24 @@ async function loadInventory() {
             </div>
         </div>`).join('');
 }
+
+async function loadMyListings() {
+    if(!currentUser) return;
+    const r = await fetch(API+'/api/listings');
+    const all = await r.json();
+    const mine = all.filter(l => l.seller_id === currentUser.id);
+    const box = document.getElementById('myListingsList');
+    if(!mine.length){ box.innerHTML='<div class="empty">Нет активных лотов</div>'; return; }
+    box.innerHTML = mine.map(l=>`
+        <div class="listing-item">
+            <div><strong>${l.nft_emoji} ${l.nft_name}</strong><br><span style="color:var(--muted);font-size:10px">${l.price} ${l.currency}</span></div>
+            <div style="display:flex;gap:4px">
+                <button class="btn-boost" style="padding:4px 8px;font-size:10px" onclick="boostListing(${l.id})">🔥</button>
+                <button class="btn-red" style="padding:4px 8px;font-size:10px" onclick="cancelListing(${l.id})">✕</button>
+            </div>
+        </div>`).join('');
+}
+
 async function loadBundles() {
     if(!currentUser) return;
     const r = await fetch(API+'/api/listings');
@@ -758,14 +678,30 @@ async function loadBundles() {
         return `<div class="listing-item"><div><strong>📦 Пакет #${bid}</strong><br><span style="color:var(--muted);font-size:10px">${arr.map(x=>x.nft_emoji).join(' ')} (${arr.length} NFT)</span></div><span class="price">${arr.reduce((s,x)=>s+x.price,0).toFixed(2)} TON</span></div>`;
     }).join('');
 }
+
 async function loadTrials() {
     if(!currentUser) return;
     const r = await fetch(API+'/api/nft/trials/'+currentUser.id);
     const list = await r.json();
     const box = document.getElementById('trialsList');
     if(!list.length){ box.innerHTML='<div class="empty">Нет примерок</div>'; return; }
-    box.innerHTML = list.map(t => `<div class="listing-item"><div><strong>${t.nft_emoji} ${t.nft_name}</strong><br><span style="color:var(--muted);font-size:10px">до ${new Date(t.expires_at).toLocaleString()}</span></div></div>`).join('');
+    box.innerHTML = list.map(t => `<div class="listing-item"><div><strong>${t.nft_emoji} ${t.nft_name}</strong><br><span style="color:var(--muted);font-size:10px">до ${fmt(t.expires_at)}</span></div></div>`).join('');
 }
+
+async function loadTransactions() {
+    if(!currentUser) return;
+    const r = await fetch(API+'/api/transactions/'+currentUser.id);
+    const list = await r.json();
+    const box = document.getElementById('txList');
+    if(!list.length){ box.innerHTML='<div class="empty">Нет транзакций</div>'; return; }
+    box.innerHTML = list.map(t=>{
+        const sign = t.amount > 0 ? '+' : '';
+        const cls = t.amount > 0 ? 'plus' : 'minus';
+        const cur = t.currency === 'TON' ? '💎' : '⭐';
+        return `<div class="tx-row"><span>${t.type}</span><span class="${cls}">${sign}${t.amount.toFixed(4)} ${cur}</span></div>`;
+    }).join('');
+}
+
 function rarityBadge(ton) {
     if(ton>=500) return '<span style="background:#5a1f1f;color:#ff9b9b;font-size:9px;padding:2px 5px;border-radius:4px">Legendary</span>';
     if(ton>=50) return '<span style="background:#5a3a1f;color:var(--gold);font-size:9px;padding:2px 5px;border-radius:4px">Epic</span>';
@@ -775,6 +711,7 @@ function rarityBadge(ton) {
 function cardHTML(g) {
     return `<div class="card">
         <button class="fav-btn" onclick="toggleFav('${g.slug}', event)">${favorites.includes(g.slug)?'❤️':'🤍'}</button>
+        <button class="watch-btn" onclick="toggleWatch('${g.cat}', event)">${watchlist.includes(g.cat)?'👁':'👁‍🗨'}</button>
         <div class="card-img">${imgTag(g.slug,g.emoji)}</div>
         <h3>${g.name}</h3>
         <div class="card-tag">${rarityBadge(g.ton)} ${g.tag}</div>
@@ -794,39 +731,42 @@ function renderCatalog() { applyFilters(); }
 function setFilter(f,btn){ curFilter=f; document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); applyFilters(); }
 
 async function loadMarket() {
-    const r = await fetch(API+'/api/listings');
-    const listings = await r.json();
     const g = document.getElementById('marketGrid');
-    if(!listings.length){ g.innerHTML='<div class="empty">Нет лотов</div>'; return; }
-    g.innerHTML = listings.map(l=>{
-        const cur = l.currency==='TON'?'💎':'⭐';
+    g.innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
+    const r = await fetch(API+'/api/listings');
+    marketData = await r.json();
+    renderMarket();
+}
+function renderMarket() {
+    const q = (document.getElementById('marketSearch').value||'').toLowerCase().trim();
+    const sort = document.getElementById('marketSort').value;
+    const cur = document.getElementById('marketCurrency').value;
+    const min = parseFloat(document.getElementById('marketMin').value) || 0;
+    const max = parseFloat(document.getElementById('marketMax').value) || Infinity;
+    let list = marketData.filter(l => l.nft_name.toLowerCase().includes(q) && (cur==='all'||l.currency===cur) && l.price>=min && l.price<=max);
+    if (sort==='boost') list.sort((a,b)=>(b.boosted_until||0)-(a.boosted_until||0));
+    else if (sort==='asc') list.sort((a,b)=>a.price-b.price);
+    else if (sort==='desc') list.sort((a,b)=>b.price-a.price);
+    else list.sort((a,b)=>b.id-a.id);
+    const g = document.getElementById('marketGrid');
+    if(!list.length){ g.innerHTML='<div class="empty">Нет лотов по фильтрам<br><button class="empty-cta" onclick="goTab(\'inventory\')">Выставить лот →</button></div>'; return; }
+    g.innerHTML = list.map(l=>{
+        const curIcon = l.currency==='TON'?'💎':'⭐';
         const boosted = l.boosted_until && l.boosted_until > Date.now();
         return `<div class="card">
             ${boosted?'<div class="badge-top">🔥 ТОП</div>':''}
             <div class="card-img">${imgTag(l.nft_slug,l.nft_emoji)}</div>
             <h3>${l.nft_name}</h3>
-            <div class="card-tag">${l.seller_name}${l.seller_verified?' ✅':''}</div>
-            <div class="card-price">${l.price} ${cur}</div>
+            <div class="card-tag"><span class="seller-link" onclick="openSeller(${l.seller_id})">${l.seller_name}</span>${l.seller_verified?' ✅':''}</div>
+            <div class="card-price">${l.price} ${curIcon}</div>
             ${currentUser && l.seller_id !== currentUser.id
-                ? `<div class="row">
-                    <button class="btn-buy" onclick="buyListing(${l.id}, false)">Купить</button>
-                    <button class="btn-boost" onclick="buyListing(${l.id}, true)">⚡ +2%</button>
-                  </div>
-                  <div class="row">
-                    <button class="btn-swap" onclick="openOffer(${l.id},'${l.nft_name}',${l.price},'${l.currency}')">Оффер</button>
-                    <button class="btn-glass" onclick="openGuarantee(${l.id})">🛡 Гарант</button>
-                  </div>`
-                : `<div class="row">
-                    <button class="btn-send" onclick="cancelListing(${l.id})">Снять (0.5)</button>
-                    <button class="btn-boost" onclick="boostListing(${l.id})">🔥 В топ (1)</button>
-                  </div>
-                  <div class="row">
-                    <button class="btn-glass" onclick="lockPrice(${l.id})">🔒 Цена (0.5)</button>
-                    <button class="btn-glass" onclick="searchBoost(${l.id})">🔍 Поиск (0.5)</button>
-                  </div>`}
+                ? `<div class="row"><button class="btn-buy" onclick="buyListing(${l.id}, false)">Купить</button><button class="btn-boost" onclick="buyListing(${l.id}, true)">⚡ +2%</button></div>
+                  <div class="row"><button class="btn-swap" onclick="openOffer(${l.id},'${l.nft_name}',${l.price},'${l.currency}')">Оффер</button><button class="btn-glass" onclick="openGuarantee(${l.id})">🛡</button></div>`
+                : `<div class="row"><button class="btn-send" onclick="cancelListing(${l.id})">Снять (0.5)</button><button class="btn-boost" onclick="boostListing(${l.id})">🔥 (1)</button></div>`}
         </div>`;
     }).join('');
 }
+
 async function buyListing(id, instant) {
     if(!currentUser) return toast('⚠️ Войдите');
     if(!confirm(instant ? 'Купить с мгновенной покупкой (+2%)?' : 'Купить лот?')) return;
@@ -841,7 +781,7 @@ async function cancelListing(id) {
     const r = await fetch(API+'/api/listings/'+id+'?userId='+currentUser.id,{method:'DELETE'});
     const d = await r.json();
     if(d.error) return toast('❌ '+d.error);
-    toast('🗑 Снят'); await refreshBalance(); await loadInventory(); await loadMarket();
+    toast('🗑 Снят'); await refreshBalance(); await loadInventory(); await loadMarket(); await loadMyListings();
 }
 async function boostListing(id) {
     if(!currentUser) return toast('⚠️ Войдите');
@@ -849,28 +789,47 @@ async function boostListing(id) {
     const r = await fetch(API+'/api/listings/'+id+'/boost',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id})});
     const d = await r.json();
     if(d.error) return toast('❌ '+d.error);
-    toast('🔥 В топ!'); await refreshBalance(); await loadMarket();
-}
-async function lockPrice(id) {
-    if(!confirm('Заморозить цену на 7 дней за 0.5 TON?')) return;
-    const r = await fetch(API+'/api/listings/'+id+'/lock-price',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id})});
-    const d = await r.json();
-    if(d.error) return toast('❌ '+d.error);
-    toast('🔒 Цена заморожена'); await refreshBalance();
-}
-async function searchBoost(id) {
-    if(!confirm('Продвинуть в поиске на 7 дней за 0.5 TON?')) return;
-    const r = await fetch(API+'/api/listings/'+id+'/search-boost',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id})});
-    const d = await r.json();
-    if(d.error) return toast('❌ '+d.error);
-    toast('🔍 Буст поиска'); await refreshBalance();
+    toast('🔥 В топ!'); await refreshBalance(); await loadMarket(); await loadMyListings();
 }
 async function openGuarantee(id) {
     if(!confirm('Сделка через гаранта (3% от суммы)?')) return;
     const r = await fetch(API+'/api/listings/'+id+'/guarantee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({buyerId:currentUser.id})});
     const d = await r.json();
     if(d.error) return toast('❌ '+d.error);
-    toast('🛡 Заявка гаранту создана');
+    toast('🛡 Заявка гаранту создана'); await refreshBalance();
+}
+
+async function openSeller(id) {
+    curSellerId = id;
+    const r = await fetch(API+'/api/user-by-name/'+(await fetch(API+'/api/user/'+id).then(x=>x.json())).username);
+    const d = await r.json();
+    document.getElementById('sellerName').innerText = d.username + (d.is_verified?' ✅':'') + (d.role!=='user'?' ['+d.role+']':'');
+    document.getElementById('sellerBody').innerHTML = `
+        <div class="rating">⭐ ${d.rating.toFixed(1)} (${d.reviews_count} отзывов)</div>
+        <div style="color:var(--muted);font-size:12px;margin-bottom:10px">Продаж: ${d.sales} • С нами с ${new Date(d.created_at).toLocaleDateString()}</div>
+        <h4 style="margin:10px 0 6px">Активные лоты (${d.listings.length})</h4>
+        ${d.listings.length ? d.listings.map(l=>`<div class="listing-item" style="margin-bottom:6px"><div><strong>${l.nft_emoji} ${l.nft_name}</strong></div><span class="price">${l.price} ${l.currency}</span></div>`).join('') : '<div style="color:var(--muted)">Нет лотов</div>'}
+        ${currentUser && currentUser.id !== id ? `<button class="btn-primary" onclick="openReview(${id})" style="width:100%;margin-top:10px">Оставить отзыв</button>` : ''}
+    `;
+    document.getElementById('sellerModal').style.display='flex';
+}
+function openReview(id) {
+    curSellerId = id;
+    curReviewRating = 5;
+    const box = document.getElementById('reviewStars');
+    box.innerHTML = [1,2,3,4,5].map(i=>`<button class="star-btn" onclick="setReviewRating(${i})" data-i="${i}">★</button>`).join('');
+    document.getElementById('reviewModal').style.display='flex';
+}
+function setReviewRating(i) {
+    curReviewRating = i;
+    document.querySelectorAll('#reviewStars .star-btn').forEach((b,idx)=>{ b.innerText = idx < i ? '★' : '☆'; });
+}
+async function submitReview() {
+    const text = document.getElementById('reviewText').value.trim();
+    const r = await fetch(API+'/api/reviews',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sellerId:curSellerId, buyerId:currentUser.id, rating:curReviewRating, text})});
+    const d = await r.json();
+    if(d.error) return toast('❌ '+d.error);
+    closeM('reviewModal'); toast('✅ Отзыв добавлен');
 }
 
 function openList(item) {
@@ -894,7 +853,7 @@ async function confirmListing() {
         const my = all.find(x => x.seller_id === currentUser.id && x.nft_slug === curListingItem.nft_slug);
         if(my) await fetch(API+'/api/listings/'+my.id+'/private',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id})});
     }
-    closeM('listModal'); toast('📊 Лот выставлен'); await loadInventory(); await loadMarket();
+    closeM('listModal'); toast('📊 Лот выставлен'); await refreshBalance(); await loadInventory(); await loadMarket(); await loadMyListings();
 }
 
 function openAuc(item) {
@@ -920,10 +879,11 @@ async function confirmAuction() {
     closeM('auctionModal'); toast('⏳ Аукцион запущен'); await refreshBalance(); await loadInventory(); await loadAuctions();
 }
 async function loadAuctions() {
+    const g = document.getElementById('auctionGrid');
+    g.innerHTML = '<div class="skeleton"></div><div class="skeleton"></div>';
     const r = await fetch(API+'/api/auctions');
     const list = await r.json();
-    const g = document.getElementById('auctionGrid');
-    if(!list.length){ g.innerHTML='<div class="empty">Нет аукционов</div>'; return; }
+    if(!list.length){ g.innerHTML='<div class="empty">Нет аукционов<br><button class="empty-cta" onclick="goTab(\'inventory\')">Запустить →</button></div>'; return; }
     g.innerHTML = list.map(a=>{
         const left = Math.max(0,Math.floor((a.end_time-Date.now())/1000));
         const h=Math.floor(left/3600), m=Math.floor((left%3600)/60), s=left%60;
@@ -934,7 +894,7 @@ async function loadAuctions() {
         return `<div class="card">
             <div class="card-img">${imgTag(a.nft_slug,a.nft_emoji)}</div>
             <h3>${a.nft_name} ${a.is_urgent?'⚡':''}</h3>
-            <div class="card-tag">${a.seller_name} • ${timer} • ${a.bids_count} ставок</div>
+            <div class="card-tag"><span class="seller-link" onclick="openSeller(${a.seller_id})">${a.seller_name}</span> • ${timer} • ${a.bids_count} ставок</div>
             <div class="card-price">${a.current_bid} ${cur}</div>
             <div class="row">
                 ${isMine?`<button class="btn-glass" disabled style="flex:1;padding:8px;font-size:11px">Ваш лот</button>
@@ -1029,7 +989,7 @@ function openWithdraw(currency) {
     wdCurrency = currency;
     document.getElementById('wdAmount').value='';
     const bal = currentUser ? (currency==='TON'?currentUser.ton_balance:currentUser.stars_balance) : 0;
-    document.getElementById('wdSub').innerHTML = `Доступно: <b>${bal.toFixed(2)} ${currency}</b><br><span style="color:var(--gold);font-size:11px">Комиссия: 10% (3 дня) / 15% (срочно 1ч)</span>`;
+    document.getElementById('wdSub').innerHTML = `Доступно: <b>${bal.toFixed(2)} ${currency}</b><br><span style="color:var(--gold);font-size:11px">Комиссия: 10% (3 дня) / 15% (срочно 1ч). Средства спишутся сразу.</span>`;
     document.getElementById('wdTarget').placeholder = currency==='TON'?'Адрес TON':'@username';
     document.getElementById('wdTarget').value = '';
     document.getElementById('wdUrgent').checked = false;
@@ -1045,16 +1005,16 @@ async function doWithdraw() {
     const feePct = urgent ? 15 : 10;
     const fee = +(net*feePct/100).toFixed(2);
     const total = +(net+fee).toFixed(2);
-    if(!confirm(`Вывести ${net} ${wdCurrency} на ${t}?\nКомиссия ${feePct}%: ${fee}\nСпишется: ${total}`)) return;
+    if(!confirm(`Вывести ${net} ${wdCurrency} на ${t}?\nКомиссия ${feePct}%: ${fee}\nСпишется сразу: ${total}`)) return;
     const r = await fetch(API+'/api/withdraw/funds',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,currency:wdCurrency,amount:net,target:t,urgent})});
     const d = await r.json();
     if(d.error) return toast('❌ '+d.error);
-    closeM('wdModal'); toast('📤 Заявка отправлена'); await refreshBalance();
+    closeM('wdModal'); toast('📤 Заявка отправлена'); await refreshBalance(); loadTransactions();
 }
 function openWdNft(item) {
     if(!currentUser) return toast('⚠️ Войдите');
     wdNftItem = item;
-    document.getElementById('wdNftSub').innerText = item.nft_name+' ('+item.nft_emoji+'). Заявка уйдёт админу.';
+    document.getElementById('wdNftSub').innerText = item.nft_name+' ('+item.nft_emoji+'). Комиссия 10% от оценки. NFT спишется сразу.';
     document.getElementById('wdNftTarget').value = '';
     document.getElementById('wdNftModal').style.display='flex';
 }
@@ -1065,7 +1025,7 @@ async function doWithdrawNft() {
     const r = await fetch(API+'/api/withdraw/nft',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,slug:wdNftItem.nft_slug,name:wdNftItem.nft_name,emoji:wdNftItem.nft_emoji,target:t})});
     const d = await r.json();
     if(d.error) return toast('❌ '+d.error);
-    closeM('wdNftModal'); toast('📤 Заявка отправлена'); await loadInventory();
+    closeM('wdNftModal'); toast('📤 Заявка отправлена (fee '+ (d.fee||0) +')'); await refreshBalance(); await loadInventory(); loadTransactions();
 }
 function openExchange() { document.getElementById('exAmount').value=''; document.getElementById('exchangeModal').style.display='flex'; }
 async function doExchange() {
@@ -1076,7 +1036,7 @@ async function doExchange() {
     const r = await fetch(API+'/api/exchange',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,from,amount})});
     const d = await r.json();
     if(d.error) return toast('❌ '+d.error);
-    closeM('exchangeModal'); toast('🔄 Обмен выполнен'); await refreshBalance();
+    closeM('exchangeModal'); toast('🔄 Обмен выполнен'); await refreshBalance(); loadTransactions();
 }
 async function doTrial(item) {
     if(!confirm('Примерка на 24ч за 0.1 TON?')) return;
@@ -1104,7 +1064,7 @@ async function spinRoulette() {
         if(d.error) { toast('❌ '+d.error); return; }
         res.innerText = '🎉 Выигрыш: ' + d.prize + ' TON';
         toast('🎉 +' + d.prize + ' TON');
-        await refreshBalance();
+        await refreshBalance(); loadTransactions();
     } finally { btn.disabled = false; btn.classList.remove('spin-anim'); }
 }
 function openVerify() { if(!currentUser) return toast('⚠️ Войдите'); document.getElementById('verifyModal').style.display='flex'; }
@@ -1113,7 +1073,16 @@ async function doVerify() {
     const r = await fetch(API+'/api/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id})});
     const d = await r.json();
     if(d.error) return toast('❌ '+d.error);
-    closeM('verifyModal'); toast('✅ Верифицирован!'); await refreshBalance();
+    closeM('verifyModal'); toast('✅ Верифицирован!'); await refreshBalance(); refreshProfileHeader();
+}
+function openPromo() { if(!currentUser) return toast('⚠️ Войдите'); document.getElementById('promoCode').value=''; document.getElementById('promoModal').style.display='flex'; }
+async function doRedeemPromo() {
+    const code = document.getElementById('promoCode').value.trim();
+    if(!code) return toast('⚠️ Введите код');
+    const r = await fetch(API+'/api/promo/redeem',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id, code})});
+    const d = await r.json();
+    if(d.error) return toast('❌ '+d.error);
+    closeM('promoModal'); toast('✅ +'+d.amount+' '+d.currency); await refreshBalance(); loadTransactions();
 }
 
 async function loadTopSellers() {
@@ -1166,21 +1135,15 @@ async function renderAdmin() {
     renderAdminUsers();
     document.getElementById('adminWithdrawalsList').innerHTML = wds.length ? wds.map(w=>{
         let badge = w.type==='NFT'?'<span class="wd-badge wd-nft">NFT</span>':(w.currency==='TON'?'<span class="wd-badge wd-ton">TON</span>':'<span class="wd-badge wd-stars">STARS</span>');
-        const label = w.type==='NFT' ? `${w.nft_emoji} ${w.nft_name} → ${w.target}` : `${w.amount_net ?? w.amount} ${w.currency} → ${w.target}` + (w.fee ? ` <span style="color:var(--gold)">(fee ${w.fee})</span>` : '');
-        return `<div class="listing-item">
-            <div>${w.urgent?'⚡':''} ${badge} <strong>${w.username}</strong><br><span style="color:var(--muted);font-size:10px">${label}</span></div>
-            <div style="display:flex;gap:4px">
-                <button class="btn-send" style="padding:4px 8px;font-size:10px" onclick="adminApproveWd(${w.id})">ОК</button>
-                <button class="btn-red" style="padding:4px 8px;font-size:10px" onclick="adminRejectWd(${w.id})">✕</button>
-            </div>
-        </div>`;
+        const label = w.type==='NFT' ? `${w.nft_emoji} ${w.nft_name} → ${w.target}` + (w.fee?` <span style="color:var(--gold)">(fee ${w.fee})</span>`:'') : `${w.amount_net ?? w.amount} ${w.currency} → ${w.target}` + (w.fee ? ` <span style="color:var(--gold)">(fee ${w.fee})</span>` : '');
+        return `<div class="listing-item"><div>${w.urgent?'⚡':''} ${badge} <strong>${w.username}</strong><br><span style="color:var(--muted);font-size:10px">${label}</span></div><div style="display:flex;gap:4px"><button class="btn-send" style="padding:4px 8px;font-size:10px" onclick="adminApproveWd(${w.id})">ОК</button><button class="btn-red" style="padding:4px 8px;font-size:10px" onclick="adminRejectWd(${w.id})">✕</button></div></div>`;
     }).join('') : '<div class="empty">Нет заявок</div>';
     document.getElementById('adminListingsList').innerHTML = list.length ? list.map(l=>`
         <div class="listing-item"><div><strong>${l.nft_emoji} ${l.nft_name}</strong><br><span style="color:var(--muted);font-size:10px">${l.seller_name} • ${l.price} ${l.currency}</span></div><button class="btn-glass" style="padding:4px 8px;font-size:10px" onclick="adminCancelListing(${l.id})">Снять</button></div>`).join('') : '<div class="empty">Нет лотов</div>';
     document.getElementById('adminAuctionsList').innerHTML = aucs.length ? aucs.map(a=>`
         <div class="listing-item"><div><strong>${a.nft_emoji} ${a.nft_name}</strong><br><span style="color:var(--muted);font-size:10px">${a.seller_name} • ${a.current_bid} ${a.currency}</span></div>${currentUser.role==='super'?`<button class="btn-glass" style="padding:4px 8px;font-size:10px" onclick="adminCancelAuction(${a.id})">Снять</button>`:''}</div>`).join('') : '<div class="empty">Нет аукционов</div>';
     document.getElementById('adminRouletteList').innerHTML = roulette.length ? roulette.map(r=>`
-        <div class="listing-item"><div><strong>${r.username||'—'}</strong><br><span style="color:var(--muted);font-size:10px">${r.pool==='owner'?'👑 ':'👤 '}${new Date(r.created_at).toLocaleString()}</span></div><span class="price">${r.cost} → ${r.prize} TON</span></div>`).join('') : '<div class="empty">Нет прокруток</div>';
+        <div class="listing-item"><div><strong>${r.username||'—'}</strong><br><span style="color:var(--muted);font-size:10px">${r.pool==='owner'?'👑 ':'👤 '}${fmt(r.created_at)}</span></div><span class="price">${r.cost} → ${r.prize} TON</span></div>`).join('') : '<div class="empty">Нет прокруток</div>';
     document.getElementById('adminFinanceList').innerHTML = `
         <div class="listing-item"><strong>💎 TON у юзеров</strong><span class="price">${fin.totalTon.toFixed(2)}</span></div>
         <div class="listing-item"><strong>⭐ Stars у юзеров</strong><span class="price">${fin.totalStars.toFixed(0)}</span></div>
@@ -1199,16 +1162,9 @@ async function renderAdmin() {
     document.getElementById('adminChartSales').innerHTML = salesChart.length ? salesChart.map(r=>`
         <div class="listing-item"><span>${r.day}</span><span class="price">${r.count} 💸 • ${r.volume.toFixed(2)}</span></div>`).join('') : '<div class="empty">Нет данных</div>';
     document.getElementById('adminGuaranteesList').innerHTML = guar.length ? guar.map(g=>`
-        <div class="listing-item">
-            <div><strong>${g.nft_emoji||''} ${g.nft_name||'—'}</strong><br><span style="color:var(--muted);font-size:10px">${g.buyer_name} → ${g.seller_name} • ${g.price} ${g.currency} (fee ${g.fee})</span></div>
-            <div style="display:flex;gap:4px">
-                <button class="btn-send" style="padding:4px 8px;font-size:10px" onclick="adminGuaranteeComplete(${g.id})">Завершить</button>
-                <button class="btn-red" style="padding:4px 8px;font-size:10px" onclick="adminGuaranteeCancel(${g.id})">Отменить</button>
-            </div>
-        </div>`).join('') : '<div class="empty">Нет заявок</div>';
+        <div class="listing-item"><div><strong>${g.nft_emoji||''} ${g.nft_name||'—'}</strong><br><span style="color:var(--muted);font-size:10px">${g.buyer_name} → ${g.seller_name} • ${g.price} ${g.currency} (fee ${g.fee})</span></div><div style="display:flex;gap:4px"><button class="btn-send" style="padding:4px 8px;font-size:10px" onclick="adminGuaranteeComplete(${g.id})">Завершить</button><button class="btn-red" style="padding:4px 8px;font-size:10px" onclick="adminGuaranteeCancel(${g.id})">Отменить</button></div></div>`).join('') : '<div class="empty">Нет заявок</div>';
     document.getElementById('adminLogsList').innerHTML = logs.length ? logs.map(l=>`
-        <div class="log-row"><span style="color:var(--blue)">${l.username||'—'}</span><span>${l.role||''}</span><span>${l.action}</span><span style="color:var(--muted)">${l.details||''}</span></div>
-    `).join('') : '<div class="empty">Нет логов</div>';
+        <div class="log-row"><span style="color:var(--blue)">${l.username||'—'}</span><span>${l.role||''}</span><span>${l.action}</span><span style="color:var(--muted)">${l.details||''}</span><span style="color:var(--muted);font-size:9px">${l.ip||''}</span></div>`).join('') : '<div class="empty">Нет логов</div>';
 }
 function renderAdminUsers() {
     const q = (document.getElementById('adminSearch').value||'').toLowerCase().trim();
@@ -1244,12 +1200,15 @@ function openMassBalance() { document.getElementById('mbAmount').value=''; docum
 async function doMassBalance() { const amount = parseFloat(document.getElementById('mbAmount').value); const currency = document.getElementById('mbCurrency').value; if(!amount||isNaN(amount)) return toast('⚠️ Сумма'); const r = await fetch(API+'/api/admin/mass-balance',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id,amount,currency})}); const d = await r.json(); if(d.error) return toast('❌ '+d.error); closeM('massBalanceModal'); toast('💰 Начислено всем'); await renderAdmin(); }
 function openMassGiveNft() { document.getElementById('mgnNft').innerHTML = gifts.map(g=>`<option value="${g.slug}|${g.name}|${g.emoji}">${g.emoji} ${g.name}</option>`).join(''); document.getElementById('massGiveNftModal').style.display='flex'; }
 async function doMassGiveNft() { const [slug,name,emoji] = document.getElementById('mgnNft').value.split('|'); const r = await fetch(API+'/api/admin/mass-give-nft',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id,slug,name,emoji})}); const d = await r.json(); if(d.error) return toast('❌ '+d.error); closeM('massGiveNftModal'); toast('🎁 Выдано: '+d.sent); }
+function openPromoAdmin() { document.getElementById('paCode').value=''; document.getElementById('paAmount').value=''; document.getElementById('paMax').value=1; document.getElementById('paHours').value=0; document.getElementById('promoAdminModal').style.display='flex'; }
+async function doCreatePromo() { const code = document.getElementById('paCode').value.trim(); const currency = document.getElementById('paCurrency').value; const amount = parseFloat(document.getElementById('paAmount').value); const max = parseInt(document.getElementById('paMax').value)||1; const hours = parseInt(document.getElementById('paHours').value)||0; if(!code||!amount) return toast('⚠️ Заполните'); const r = await fetch(API+'/api/admin/promo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id,code,currency,amount,max_uses:max,expires_hours:hours})}); const d = await r.json(); if(d.error) return toast('❌ '+d.error); closeM('promoAdminModal'); toast('🎟 Создан'); }
 
 renderCatalog();
 initAuth();
 setInterval(()=>{ if(document.getElementById('sec-auctions').classList.contains('active')) loadAuctions(); }, 10000);
 setInterval(()=>{ if(currentUser && (currentUser.role==='super'||currentUser.role==='moder') && document.getElementById('sec-profile').classList.contains('active')) renderAdmin(); }, 30000);
 setInterval(()=>{ if(currentUser) loadNotifications(); }, 15000);
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(()=>{}); }
 </script>
 </body>
 </html>
