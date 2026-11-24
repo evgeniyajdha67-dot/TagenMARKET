@@ -6,8 +6,36 @@
 <title>FROST MARKET</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-:root { --bg:#070b14; --panel:#0f1726; --card:#141f33; --border:#22334f; --blue:#58b4ff; --cyan:#8ce0ff; --gold:#ffd77a; --green:#34d399; --red:#ff6b8b; --text:#f3f7ff; --muted:#8b9bb5; }
-body { background:radial-gradient(circle at 50% 0%, #11223d 0%, var(--bg) 55%); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif; min-height:100vh; padding-bottom:84px; overflow-x:hidden; }
+:root {
+  --bg:#070b14; --panel:#0f1726; --card:#141f33; --border:#22334f;
+  --blue:#58b4ff; --cyan:#8ce0ff; --gold:#ffd77a; --green:#34d399; --red:#ff6b8b;
+  --text:#f3f7ff; --muted:#8b9bb5;
+  --hero1:#102342; --hero2:#121b30; --hero3:#192642; --heroBorder:#2b4369;
+  --accent:#3b8ee8; --accent2:#6c63ff;
+  --snow: none;
+}
+body[data-theme="winter"] {
+  --bg:#0a1628; --panel:#0f2238; --card:#152b45; --border:#2a4a6e;
+  --blue:#7cc4ff; --cyan:#a8e6ff; --gold:#ffe4a3; --green:#4ade80; --red:#ff8095;
+  --text:#f0f8ff; --muted:#93aec9;
+  --hero1:#123a5e; --hero2:#0f2842; --hero3:#1a4066; --heroBorder:#3a6a9e;
+  --accent:#5ab0ff; --accent2:#7c8cff;
+}
+body[data-theme="newyear"] {
+  --bg:#0a0806; --panel:#1a0f0f; --card:#241414; --border:#4a2020;
+  --blue:#ff6b6b; --cyan:#ffd4a3; --gold:#ffd77a; --green:#4ade80; --red:#ff4d6d;
+  --text:#fff5e6; --muted:#c9a89a;
+  --hero1:#3d0f0f; --hero2:#1f0808; --hero3:#4a1414; --heroBorder:#7a2a2a;
+  --accent:#e63946; --accent2:#2a9d8f;
+}
+body[data-theme="halloween"] {
+  --bg:#0a0612; --panel:#150b22; --card:#1e1030; --border:#3a2456;
+  --blue:#c77dff; --cyan:#e0aaff; --gold:#ffa94d; --green:#80ed99; --red:#ff6b6b;
+  --text:#f5e6ff; --muted:#a896c4;
+  --hero1:#2a0f4a; --hero2:#150822; --hero3:#3a1656; --heroBorder:#5a2a7e;
+  --accent:#9d4edd; --accent2:#ff6d00;
+}
+body { background:radial-gradient(circle at 50% 0%, var(--hero1) 0%, var(--bg) 55%); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif; min-height:100vh; padding-bottom:84px; overflow-x:hidden; transition:background .4s, color .4s; }
 header { position:sticky; top:0; z-index:30; height:62px; padding:0 4%; background:rgba(9,14,26,0.92); backdrop-filter:blur(14px); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:10px; }
 .brand { font-size:17px; font-weight:900; color:var(--text); display:flex; align-items:center; gap:6px; cursor:pointer; }
 .brand span { color:var(--blue); }
@@ -17,7 +45,7 @@ header { position:sticky; top:0; z-index:30; height:62px; padding:0 4%; backgrou
 .section { display:none; }
 .section.active { display:block; }
 h2 { font-size:18px; margin:18px 0 10px; }
-.btn-primary { background:linear-gradient(100deg,#3b8ee8,#6c63ff); color:#fff; border:none; padding:11px 18px; border-radius:12px; font-size:13.5px; font-weight:700; cursor:pointer; }
+.btn-primary { background:linear-gradient(100deg,var(--accent),var(--accent2)); color:#fff; border:none; padding:11px 18px; border-radius:12px; font-size:13.5px; font-weight:700; cursor:pointer; }
 .btn-glass { background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.16); color:#fff; padding:10px 14px; border-radius:12px; font-size:13px; font-weight:600; cursor:pointer; }
 .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:11px; }
 .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:10px; display:flex; flex-direction:column; position:relative; }
@@ -28,6 +56,8 @@ h2 { font-size:18px; margin:18px 0 10px; }
 .card-tag { font-size:11px; color:var(--muted); margin-bottom:8px; }
 .card-price { font-size:14px; font-weight:800; color:var(--gold); margin-bottom:8px; }
 .fav-btn { position:absolute; top:8px; right:8px; width:28px; height:28px; border-radius:50%; background:rgba(11,18,32,0.85); border:1px solid var(--border); color:#fff; cursor:pointer; z-index:3; font-size:13px; }
+.badge-top { position:absolute; top:8px; left:8px; background:linear-gradient(90deg,#ff6b35,#ffd77a); color:#000; font-size:9px; font-weight:900; padding:2px 6px; border-radius:6px; z-index:3; }
+.badge-verif { display:inline-block; background:var(--accent); color:#fff; font-size:9px; padding:1px 5px; border-radius:4px; margin-left:4px; }
 .row { display:flex; gap:6px; margin-top:6px; flex-wrap:wrap; }
 .row button { flex:1; min-width:60px; padding:8px 4px; border-radius:8px; font-size:11px; font-weight:700; border:none; cursor:pointer; }
 .btn-list { background:#4a2c5a; color:#d8a8ff; }
@@ -36,11 +66,13 @@ h2 { font-size:18px; margin:18px 0 10px; }
 .btn-auc { background:#5a3a1f; color:var(--gold); }
 .btn-buy { background:#274d80; color:#fff; }
 .btn-red { background:#5a1f1f; color:#ff9b9b; }
+.btn-boost { background:#5a3a1f; color:#ffd77a; }
+.btn-spin { background:linear-gradient(90deg,#ff6b35,#ffd77a); color:#000; }
 .empty { grid-column:1/-1; text-align:center; padding:30px; color:var(--muted); font-size:13px; background:var(--panel); border:1px dashed var(--border); border-radius:16px; }
 .modal { display:none; position:fixed; inset:0; z-index:50; background:rgba(3,6,14,0.85); align-items:center; justify-content:center; padding:16px; }
-.modal-box { background:#142036; border:1px solid var(--border); border-radius:22px; padding:20px; width:100%; max-width:370px; text-align:center; max-height:90vh; overflow-y:auto; }
-.m-input { width:100%; background:#0b1220; border:1px solid var(--border); color:#fff; padding:11px 12px; border-radius:11px; font-size:14px; margin-bottom:10px; outline:none; text-align:center; }
-.toast { position:fixed; top:72px; left:50%; transform:translateX(-50%); background:#1b2f50; border:1px solid var(--blue); color:#fff; padding:9px 16px; border-radius:12px; font-size:12.5px; font-weight:600; z-index:70; display:none; }
+.modal-box { background:var(--panel); border:1px solid var(--border); border-radius:22px; padding:20px; width:100%; max-width:370px; text-align:center; max-height:90vh; overflow-y:auto; }
+.m-input { width:100%; background:var(--card); border:1px solid var(--border); color:#fff; padding:11px 12px; border-radius:11px; font-size:14px; margin-bottom:10px; outline:none; text-align:center; }
+.toast { position:fixed; top:72px; left:50%; transform:translateX(-50%); background:var(--panel); border:1px solid var(--blue); color:#fff; padding:9px 16px; border-radius:12px; font-size:12.5px; font-weight:600; z-index:70; display:none; }
 .bottom-nav { position:fixed; bottom:0; left:0; right:0; height:64px; background:rgba(9,14,26,0.96); border-top:1px solid var(--border); display:flex; justify-content:space-around; align-items:center; z-index:35; }
 .b-nav-btn { background:none; border:none; color:var(--muted); display:flex; flex-direction:column; align-items:center; gap:3px; font-size:11px; font-weight:600; cursor:pointer; padding:5px 6px; }
 .b-nav-btn.active { color:var(--blue); }
@@ -48,11 +80,7 @@ h2 { font-size:18px; margin:18px 0 10px; }
 .listings-list { display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
 .listing-item { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:10px; display:flex; justify-content:space-between; align-items:center; font-size:12px; gap:8px; flex-wrap:wrap; }
 .listing-item .price { color:var(--gold); font-weight:700; }
-.stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:12px; }
-.stat-card { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:14px 12px; text-align:center; }
-.stat-card strong { display:block; font-size:17px; color:var(--cyan); margin-bottom:3px; }
-.stat-card span { font-size:11.5px; color:var(--muted); }
-.hero { margin-top:16px; padding:26px 22px; border-radius:22px; border:1px solid #2b4369; background:radial-gradient(circle at 88% 18%, rgba(88,180,255,0.28) 0%, transparent 48%), linear-gradient(135deg,#102342,#121b30 60%,#192642); }
+.hero { margin-top:16px; padding:26px 22px; border-radius:22px; border:1px solid var(--heroBorder); background:radial-gradient(circle at 88% 18%, rgba(88,180,255,0.28) 0%, transparent 48%), linear-gradient(135deg,var(--hero1),var(--hero2) 60%,var(--hero3)); }
 .hero h1 { font-size:clamp(23px,5vw,34px); margin-bottom:8px; }
 .hero p { color:#bdd0eb; font-size:13.5px; margin-bottom:16px; }
 .hero-btns { display:flex; flex-wrap:wrap; gap:9px; }
@@ -62,8 +90,8 @@ h2 { font-size:18px; margin:18px 0 10px; }
 .w-actions { display:flex; gap:6px; flex-wrap:wrap; }
 .w-in { flex:1; min-width:60px; background:#214575; color:#8cc5ff; border:none; padding:8px; border-radius:9px; font-size:12px; font-weight:700; cursor:pointer; }
 .w-out { flex:1; min-width:60px; background:#19253d; color:var(--gold); border:1px solid #32486e; padding:8px; border-radius:9px; font-size:12px; font-weight:700; cursor:pointer; }
-.profile-header { margin-top:16px; background:linear-gradient(140deg,#14223b,#0e1626); border:1px solid var(--border); border-radius:20px; padding:18px; display:flex; align-items:center; gap:14px; }
-.avatar { width:58px; height:58px; border-radius:50%; background:linear-gradient(135deg,#3b8ee8,#6c63ff); display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:800; border:2px solid var(--blue); }
+.profile-header { margin-top:16px; background:linear-gradient(140deg,var(--hero1),var(--hero2)); border:1px solid var(--border); border-radius:20px; padding:18px; display:flex; align-items:center; gap:14px; }
+.avatar { width:58px; height:58px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:800; border:2px solid var(--blue); }
 .search-box { width:100%; background:var(--panel); border:1px solid var(--border); color:var(--text); padding:11px 14px; border-radius:12px; font-size:14px; outline:none; margin-bottom:10px; }
 .filters { display:flex; gap:7px; overflow-x:auto; padding-bottom:8px; margin-bottom:8px; }
 .filter-btn { background:var(--panel); border:1px solid var(--border); color:var(--muted); padding:8px 14px; border-radius:11px; font-size:12.5px; font-weight:600; cursor:pointer; white-space:nowrap; }
@@ -81,11 +109,22 @@ h2 { font-size:18px; margin:18px 0 10px; }
 .wd-nft { background:#4a2c5a; color:#d8a8ff; }
 .wd-ton { background:#1f4678; color:var(--blue); }
 .wd-stars { background:#5a3a1f; color:var(--gold); }
+.theme-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+.theme-btn { padding:9px 14px; border-radius:11px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:12px; font-weight:700; cursor:pointer; }
+.theme-btn.active { border-color:var(--accent); background:var(--accent); color:#fff; }
+.roulette-box { background:linear-gradient(135deg,#1a0f2e,#2a1f4e); border:2px solid var(--gold); border-radius:18px; padding:20px; margin:14px 0; text-align:center; }
+.roulette-prizes { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:14px 0; }
+.roulette-prize { background:rgba(255,215,122,0.1); border:1px solid var(--gold); border-radius:10px; padding:10px 6px; font-size:13px; font-weight:800; color:var(--gold); }
+.roulette-result { font-size:22px; font-weight:900; color:var(--gold); margin:10px 0; min-height:30px; }
+.spin-anim { animation:spinPulse 0.6s ease-in-out infinite; }
+@keyframes spinPulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+.toggle-row { display:flex; align-items:center; justify-content:space-between; background:var(--card); border:1px solid var(--border); border-radius:11px; padding:10px 12px; margin-bottom:10px; font-size:13px; }
+.toggle-row input { width:auto; accent-color:var(--accent); }
 @media (max-width:860px) { .grid { grid-template-columns:repeat(3,1fr); } }
-@media (max-width:600px) { .grid { grid-template-columns:repeat(2,1fr); gap:9px; } .card-img { height:110px; } .wallet-cards { grid-template-columns:1fr; } .b-nav-btn { font-size:10px; padding:5px 3px; } }
+@media (max-width:600px) { .grid { grid-template-columns:repeat(2,1fr); gap:9px; } .card-img { height:110px; } .wallet-cards { grid-template-columns:1fr; } .b-nav-btn { font-size:10px; padding:5px 3px; } .roulette-prizes { grid-template-columns:repeat(2,1fr); } }
 </style>
 </head>
-<body>
+<body data-theme="dark">
 
 <div class="toast" id="toast">Готово</div>
 
@@ -106,6 +145,7 @@ h2 { font-size:18px; margin:18px 0 10px; }
             <div class="hero-btns">
                 <button class="btn-primary" onclick="document.getElementById('catalogAnchor').scrollIntoView({behavior:'smooth'})">Витрина →</button>
                 <button class="btn-glass" onclick="goTab('market')">📊 На рынок</button>
+                <button class="btn-spin" onclick="openRoulette()">🎰 Рулетка</button>
             </div>
         </section>
         <div class="catalog-head" id="catalogAnchor">
@@ -130,6 +170,10 @@ h2 { font-size:18px; margin:18px 0 10px; }
     <div id="sec-inventory" class="section">
         <div class="catalog-head"><h2>🎒 Мои NFT</h2></div>
         <div class="grid" id="invGrid"></div>
+        <div class="catalog-head"><h2>📦 Мои пакеты</h2></div>
+        <div class="listings-list" id="bundlesList"></div>
+        <div class="catalog-head"><h2>👗 Примерка (24ч)</h2></div>
+        <div class="listings-list" id="trialsList"></div>
     </div>
 
     <div id="sec-market" class="section">
@@ -156,7 +200,7 @@ h2 { font-size:18px; margin:18px 0 10px; }
         <div class="profile-header">
             <div class="avatar" id="uAvatar">❄</div>
             <div>
-                <h3 id="uName">Гость</h3>
+                <h3 id="uName">Гость <span id="uVerif"></span></h3>
                 <p id="uMeta" style="font-size:12px;color:var(--muted)">Не авторизован</p>
             </div>
         </div>
@@ -180,6 +224,15 @@ h2 { font-size:18px; margin:18px 0 10px; }
         </div>
         <div class="row" style="margin-top:10px">
             <button class="btn-list" onclick="openExchange()">🔄 Обмен</button>
+            <button class="btn-boost" onclick="openRoulette()">🎰 Рулетка</button>
+            <button class="btn-buy" onclick="openVerify()">✅ Верификация</button>
+        </div>
+        <div class="catalog-head"><h2>🎨 Тема оформления</h2></div>
+        <div class="theme-row">
+            <button class="theme-btn" data-theme-btn="dark" onclick="setTheme('dark')">🌙 Тёмная</button>
+            <button class="theme-btn" data-theme-btn="winter" onclick="setTheme('winter')">❄ Зима</button>
+            <button class="theme-btn" data-theme-btn="newyear" onclick="setTheme('newyear')">🎄 Новый год</button>
+            <button class="theme-btn" data-theme-btn="halloween" onclick="setTheme('halloween')">🎃 Хэллоуин</button>
         </div>
         <div class="catalog-head"><h2>🏆 Топ продавцов</h2></div>
         <div class="listings-list" id="topSellersList"></div>
@@ -226,6 +279,8 @@ h2 { font-size:18px; margin:18px 0 10px; }
         <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="listSub"></p>
         <input type="number" class="m-input" id="listPrice" placeholder="Цена">
         <select class="m-input" id="listCurrency"><option value="TON">💎 TON</option><option value="STARS">⭐ Stars</option></select>
+        <div class="toggle-row"><span>⚡ Мгновенная покупка (+2%)</span><input type="checkbox" id="listInstant"></div>
+        <div class="toggle-row"><span>🔒 Приватный лот (0.5 TON)</span><input type="checkbox" id="listPrivate"></div>
         <button class="btn-primary" onclick="confirmListing()" style="width:100%;margin-bottom:8px">Выставить</button>
         <button class="btn-glass" onclick="closeM('listModal')" style="width:100%">Отмена</button>
     </div>
@@ -236,8 +291,10 @@ h2 { font-size:18px; margin:18px 0 10px; }
         <h3>Аукцион</h3>
         <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="aucSub"></p>
         <input type="number" class="m-input" id="aucStart" placeholder="Старт">
-        <input type="number" class="m-input" id="aucHours" placeholder="Часы" value="1">
+        <input type="number" class="m-input" id="aucHours" placeholder="Часы" value="24">
         <select class="m-input" id="aucCurrency"><option value="TON">💎 TON</option><option value="STARS">⭐ Stars</option></select>
+        <div class="toggle-row"><span>⚡ Срочный аукцион 1ч (2 TON)</span><input type="checkbox" id="aucUrgent"></div>
+        <div class="toggle-row"><span>🛡 Резервная цена (1 TON)</span><input type="checkbox" id="aucReserve"></div>
         <button class="btn-primary" onclick="confirmAuction()" style="width:100%;margin-bottom:8px">Запустить</button>
         <button class="btn-glass" onclick="closeM('auctionModal')" style="width:100%">Отмена</button>
     </div>
@@ -249,6 +306,7 @@ h2 { font-size:18px; margin:18px 0 10px; }
         <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="offerSub"></p>
         <input type="number" class="m-input" id="offerPrice" placeholder="Цена">
         <select class="m-input" id="offerCurrency"><option value="TON">💎 TON</option><option value="STARS">⭐ Stars</option></select>
+        <div class="toggle-row"><span>⚡ Быстрый оффер (0.1 TON)</span><input type="checkbox" id="offerFast"></div>
         <button class="btn-primary" onclick="submitOffer()" style="width:100%;margin-bottom:8px">Отправить</button>
         <button class="btn-glass" onclick="closeM('offerModal')" style="width:100%">Отмена</button>
     </div>
@@ -259,6 +317,7 @@ h2 { font-size:18px; margin:18px 0 10px; }
         <h3>Ставка</h3>
         <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="bidSub"></p>
         <input type="number" class="m-input" id="bidAmount" placeholder="Сумма">
+        <div class="toggle-row"><span>⚡ Поднять ставку вне очереди (0.3 TON)</span><input type="checkbox" id="bidFast"></div>
         <div class="bids-list" id="bidsList"></div>
         <button class="btn-primary" onclick="submitBid()" style="width:100%;margin-bottom:8px;margin-top:10px">Поставить</button>
         <button class="btn-glass" onclick="closeM('bidModal')" style="width:100%">Отмена</button>
@@ -268,6 +327,7 @@ h2 { font-size:18px; margin:18px 0 10px; }
 <div class="modal" id="topupModal">
     <div class="modal-box">
         <h3>Пополнение</h3>
+        <p style="color:var(--muted);font-size:12px;margin-bottom:10px">Без комиссии</p>
         <div id="adminContactBox" style="background:#1a2945;border:1px solid var(--gold);border-radius:12px;padding:10px;margin-bottom:10px;font-size:12.5px;text-align:left"></div>
         <button class="btn-glass" onclick="closeM('topupModal')" style="width:100%">Закрыть</button>
     </div>
@@ -278,7 +338,8 @@ h2 { font-size:18px; margin:18px 0 10px; }
         <h3>Вывод</h3>
         <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="wdSub"></p>
         <input type="text" class="m-input" id="wdTarget" placeholder="Реквизиты">
-        <input type="number" class="m-input" id="wdAmount" placeholder="Сумма">
+        <input type="number" class="m-input" id="wdAmount" placeholder="Сумма (на руки)">
+        <div class="toggle-row"><span>⚡ Срочный вывод 1ч (15% вместо 10%)</span><input type="checkbox" id="wdUrgent"></div>
         <button class="btn-primary" onclick="doWithdraw()" style="width:100%;margin-bottom:8px">Отправить заявку</button>
         <button class="btn-glass" onclick="closeM('wdModal')" style="width:100%">Отмена</button>
     </div>
@@ -297,7 +358,7 @@ h2 { font-size:18px; margin:18px 0 10px; }
 <div class="modal" id="exchangeModal">
     <div class="modal-box">
         <h3>Обмен валют</h3>
-        <p style="color:var(--muted);font-size:12px;margin-bottom:10px">Продать 1 TON → 200 ⭐<br>Купить 1 TON ← 2500 ⭐</p>
+        <p style="color:var(--muted);font-size:12px;margin-bottom:10px">Комиссия обмена 2%</p>
         <select class="m-input" id="exFrom">
             <option value="TON">💎 TON → ⭐ Stars (×200)</option>
             <option value="STARS">⭐ Stars → 💎 TON (÷2500)</option>
@@ -305,6 +366,31 @@ h2 { font-size:18px; margin:18px 0 10px; }
         <input type="number" class="m-input" id="exAmount" placeholder="Сумма">
         <button class="btn-primary" onclick="doExchange()" style="width:100%;margin-bottom:8px">Обменять</button>
         <button class="btn-glass" onclick="closeM('exchangeModal')" style="width:100%">Отмена</button>
+    </div>
+</div>
+
+<div class="modal" id="rouletteModal">
+    <div class="modal-box" style="max-width:420px">
+        <h3>🎰 Рулетка</h3>
+        <p style="color:var(--muted);font-size:12px;margin-bottom:10px">Стоимость прокрутки: 10 TON</p>
+        <div class="roulette-prizes">
+            <div class="roulette-prize">1 TON</div>
+            <div class="roulette-prize">3 TON</div>
+            <div class="roulette-prize">5 TON</div>
+            <div class="roulette-prize">20 TON</div>
+        </div>
+        <div class="roulette-result" id="rouletteResult">Нажмите «Крутить»</div>
+        <button class="btn-spin" id="rouletteBtn" onclick="spinRoulette()" style="width:100%;padding:14px;font-size:15px;margin-bottom:8px">Крутить (10 TON)</button>
+        <button class="btn-glass" onclick="closeM('rouletteModal')" style="width:100%">Закрыть</button>
+    </div>
+</div>
+
+<div class="modal" id="verifyModal">
+    <div class="modal-box">
+        <h3>✅ Верификация продавца</h3>
+        <p style="color:var(--muted);font-size:12px;margin-bottom:10px">50 TON разово. Галочка «Проверен» и приоритет в сортировке.</p>
+        <button class="btn-primary" onclick="doVerify()" style="width:100%;margin-bottom:8px">Оплатить 50 TON</button>
+        <button class="btn-glass" onclick="closeM('verifyModal')" style="width:100%">Отмена</button>
     </div>
 </div>
 
@@ -500,20 +586,11 @@ window.__imgFallback = function(img){
     const slug = img.dataset.slug;
     let idx = parseInt(img.dataset.idx || '0', 10) + 1;
     const urls = IMG_NUMS.map(n=>imgUrl(slug,n));
-    if (idx < urls.length) {
-        img.dataset.idx = idx;
-        img.src = urls[idx];
-    } else {
-        img.style.display = 'none';
-        if (img.nextElementSibling) img.nextElementSibling.style.display = 'block';
-    }
+    if (idx < urls.length) { img.dataset.idx = idx; img.src = urls[idx]; }
+    else { img.style.display = 'none'; if (img.nextElementSibling) img.nextElementSibling.style.display = 'block'; }
 };
 
-function roleBadge(role) {
-    if(role==='super') return '<span class="role-badge role-super">SUPER</span>';
-    if(role==='moder') return '<span class="role-badge role-moder">MODER</span>';
-    return '';
-}
+function roleBadge(role) { if(role==='super') return '<span class="role-badge role-super">SUPER</span>'; if(role==='moder') return '<span class="role-badge role-moder">MODER</span>'; return ''; }
 
 function goTab(t) {
     document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
@@ -521,11 +598,20 @@ function goTab(t) {
     document.getElementById('sec-'+t).classList.add('active');
     document.getElementById('bnav-'+t).classList.add('active');
     if(t==='market'){ loadMarket(); loadIncomingOffers(); loadSalesHistory(); }
-    if(t==='inventory') loadInventory();
+    if(t==='inventory'){ loadInventory(); loadBundles(); loadTrials(); }
     if(t==='auctions') loadAuctions();
     if(t==='profile'){ loadTopSellers(); if(currentUser && (currentUser.role==='super'||currentUser.role==='moder')) renderAdmin(); }
     window.scrollTo({top:0,behavior:'smooth'});
 }
+
+function setTheme(name) {
+    document.body.setAttribute('data-theme', name);
+    localStorage.setItem('frost_theme', name);
+    document.querySelectorAll('[data-theme-btn]').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-theme-btn') === name);
+    });
+}
+(function initTheme(){ const t = localStorage.getItem('frost_theme') || 'dark'; setTheme(t); })();
 
 let isLoginMode = false;
 function toggleAuthMode() {
@@ -552,8 +638,7 @@ async function submitAuth() {
     currentUser = data;
     localStorage.setItem('frost_userId',currentUser.id);
     closeM('authModal');
-    document.getElementById('uName').innerText = currentUser.username;
-    document.getElementById('uMeta').innerText = 'ID: '+currentUser.id + (currentUser.role!=='user'?' • '+currentUser.role.toUpperCase():'');
+    refreshProfileHeader();
     updateBalance();
     toast('✅ '+currentUser.username);
     await loadInventory(); await loadMarket(); await loadFavorites(); await loadNotifications();
@@ -567,8 +652,7 @@ async function initAuth() {
             const user = await r.json();
             if(user && !user.error && !user.is_banned){
                 currentUser = user;
-                document.getElementById('uName').innerText = currentUser.username;
-                document.getElementById('uMeta').innerText = 'ID: '+currentUser.id + (currentUser.role!=='user'?' • '+currentUser.role.toUpperCase():'');
+                refreshProfileHeader();
                 updateBalance();
                 closeM('authModal');
                 await loadInventory(); await loadMarket(); await loadFavorites(); await loadNotifications();
@@ -578,6 +662,12 @@ async function initAuth() {
         }catch(e){}
     }
     document.getElementById('authModal').style.display='flex';
+}
+function refreshProfileHeader() {
+    if (!currentUser) return;
+    document.getElementById('uName').innerHTML = currentUser.username + ' ' + (currentUser.is_verified ? '<span class="badge-verif">✅ Проверен</span>' : '');
+    document.getElementById('uMeta').innerText = 'ID: '+currentUser.id + (currentUser.role!=='user'?' • '+currentUser.role.toUpperCase():'');
+    document.getElementById('uVerif').innerHTML = '';
 }
 
 function updateBalance() {
@@ -591,7 +681,7 @@ async function refreshBalance() {
     if(!currentUser) return;
     const r = await fetch(API+'/api/user/'+currentUser.id);
     currentUser = await r.json();
-    updateBalance();
+    updateBalance(); refreshProfileHeader();
 }
 
 async function loadFavorites() {
@@ -632,8 +722,36 @@ async function loadInventory() {
             </div>
             <div class="row">
                 <button class="btn-send" onclick='openWdNft(${JSON.stringify(i)})'>Вывод</button>
+                <button class="btn-swap" onclick='doTrial(${JSON.stringify(i)})'>Примерка</button>
+            </div>
+            <div class="row">
+                <button class="btn-buy" onclick='doEvaluate(${JSON.stringify(i)})'>Оценка (0.2)</button>
             </div>
         </div>`).join('');
+}
+
+async function loadBundles() {
+    if(!currentUser) return;
+    const r = await fetch(API+'/api/listings');
+    const all = await r.json();
+    const mine = all.filter(l => l.seller_id === currentUser.id && l.bundle_id);
+    const box = document.getElementById('bundlesList');
+    if(!mine.length){ box.innerHTML='<div class="empty">Нет пакетов</div>'; return; }
+    const byBundle = {};
+    mine.forEach(l => { if(!byBundle[l.bundle_id]) byBundle[l.bundle_id]=[]; byBundle[l.bundle_id].push(l); });
+    box.innerHTML = Object.keys(byBundle).map(bid => {
+        const arr = byBundle[bid];
+        return `<div class="listing-item"><div><strong>📦 Пакет #${bid}</strong><br><span style="color:var(--muted);font-size:10px">${arr.map(x=>x.nft_emoji).join(' ')} (${arr.length} NFT)</span></div><span class="price">${arr.reduce((s,x)=>s+x.price,0).toFixed(2)} TON</span></div>`;
+    }).join('');
+}
+
+async function loadTrials() {
+    if(!currentUser) return;
+    const r = await fetch(API+'/api/nft/trials/'+currentUser.id);
+    const list = await r.json();
+    const box = document.getElementById('trialsList');
+    if(!list.length){ box.innerHTML='<div class="empty">Нет примерок</div>'; return; }
+    box.innerHTML = list.map(t => `<div class="listing-item"><div><strong>${t.nft_emoji} ${t.nft_name}</strong><br><span style="color:var(--muted);font-size:10px">до ${new Date(t.expires_at).toLocaleString()}</span></div></div>`).join('');
 }
 
 function rarityBadge(ton) {
@@ -654,22 +772,14 @@ function cardHTML(g) {
 function applyFilters() {
     const q = document.getElementById('searchInp').value.toLowerCase().trim();
     const sort = document.getElementById('sortSel').value;
-    let list = gifts.filter(g=>
-        (curFilter==='all'||g.cat===curFilter) &&
-        (g.name.toLowerCase().includes(q)||g.tag.toLowerCase().includes(q))
-    );
+    let list = gifts.filter(g=>(curFilter==='all'||g.cat===curFilter)&&(g.name.toLowerCase().includes(q)||g.tag.toLowerCase().includes(q)));
     if(sort==='desc') list.sort((a,b)=>b.ton-a.ton);
     if(sort==='asc') list.sort((a,b)=>a.ton-b.ton);
     document.getElementById('shownCount').innerText = list.length;
     document.getElementById('catalogGrid').innerHTML = list.map(cardHTML).join('');
 }
 function renderCatalog() { applyFilters(); }
-function setFilter(f,btn){
-    curFilter=f;
-    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    applyFilters();
-}
+function setFilter(f,btn){ curFilter=f; document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); applyFilters(); }
 
 async function loadMarket() {
     const r = await fetch(API+'/api/listings');
@@ -678,48 +788,101 @@ async function loadMarket() {
     if(!listings.length){ g.innerHTML='<div class="empty">Нет лотов</div>'; return; }
     g.innerHTML = listings.map(l=>{
         const cur = l.currency==='TON'?'💎':'⭐';
+        const boosted = l.boosted_until && l.boosted_until > Date.now();
         return `<div class="card">
+            ${boosted?'<div class="badge-top">🔥 ТОП</div>':''}
             <div class="card-img">${imgTag(l.nft_slug,l.nft_emoji)}</div>
             <h3>${l.nft_name}</h3>
-            <div class="card-tag">Продавец: ${l.seller_name}</div>
+            <div class="card-tag">${l.seller_name}${l.seller_verified?' ✅':''}</div>
             <div class="card-price">${l.price} ${cur}</div>
             ${currentUser && l.seller_id !== currentUser.id
                 ? `<div class="row">
-                    <button class="btn-buy" onclick="buyListing(${l.id})">Купить</button>
+                    <button class="btn-buy" onclick="buyListing(${l.id}, false)">Купить</button>
+                    <button class="btn-boost" onclick="buyListing(${l.id}, true)">⚡ +2%</button>
+                  </div>
+                  <div class="row">
                     <button class="btn-swap" onclick="openOffer(${l.id},'${l.nft_name}',${l.price},'${l.currency}')">Оффер</button>
+                    <button class="btn-glass" onclick="openGuarantee(${l.id})">🛡 Гарант</button>
                   </div>`
-                : `<div class="row"><button class="btn-send" onclick="cancelListing(${l.id})">Снять</button></div>`}
+                : `<div class="row">
+                    <button class="btn-send" onclick="cancelListing(${l.id})">Снять (0.5)</button>
+                    <button class="btn-boost" onclick="boostListing(${l.id})">🔥 В топ (1)</button>
+                  </div>
+                  <div class="row">
+                    <button class="btn-glass" onclick="lockPrice(${l.id})">🔒 Цена (0.5)</button>
+                    <button class="btn-glass" onclick="searchBoost(${l.id})">🔍 Поиск (0.5)</button>
+                  </div>`}
         </div>`;
     }).join('');
 }
-async function buyListing(id) {
+async function buyListing(id, instant) {
     if(!currentUser) return toast('⚠️ Войдите');
-    const r = await fetch(API+'/api/listings/'+id+'/buy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({buyerId:currentUser.id})});
+    if(!confirm(instant ? 'Купить с мгновенной покупкой (+2%)?' : 'Купить лот?')) return;
+    const r = await fetch(API+'/api/listings/'+id+'/buy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({buyerId:currentUser.id, instant:!!instant})});
     const d = await r.json();
     if(d.error) return toast('❌ '+d.error);
     toast('✅ Куплено'); await refreshBalance(); await loadInventory(); await loadMarket(); await loadNotifications();
 }
 async function cancelListing(id) {
     if(!currentUser) return toast('⚠️ Войдите');
+    if(!confirm('Снять лот? Комиссия 0.5 TON')) return;
     const r = await fetch(API+'/api/listings/'+id+'?userId='+currentUser.id,{method:'DELETE'});
     const d = await r.json();
     if(d.error) return toast('❌ '+d.error);
-    toast('🗑 Снят'); await loadInventory(); await loadMarket();
+    toast('🗑 Снят'); await refreshBalance(); await loadInventory(); await loadMarket();
 }
+async function boostListing(id) {
+    if(!currentUser) return toast('⚠️ Войдите');
+    if(!confirm('Продвинуть в топ на 24ч за 1 TON?')) return;
+    const r = await fetch(API+'/api/listings/'+id+'/boost',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id})});
+    const d = await r.json();
+    if(d.error) return toast('❌ '+d.error);
+    toast('🔥 В топ!'); await refreshBalance(); await loadMarket();
+}
+async function lockPrice(id) {
+    if(!confirm('Заморозить цену на 7 дней за 0.5 TON?')) return;
+    const r = await fetch(API+'/api/listings/'+id+'/lock-price',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id})});
+    const d = await r.json();
+    if(d.error) return toast('❌ '+d.error);
+    toast('🔒 Цена заморожена'); await refreshBalance();
+}
+async function searchBoost(id) {
+    if(!confirm('Продвинуть в поиске на 7 дней за 0.5 TON?')) return;
+    const r = await fetch(API+'/api/listings/'+id+'/search-boost',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id})});
+    const d = await r.json();
+    if(d.error) return toast('❌ '+d.error);
+    toast('🔍 Буст поиска'); await refreshBalance();
+}
+async function openGuarantee(id) {
+    if(!confirm('Сделка через гаранта (3% от суммы)?')) return;
+    const r = await fetch(API+'/api/listings/'+id+'/guarantee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({buyerId:currentUser.id})});
+    const d = await r.json();
+    if(d.error) return toast('❌ '+d.error);
+    toast('🛡 Заявка гаранту создана');
+}
+
 function openList(item) {
     if(!currentUser) return toast('⚠️ Войдите');
     curListingItem = item;
     document.getElementById('listSub').innerText = item.nft_name+' ('+item.nft_emoji+')';
     document.getElementById('listPrice').value='';
+    document.getElementById('listInstant').checked=false;
+    document.getElementById('listPrivate').checked=false;
     document.getElementById('listModal').style.display='flex';
 }
 async function confirmListing() {
     const price = parseFloat(document.getElementById('listPrice').value);
     const currency = document.getElementById('listCurrency').value;
+    const isPrivate = document.getElementById('listPrivate').checked;
     if(!price||price<=0) return toast('⚠️ Цена');
     const r = await fetch(API+'/api/listings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,nft_slug:curListingItem.nft_slug,nft_name:curListingItem.nft_name,nft_emoji:curListingItem.nft_emoji,price,currency})});
     const d = await r.json();
     if(d.error) return toast('❌ '+d.error);
+    if(isPrivate){
+        const all = await (await fetch(API+'/api/listings')).json();
+        const my = all.find(x => x.seller_id === currentUser.id && x.nft_slug === curListingItem.nft_slug);
+        if(my) await fetch(API+'/api/listings/'+my.id+'/private',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id})});
+    }
     closeM('listModal'); toast('📊 Лот выставлен'); await loadInventory(); await loadMarket();
 }
 
@@ -728,18 +891,22 @@ function openAuc(item) {
     curAuctionItem = item;
     document.getElementById('aucSub').innerText = item.nft_name+' ('+item.nft_emoji+')';
     document.getElementById('aucStart').value='';
-    document.getElementById('aucHours').value=1;
+    document.getElementById('aucHours').value=24;
+    document.getElementById('aucUrgent').checked=false;
+    document.getElementById('aucReserve').checked=false;
     document.getElementById('auctionModal').style.display='flex';
 }
 async function confirmAuction() {
     const start = parseFloat(document.getElementById('aucStart').value);
     const hours = parseFloat(document.getElementById('aucHours').value);
     const currency = document.getElementById('aucCurrency').value;
+    const urgent = document.getElementById('aucUrgent').checked;
+    const reserve = document.getElementById('aucReserve').checked;
     if(!start||start<=0||!hours||hours<=0) return toast('⚠️ Заполните');
-    const r = await fetch(API+'/api/auctions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,nft_slug:curAuctionItem.nft_slug,nft_name:curAuctionItem.nft_name,nft_emoji:curAuctionItem.nft_emoji,start_price:start,hours,currency})});
+    const r = await fetch(API+'/api/auctions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,nft_slug:curAuctionItem.nft_slug,nft_name:curAuctionItem.nft_name,nft_emoji:curAuctionItem.nft_emoji,start_price:start,hours,currency,urgent,reserve})});
     const d = await r.json();
     if(d.error) return toast('❌ '+d.error);
-    closeM('auctionModal'); toast('⏳ Аукцион запущен'); await loadInventory(); await loadAuctions();
+    closeM('auctionModal'); toast('⏳ Аукцион запущен'); await refreshBalance(); await loadInventory(); await loadAuctions();
 }
 async function loadAuctions() {
     const r = await fetch(API+'/api/auctions');
@@ -755,21 +922,30 @@ async function loadAuctions() {
         const minStep = (a.current_bid*1.05).toFixed(2);
         return `<div class="card">
             <div class="card-img">${imgTag(a.nft_slug,a.nft_emoji)}</div>
-            <h3>${a.nft_name}</h3>
-            <div class="card-tag">${a.seller_name} • ${timer} • ставок: ${a.bids_count}</div>
+            <h3>${a.nft_name} ${a.is_urgent?'⚡':''}</h3>
+            <div class="card-tag">${a.seller_name} • ${timer} • ${a.bids_count} ставок</div>
             <div class="card-price">${a.current_bid} ${cur}</div>
             <div class="row">
-                ${isMine?'<button class="btn-glass" disabled style="flex:1;padding:8px;font-size:11px">Ваш лот</button>'
+                ${isMine?`<button class="btn-glass" disabled style="flex:1;padding:8px;font-size:11px">Ваш лот</button>
+                <button class="btn-boost" onclick="extendAuction(${a.id})">+1ч (0.5)</button>`
                 :`<button class="btn-buy" onclick="openBid(${a.id},${a.current_bid},'${a.currency}')">Ставка от ${minStep} ${cur}</button>`}
             </div>
         </div>`;
     }).join('');
+}
+async function extendAuction(id) {
+    if(!confirm('Продлить аукцион на 1 час за 0.5 TON?')) return;
+    const r = await fetch(API+'/api/auctions/'+id+'/extend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id})});
+    const d = await r.json();
+    if(d.error) return toast('❌ '+d.error);
+    toast('⏳ +1 час'); await refreshBalance(); await loadAuctions();
 }
 async function openBid(id, cur, currency) {
     if(!currentUser) return toast('⚠️ Войдите');
     curBidAuction = id;
     document.getElementById('bidSub').innerText = 'Текущая: '+cur+' '+currency+'. Мин. шаг +5%';
     document.getElementById('bidAmount').value = (cur*1.05).toFixed(2);
+    document.getElementById('bidFast').checked = false;
     const r = await fetch(API+'/api/auctions/'+id+'/bids');
     const bids = await r.json();
     document.getElementById('bidsList').innerHTML = bids.length
@@ -779,8 +955,9 @@ async function openBid(id, cur, currency) {
 }
 async function submitBid() {
     const amount = parseFloat(document.getElementById('bidAmount').value);
+    const fast = document.getElementById('bidFast').checked;
     if(!amount||amount<=0) return toast('⚠️ Сумма');
-    const r = await fetch(API+'/api/auctions/'+curBidAuction+'/bid',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bidderId:currentUser.id,amount})});
+    const r = await fetch(API+'/api/auctions/'+curBidAuction+'/bid',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bidderId:currentUser.id,amount,fast})});
     const d = await r.json();
     if(d.error) return toast('❌ '+d.error);
     closeM('bidModal'); toast('💸 Ставка принята'); await refreshBalance(); await loadAuctions();
@@ -792,16 +969,18 @@ function openOffer(listingId, name, price, currency) {
     document.getElementById('offerSub').innerText = 'Лот: '+name+' ('+price+' '+currency+')';
     document.getElementById('offerPrice').value = (price*0.9).toFixed(2);
     document.getElementById('offerCurrency').value = currency;
+    document.getElementById('offerFast').checked = false;
     document.getElementById('offerModal').style.display='flex';
 }
 async function submitOffer() {
     const price = parseFloat(document.getElementById('offerPrice').value);
     const currency = document.getElementById('offerCurrency').value;
+    const fast = document.getElementById('offerFast').checked;
     if(!price||price<=0) return toast('⚠️ Цена');
-    const r = await fetch(API+'/api/offers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({listingId:curOfferListing,buyerId:currentUser.id,price,currency})});
+    const r = await fetch(API+'/api/offers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({listingId:curOfferListing,buyerId:currentUser.id,price,currency,fast})});
     const d = await r.json();
     if(d.error) return toast('❌ '+d.error);
-    closeM('offerModal'); toast('📩 Оффер отправлен');
+    closeM('offerModal'); toast('📩 Оффер отправлен'); await refreshBalance();
 }
 async function loadIncomingOffers() {
     if(!currentUser) return;
@@ -812,7 +991,7 @@ async function loadIncomingOffers() {
     box.innerHTML = list.map(o=>{
         const cur = o.currency==='TON'?'💎':'⭐';
         return `<div class="listing-item">
-            <div><strong>${o.nft_emoji} ${o.nft_name}</strong><br><span style="color:var(--muted);font-size:10px">от ${o.buyer_name}</span></div>
+            <div><strong>${o.fast_delivery?'⚡':''} ${o.nft_emoji} ${o.nft_name}</strong><br><span style="color:var(--muted);font-size:10px">от ${o.buyer_name}</span></div>
             <div style="text-align:right"><span class="price">${o.price} ${cur}</span><br>
                 <button class="btn-send" style="padding:4px 8px;font-size:10px;margin-top:4px" onclick="acceptOffer(${o.id})">Принять</button>
                 <button class="btn-glass" style="padding:4px 8px;font-size:10px" onclick="rejectOffer(${o.id})">✕</button>
@@ -840,21 +1019,27 @@ function openWithdraw(currency) {
     wdCurrency = currency;
     document.getElementById('wdAmount').value='';
     const bal = currentUser ? (currency==='TON'?currentUser.ton_balance:currentUser.stars_balance) : 0;
-    document.getElementById('wdSub').innerText = 'Доступно: '+bal.toFixed(2)+' '+currency+'. Заявка уйдёт админу.';
+    document.getElementById('wdSub').innerHTML = `Доступно: <b>${bal.toFixed(2)} ${currency}</b><br><span style="color:var(--gold);font-size:11px">Комиссия: 10% (3 дня) / 15% (срочно 1ч)</span>`;
     document.getElementById('wdTarget').placeholder = currency==='TON'?'Адрес TON':'@username';
     document.getElementById('wdTarget').value = '';
+    document.getElementById('wdUrgent').checked = false;
     document.getElementById('wdModal').style.display='flex';
 }
 async function doWithdraw() {
     if(!currentUser) return toast('⚠️ Войдите');
     const t = document.getElementById('wdTarget').value.trim();
-    const v = parseFloat(document.getElementById('wdAmount').value);
+    const net = parseFloat(document.getElementById('wdAmount').value);
+    const urgent = document.getElementById('wdUrgent').checked;
     if(t.length<4) return toast('⚠️ Реквизиты');
-    if(!v||v<1) return toast('⚠️ Сумма');
-    const r = await fetch(API+'/api/withdraw/funds',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,currency:wdCurrency,amount:v,target:t})});
+    if(!net||net<1) return toast('⚠️ Сумма');
+    const feePct = urgent ? 15 : 10;
+    const fee = +(net*feePct/100).toFixed(2);
+    const total = +(net+fee).toFixed(2);
+    if(!confirm(`Вывести ${net} ${wdCurrency} на ${t}?\nКомиссия ${feePct}%: ${fee}\nСпишется: ${total}`)) return;
+    const r = await fetch(API+'/api/withdraw/funds',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,currency:wdCurrency,amount:net,target:t,urgent})});
     const d = await r.json();
     if(d.error) return toast('❌ '+d.error);
-    closeM('wdModal'); toast('📤 Заявка отправлена админу');
+    closeM('wdModal'); toast('📤 Заявка отправлена'); await refreshBalance();
 }
 
 function openWdNft(item) {
@@ -871,8 +1056,7 @@ async function doWithdrawNft() {
     const r = await fetch(API+'/api/withdraw/nft',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,slug:wdNftItem.nft_slug,name:wdNftItem.nft_name,emoji:wdNftItem.nft_emoji,target:t})});
     const d = await r.json();
     if(d.error) return toast('❌ '+d.error);
-    closeM('wdNftModal'); toast('📤 Заявка на вывод NFT отправлена админу');
-    await loadInventory();
+    closeM('wdNftModal'); toast('📤 Заявка отправлена'); await loadInventory();
 }
 
 function openExchange() {
@@ -888,6 +1072,54 @@ async function doExchange() {
     const d = await r.json();
     if(d.error) return toast('❌ '+d.error);
     closeM('exchangeModal'); toast('🔄 Обмен выполнен'); await refreshBalance();
+}
+
+async function doTrial(item) {
+    if(!confirm('Примерка на 24ч за 0.1 TON?')) return;
+    const r = await fetch(API+'/api/nft/trial',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,slug:item.nft_slug,name:item.nft_name,emoji:item.nft_emoji})});
+    const d = await r.json();
+    if(d.error) return toast('❌ '+d.error);
+    toast('👗 Примерка активна'); await refreshBalance(); await loadTrials();
+}
+async function doEvaluate(item) {
+    if(!confirm('Оценить NFT за 0.2 TON?')) return;
+    const r = await fetch(API+'/api/nft/evaluate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,slug:item.nft_slug,name:item.nft_name})});
+    const d = await r.json();
+    if(d.error) return toast('❌ '+d.error);
+    toast('📊 Оценка: '+d.result); await refreshBalance();
+}
+
+function openRoulette() {
+    document.getElementById('rouletteResult').innerText = 'Нажмите «Крутить»';
+    document.getElementById('rouletteModal').style.display='flex';
+}
+async function spinRoulette() {
+    if(!currentUser) return toast('⚠️ Войдите');
+    const btn = document.getElementById('rouletteBtn');
+    const res = document.getElementById('rouletteResult');
+    btn.disabled = true; btn.classList.add('spin-anim'); res.innerText = '...';
+    try {
+        const r = await fetch(API+'/api/roulette/spin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id})});
+        const d = await r.json();
+        if(d.error) { toast('❌ '+d.error); return; }
+        res.innerText = '🎉 Выигрыш: ' + d.prize + ' TON';
+        toast('🎉 +' + d.prize + ' TON');
+        await refreshBalance();
+    } finally {
+        btn.disabled = false; btn.classList.remove('spin-anim');
+    }
+}
+
+function openVerify() {
+    if(!currentUser) return toast('⚠️ Войдите');
+    document.getElementById('verifyModal').style.display='flex';
+}
+async function doVerify() {
+    if(!confirm('Верификация за 50 TON?')) return;
+    const r = await fetch(API+'/api/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id})});
+    const d = await r.json();
+    if(d.error) return toast('❌ '+d.error);
+    closeM('verifyModal'); toast('✅ Верифицирован!'); await refreshBalance();
 }
 
 async function loadTopSellers() {
@@ -912,7 +1144,7 @@ async function loadSalesHistory() {
         </div>`).join('');
 }
 
-// ===== АДМИН-ПАНЕЛЬ =====
+// ===== АДМИН =====
 async function renderAdmin() {
     if(!currentUser || (currentUser.role!=='super' && currentUser.role!=='moder')) return;
     document.getElementById('adminSection').style.display='block';
@@ -926,33 +1158,26 @@ async function renderAdmin() {
         fetch(API+'/api/admin/withdrawals?adminId='+id).then(r=>r.json())
     ]);
     allUsers = users || [];
-
     document.getElementById('adminStatsList').innerHTML = `
         <div class="listing-item"><strong>👥 Пользователей</strong><span class="price">${stats.users}</span></div>
         <div class="listing-item"><strong>📊 Лотов</strong><span class="price">${stats.listings}</span></div>
         <div class="listing-item"><strong>⏳ Аукционов</strong><span class="price">${stats.auctions}</span></div>
-        <div class="listing-item"><strong>📤 Заявок на вывод</strong><span class="price">${stats.pendingWithdrawals}</span></div>
+        <div class="listing-item"><strong>📤 Заявок</strong><span class="price">${stats.pendingWithdrawals}</span></div>
         <div class="listing-item"><strong>💸 Продаж</strong><span class="price">${stats.sales}</span></div>
-        <div class="listing-item"><strong>💎 Объём TON</strong><span class="price">${stats.salesTon.toFixed(2)} TON</span></div>
-        <div class="listing-item"><strong>⭐ Объём Stars</strong><span class="price">${stats.salesStars.toFixed(0)} ⭐</span></div>
+        <div class="listing-item"><strong>💰 Комиссия</strong><span class="price">${(stats.fees||0).toFixed(2)}</span></div>
     `;
     renderAdminUsers();
-
     document.getElementById('adminWithdrawalsList').innerHTML = wds.length ? wds.map(w=>{
-        let badge = '';
-        if(w.type==='NFT') badge = '<span class="wd-badge wd-nft">NFT</span>';
-        else if(w.currency==='TON') badge = '<span class="wd-badge wd-ton">TON</span>';
-        else badge = '<span class="wd-badge wd-stars">STARS</span>';
-        const label = w.type==='NFT' ? `${w.nft_emoji} ${w.nft_name} → ${w.target}` : `${w.amount} ${w.currency} → ${w.target}`;
+        let badge = w.type==='NFT'?'<span class="wd-badge wd-nft">NFT</span>':(w.currency==='TON'?'<span class="wd-badge wd-ton">TON</span>':'<span class="wd-badge wd-stars">STARS</span>');
+        const label = w.type==='NFT' ? `${w.nft_emoji} ${w.nft_name} → ${w.target}` : `${w.amount_net ?? w.amount} ${w.currency} → ${w.target}` + (w.fee ? ` <span style="color:var(--gold)">(fee ${w.fee})</span>` : '');
         return `<div class="listing-item">
-            <div>${badge} <strong>${w.username}</strong><br><span style="color:var(--muted);font-size:10px">${label}</span></div>
+            <div>${w.urgent?'⚡':''} ${badge} <strong>${w.username}</strong><br><span style="color:var(--muted);font-size:10px">${label}</span></div>
             <div style="display:flex;gap:4px">
-                <button class="btn-send" style="padding:4px 8px;font-size:10px" onclick="adminApproveWd(${w.id})">Одобрить</button>
-                <button class="btn-red" style="padding:4px 8px;font-size:10px" onclick="adminRejectWd(${w.id})">Отклонить</button>
+                <button class="btn-send" style="padding:4px 8px;font-size:10px" onclick="adminApproveWd(${w.id})">ОК</button>
+                <button class="btn-red" style="padding:4px 8px;font-size:10px" onclick="adminRejectWd(${w.id})">✕</button>
             </div>
         </div>`;
     }).join('') : '<div class="empty">Нет заявок</div>';
-
     document.getElementById('adminListingsList').innerHTML = list.length ? list.map(l=>`
         <div class="listing-item">
             <div><strong>${l.nft_emoji} ${l.nft_name}</strong><br><span style="color:var(--muted);font-size:10px">${l.seller_name} • ${l.price} ${l.currency}</span></div>
@@ -967,13 +1192,12 @@ async function renderAdmin() {
         <div class="log-row"><span style="color:var(--blue)">${l.username||'—'}</span><span>${l.role||''}</span><span>${l.action}</span><span style="color:var(--muted)">${l.details||''}</span></div>
     `).join('') : '<div class="empty">Нет логов</div>';
 }
-
 function renderAdminUsers() {
     const q = (document.getElementById('adminSearch').value||'').toLowerCase().trim();
     const list = allUsers.filter(u=>u.username.toLowerCase().includes(q));
     document.getElementById('adminUsersList').innerHTML = list.map(x=>`
         <div class="listing-item">
-            <div><strong>${x.username}</strong> ${roleBadge(x.role)} ${x.is_banned?'🚫':''}<br><span style="color:var(--muted);font-size:10px">ID: ${x.id} • ${x.ton_balance.toFixed(2)} TON • ${x.stars_balance.toFixed(0)} ⭐</span></div>
+            <div><strong>${x.username}</strong> ${roleBadge(x.role)} ${x.is_verified?'✅':''} ${x.is_banned?'🚫':''}<br><span style="color:var(--muted);font-size:10px">ID: ${x.id} • ${x.ton_balance.toFixed(2)} TON • ${x.stars_balance.toFixed(0)} ⭐</span></div>
             <div style="display:flex;gap:4px;flex-wrap:wrap">
                 ${currentUser.role==='super' && x.role!=='super'?`<button class="btn-glass" style="padding:4px 6px;font-size:10px" onclick="openRole(${x.id},'${x.username}')">Роль</button>`:''}
                 ${x.role!=='super'?`<button class="btn-glass" style="padding:4px 6px;font-size:10px" onclick="adminBan(${x.id},${x.is_banned?0:1})">${x.is_banned?'Разбан':'Бан'}</button>`:''}
@@ -981,109 +1205,25 @@ function renderAdminUsers() {
             </div>
         </div>`).join('') || '<div class="empty">Пусто</div>';
 }
-
-async function adminApproveWd(id) {
-    const r = await fetch(API+'/api/admin/withdrawals/'+id+'/approve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id})});
-    const d = await r.json();
-    if(d.error) return toast('❌ '+d.error);
-    toast('✅ Вывод одобрен'); await renderAdmin();
-}
-async function adminRejectWd(id) {
-    const r = await fetch(API+'/api/admin/withdrawals/'+id+'/reject',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id})});
-    const d = await r.json();
-    if(d.error) return toast('❌ '+d.error);
-    toast('❌ Отклонён'); await renderAdmin();
-}
-async function adminBan(userId, ban) {
-    const r = await fetch(API+'/api/admin/ban',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id,userId,ban:!!ban})});
-    const d = await r.json();
-    if(d.error) return toast('❌ '+d.error);
-    toast('✅'); await renderAdmin();
-}
-async function adminCancelListing(id) {
-    const r = await fetch(API+'/api/admin/listings/'+id+'?adminId='+currentUser.id,{method:'DELETE'});
-    const d = await r.json();
-    if(d.error) return toast('❌ '+d.error);
-    toast('🗑'); await renderAdmin();
-}
-async function adminCancelAuction(id) {
-    const r = await fetch(API+'/api/admin/auctions/'+id+'?adminId='+currentUser.id,{method:'DELETE'});
-    const d = await r.json();
-    if(d.error) return toast('❌ '+d.error);
-    toast('🗑'); await renderAdmin();
-}
-async function adminDeleteUser(id) {
-    if(!confirm('Удалить пользователя?')) return;
-    const r = await fetch(API+'/api/admin/users/'+id+'?adminId='+currentUser.id,{method:'DELETE'});
-    const d = await r.json();
-    if(d.error) return toast('❌ '+d.error);
-    toast('🗑 Удалён'); await renderAdmin();
-}
-
-function openRole(userId, name) {
-    curRoleUser = userId;
-    document.getElementById('roleSub').innerText = 'Пользователь: '+name;
-    document.getElementById('roleModal').style.display='flex';
-}
-async function adminSetRole() {
-    const role = document.getElementById('roleSelect').value;
-    const r = await fetch(API+'/api/admin/role',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id,userId:curRoleUser,role})});
-    const d = await r.json();
-    if(d.error) return toast('❌ '+d.error);
-    closeM('roleModal'); toast('✅ Роль обновлена'); await renderAdmin();
-}
-
-async function openGiveNft() {
-    const r = await fetch(API+'/api/admin/users?adminId='+currentUser.id);
-    const users = await r.json();
-    document.getElementById('giveUserId').innerHTML = users.map(u=>`<option value="${u.id}">${u.username}</option>`).join('');
-    document.getElementById('giveNftSlug').innerHTML = gifts.map(g=>`<option value="${g.slug}|${g.name}|${g.emoji}">${g.emoji} ${g.name}</option>`).join('');
-    document.getElementById('giveNftCount').value = 1;
-    document.getElementById('giveNftModal').style.display='flex';
-}
-async function adminGiveNft() {
-    const userId = Number(document.getElementById('giveUserId').value);
-    const [slug,name,emoji] = document.getElementById('giveNftSlug').value.split('|');
-    const count = Math.max(1, parseInt(document.getElementById('giveNftCount').value)||1);
-    if(count===1){
-        await fetch(API+'/api/admin/give-nft',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id,userId,slug,name,emoji})});
-    } else {
-        const items = Array.from({length:count},()=>({slug,name,emoji}));
-        await fetch(API+'/api/admin/give-nft-mass',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id,userId,items})});
-    }
-    closeM('giveNftModal'); toast('🎁 Выдано'); await renderAdmin();
-}
-async function openBalance() {
-    const r = await fetch(API+'/api/admin/users?adminId='+currentUser.id);
-    const users = await r.json();
-    document.getElementById('balUserId').innerHTML = users.map(u=>`<option value="${u.id}">${u.username}</option>`).join('');
-    document.getElementById('balAmount').value='';
-    document.getElementById('balanceModal').style.display='flex';
-}
-async function adminBalance() {
-    const userId = Number(document.getElementById('balUserId').value);
-    const amount = parseFloat(document.getElementById('balAmount').value);
-    const currency = document.getElementById('balCurrency').value;
-    if(!amount||isNaN(amount)) return toast('⚠️ Сумма');
-    await fetch(API+'/api/admin/balance',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id,userId,amount,currency})});
-    closeM('balanceModal'); toast('💎 Обновлено'); await renderAdmin();
-}
-
-async function exportLogs() {
-    const r = await fetch(API+'/api/admin/logs?adminId='+currentUser.id);
-    const logs = await r.json();
-    const blob = new Blob([JSON.stringify(logs, null, 2)], {type:'application/json'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'frost_logs.json';
-    a.click();
-    toast('📥 Логи скачаны');
-}
+async function adminApproveWd(id) { const r = await fetch(API+'/api/admin/withdrawals/'+id+'/approve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id})}); const d = await r.json(); if(d.error) return toast('❌ '+d.error); toast('✅ Одобрено'); await renderAdmin(); }
+async function adminRejectWd(id) { const r = await fetch(API+'/api/admin/withdrawals/'+id+'/reject',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id})}); const d = await r.json(); if(d.error) return toast('❌ '+d.error); toast('❌ Отклонено'); await renderAdmin(); }
+async function adminBan(userId, ban) { const r = await fetch(API+'/api/admin/ban',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id,userId,ban:!!ban})}); const d = await r.json(); if(d.error) return toast('❌ '+d.error); toast('✅'); await renderAdmin(); }
+async function adminCancelListing(id) { const r = await fetch(API+'/api/admin/listings/'+id+'?adminId='+currentUser.id,{method:'DELETE'}); const d = await r.json(); if(d.error) return toast('❌ '+d.error); toast('🗑'); await renderAdmin(); }
+async function adminCancelAuction(id) { const r = await fetch(API+'/api/admin/auctions/'+id+'?adminId='+currentUser.id,{method:'DELETE'}); const d = await r.json(); if(d.error) return toast('❌ '+d.error); toast('🗑'); await renderAdmin(); }
+async function adminDeleteUser(id) { if(!confirm('Удалить пользователя?')) return; const r = await fetch(API+'/api/admin/users/'+id+'?adminId='+currentUser.id,{method:'DELETE'}); const d = await r.json(); if(d.error) return toast('❌ '+d.error); toast('🗑'); await renderAdmin(); }
+function openRole(userId, name) { curRoleUser = userId; document.getElementById('roleSub').innerText = 'Пользователь: '+name; document.getElementById('roleModal').style.display='flex'; }
+async function adminSetRole() { const role = document.getElementById('roleSelect').value; const r = await fetch(API+'/api/admin/role',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id,userId:curRoleUser,role})}); const d = await r.json(); if(d.error) return toast('❌ '+d.error); closeM('roleModal'); toast('✅'); await renderAdmin(); }
+async function openGiveNft() { const r = await fetch(API+'/api/admin/users?adminId='+currentUser.id); const users = await r.json(); document.getElementById('giveUserId').innerHTML = users.map(u=>`<option value="${u.id}">${u.username}</option>`).join(''); document.getElementById('giveNftSlug').innerHTML = gifts.map(g=>`<option value="${g.slug}|${g.name}|${g.emoji}">${g.emoji} ${g.name}</option>`).join(''); document.getElementById('giveNftCount').value = 1; document.getElementById('giveNftModal').style.display='flex'; }
+async function adminGiveNft() { const userId = Number(document.getElementById('giveUserId').value); const [slug,name,emoji] = document.getElementById('giveNftSlug').value.split('|'); const count = Math.max(1, parseInt(document.getElementById('giveNftCount').value)||1); if(count===1){ await fetch(API+'/api/admin/give-nft',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id,userId,slug,name,emoji})}); } else { const items = Array.from({length:count},()=>({slug,name,emoji})); await fetch(API+'/api/admin/give-nft-mass',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id,userId,items})}); } closeM('giveNftModal'); toast('🎁 Выдано'); await renderAdmin(); }
+async function openBalance() { const r = await fetch(API+'/api/admin/users?adminId='+currentUser.id); const users = await r.json(); document.getElementById('balUserId').innerHTML = users.map(u=>`<option value="${u.id}">${u.username}</option>`).join(''); document.getElementById('balAmount').value=''; document.getElementById('balanceModal').style.display='flex'; }
+async function adminBalance() { const userId = Number(document.getElementById('balUserId').value); const amount = parseFloat(document.getElementById('balAmount').value); const currency = document.getElementById('balCurrency').value; if(!amount||isNaN(amount)) return toast('⚠️ Сумма'); await fetch(API+'/api/admin/balance',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id,userId,amount,currency})}); closeM('balanceModal'); toast('💎'); await renderAdmin(); }
+async function exportLogs() { const r = await fetch(API+'/api/admin/logs?adminId='+currentUser.id); const logs = await r.json(); const blob = new Blob([JSON.stringify(logs, null, 2)], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'frost_logs.json'; a.click(); toast('📥 Логи'); }
 
 renderCatalog();
 initAuth();
 setInterval(()=>{ if(document.getElementById('sec-auctions').classList.contains('active')) loadAuctions(); }, 10000);
 setInterval(()=>{ if(currentUser && (currentUser.role==='super'||currentUser.role==='moder') && document.getElementById('sec-profile').classList.contains('active')) renderAdmin(); }, 30000);
+setInterval(()=>{ if(currentUser) loadNotifications(); }, 15000);
 </script>
 </body>
 </html>
