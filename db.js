@@ -96,6 +96,19 @@ db.exec(`
     details TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
+  CREATE TABLE IF NOT EXISTS withdrawals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    type TEXT,
+    nft_slug TEXT,
+    nft_name TEXT,
+    nft_emoji TEXT,
+    amount REAL,
+    currency TEXT,
+    target TEXT,
+    status TEXT DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
 `);
 
 module.exports = db;
