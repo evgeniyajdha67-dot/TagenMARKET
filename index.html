@@ -121,7 +121,7 @@ h2 { font-size:18px; margin:18px 0 10px; }
             <button class="filter-btn active" onclick="setFilter('all', this)">Все</button>
             <button class="filter-btn" onclick="setFilter('nft', this)">💎 NFT</button>
             <button class="filter-btn" onclick="setFilter('winter', this)">❄ Зима</button>
-            <button class="filter-btn" onclick="setFilter('rare', this)">👑 Редкие</button>
+            <button class="filter-btn" onclick="setFilter('rare', this)">🔑 Редкие</button>
             <button class="filter-btn" onclick="setFilter('classic', this)">🎁 Доступные</button>
         </div>
         <div class="grid" id="catalogGrid"></div>
@@ -140,7 +140,7 @@ h2 { font-size:18px; margin:18px 0 10px; }
         <div class="grid" id="marketGrid"></div>
         <div class="catalog-head"><h2>📥 Входящие офферы</h2></div>
         <div class="listings-list" id="incomingOffersList"></div>
-        <div class="catalog-head"><h2>💰 История продаж</h2></div>
+        <div class="catalog-head"><h2>💸 История продаж</h2></div>
         <div class="listings-list" id="salesHistoryList"></div>
     </div>
 
@@ -184,7 +184,7 @@ h2 { font-size:18px; margin:18px 0 10px; }
         <div class="catalog-head"><h2>🏆 Топ продавцов</h2></div>
         <div class="listings-list" id="topSellersList"></div>
         <div id="adminSection" style="display:none">
-            <div class="catalog-head"><h2>👑 Админ-панель</h2></div>
+            <div class="catalog-head"><h2>🔑 Админ-панель</h2></div>
             <div class="row" style="margin-bottom:10px">
                 <button class="btn-buy" onclick="renderAdmin()">🔄 Обновить</button>
                 <button class="btn-buy" onclick="openGiveNft()">🎁 Выдать NFT</button>
@@ -197,7 +197,7 @@ h2 { font-size:18px; margin:18px 0 10px; }
             <div class="catalog-head"><h2>👥 Пользователи</h2></div>
             <input class="search-box" id="adminSearch" placeholder="🔍 Поиск по нику..." oninput="renderAdminUsers()">
             <div class="listings-list" id="adminUsersList"></div>
-            <div class="catalog-head"><h2>📌 Активные лоты</h2></div>
+            <div class="catalog-head"><h2>📊 Активные лоты</h2></div>
             <div class="listings-list" id="adminListingsList"></div>
             <div class="catalog-head"><h2>⏳ Активные аукционы</h2></div>
             <div class="listings-list" id="adminAuctionsList"></div>
@@ -358,6 +358,7 @@ let currentUser = null;
 let curListingItem = null, curAuctionItem = null, curOfferListing = null, curBidAuction = null;
 let favorites = [], allUsers = [], curRoleUser = null;
 let wdNftItem = null, wdCurrency = 'TON';
+let curFilter = 'all';
 
 const RAW = `Plush Pepe|plushpepe|nft|2500|🐸
 Algorithm Cup|algorithmcup|nft|1450|🏆
@@ -394,7 +395,7 @@ Diamond Ring|diamondring|rare|21|💎
 Crystal Ball|crystalball|rare|19|🔮
 Cupid Charm|cupidcharm|rare|18.5|💘
 Toy Bear|toybear|rare|18|🧸
-Khabib's Papakha|khabibspapakha|rare|17.5|🐑
+Khabib's Papakha|khabibspapakha|rare|17.5|👑
 Snow Globe|snowglobe|winter|17|🔮
 Love Potion|lovepotion|rare|16.5|🍷
 Mad Pumpkin|madpumpkin|rare|16|🎃
@@ -407,7 +408,7 @@ Sky Stilettos|skystilettos|rare|13|👠
 Hanging Star|hangingstar|winter|12.5|⭐
 Eternal Rose|eternalrose|rare|12|🥀
 Jingle Bells|jinglebells|winter|11.5|🛎️
-Record Player|recordplayer|rare|11|📻
+Record Player|recordplayer|rare|11|📼
 Skull Flower|skullflower|rare|10.5|💀
 Ionic Dryer|ionicdryer|rare|10.2|💨
 Joyful Bundle|joyfulbundle|winter|10|🎁
@@ -432,7 +433,7 @@ Money Pot|moneypot|classic|6.7|🍯
 Star Notepad|starnotepad|winter|6.5|📓
 Berry Box|berrybox|classic|6.4|🫐
 Party Sparkler|partysparkler|winter|6.3|🎇
-Homemade Cake|homemadecake|classic|6.2|🎂
+Homemade Cake|homemadecake|classic|6.2|🍰
 Sakura Flower|sakuraflower|classic|6.1|🌸
 Jelly Bunny|jellybunny|classic|6.0|🐰
 Candy Cane|candycane|winter|5.9|🍬
@@ -483,7 +484,7 @@ Silver Bell|silverbell|winter|9.8|🔔
 Secret Key|secretkey|rare|17.2|🗝️
 Frost Crystal|frostcrystal|winter|14.8|💠
 Aurora Bear|aurorabear|winter|21.5|🐻‍❄️`;
-const TAGS = { nft:'💎 NFT', winter:'❄ Зима', rare:'👑 Редкий', classic:'🎁 Классика' };
+const TAGS = { nft:'💎 NFT', winter:'❄ Зима', rare:'🔑 Редкий', classic:'🎁 Классика' };
 const gifts = RAW.trim().split('\n').map((l,i)=>{const p=l.split('|');return{id:i+1,name:p[0],slug:p[1],cat:p[2],tag:TAGS[p[2]],ton:parseFloat(p[3]),emoji:p[4]};});
 
 function toast(m) { const t=document.getElementById('toast'); t.innerText=m; t.style.display='block'; setTimeout(()=>t.style.display='none',2500); }
@@ -493,14 +494,20 @@ const IMG_NUMS = [1,2,10,100,1000,5000,10000];
 function imgUrl(slug,n){ return `https://nft.fragment.com/gift/${encodeURIComponent(slug)}-${n}.webp`; }
 function imgTag(slug,emoji){
     const urls = IMG_NUMS.map(n=>imgUrl(slug,n));
-    let onerror='';
-    for(let i=0;i<urls.length;i++){
-        if(i===0) onerror+=`if(!this.dataset.t){this.dataset.t=1;this.src='${urls[1]}'}`;
-        else if(i<urls.length-1) onerror+=`else if(this.dataset.t==${i}){this.dataset.t=${i+1};this.src='${urls[i+1]}'}`;
-        else onerror+=`else{this.style.display='none';this.nextElementSibling.style.display='block'}`;
-    }
-    return `<img src="${urls[0]}" loading="lazy" onerror="${onerror}"><span class="card-emoji" style="display:none">${emoji}</span>`;
+    return `<img src="${urls[0]}" loading="lazy" data-slug="${slug}" data-idx="0" onerror="window.__imgFallback(this)"><span class="card-emoji" style="display:none">${emoji}</span>`;
 }
+window.__imgFallback = function(img){
+    const slug = img.dataset.slug;
+    let idx = parseInt(img.dataset.idx || '0', 10) + 1;
+    const urls = IMG_NUMS.map(n=>imgUrl(slug,n));
+    if (idx < urls.length) {
+        img.dataset.idx = idx;
+        img.src = urls[idx];
+    } else {
+        img.style.display = 'none';
+        if (img.nextElementSibling) img.nextElementSibling.style.display = 'block';
+    }
+};
 
 function roleBadge(role) {
     if(role==='super') return '<span class="role-badge role-super">SUPER</span>';
@@ -624,7 +631,7 @@ async function loadInventory() {
                 <button class="btn-auc" onclick='openAuc(${JSON.stringify(i)})'>Аукцион</button>
             </div>
             <div class="row">
-                <button class="btn-send" onclick="openWdNft(${JSON.stringify(i)})">Вывод</button>
+                <button class="btn-send" onclick='openWdNft(${JSON.stringify(i)})'>Вывод</button>
             </div>
         </div>`).join('');
 }
@@ -644,23 +651,24 @@ function cardHTML(g) {
         <div class="card-price">${g.ton} TON</div>
     </div>`;
 }
-function renderCatalog() {
+function applyFilters() {
     const q = document.getElementById('searchInp').value.toLowerCase().trim();
     const sort = document.getElementById('sortSel').value;
-    let list = gifts.filter(g=>g.name.toLowerCase().includes(q)||g.tag.toLowerCase().includes(q));
+    let list = gifts.filter(g=>
+        (curFilter==='all'||g.cat===curFilter) &&
+        (g.name.toLowerCase().includes(q)||g.tag.toLowerCase().includes(q))
+    );
     if(sort==='desc') list.sort((a,b)=>b.ton-a.ton);
     if(sort==='asc') list.sort((a,b)=>a.ton-b.ton);
     document.getElementById('shownCount').innerText = list.length;
     document.getElementById('catalogGrid').innerHTML = list.map(cardHTML).join('');
 }
-let curFilter='all';
+function renderCatalog() { applyFilters(); }
 function setFilter(f,btn){
     curFilter=f;
     document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
-    const q = document.getElementById('searchInp').value.toLowerCase().trim();
-    let list = gifts.filter(g=>(curFilter==='all'||g.cat===curFilter)&&(g.name.toLowerCase().includes(q)||g.tag.toLowerCase().includes(q)));
-    document.getElementById('catalogGrid').innerHTML = list.map(cardHTML).join('');
+    applyFilters();
 }
 
 async function loadMarket() {
@@ -692,6 +700,7 @@ async function buyListing(id) {
     toast('✅ Куплено'); await refreshBalance(); await loadInventory(); await loadMarket(); await loadNotifications();
 }
 async function cancelListing(id) {
+    if(!currentUser) return toast('⚠️ Войдите');
     const r = await fetch(API+'/api/listings/'+id+'?userId='+currentUser.id,{method:'DELETE'});
     const d = await r.json();
     if(d.error) return toast('❌ '+d.error);
@@ -711,7 +720,7 @@ async function confirmListing() {
     const r = await fetch(API+'/api/listings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,nft_slug:curListingItem.nft_slug,nft_name:curListingItem.nft_name,nft_emoji:curListingItem.nft_emoji,price,currency})});
     const d = await r.json();
     if(d.error) return toast('❌ '+d.error);
-    closeM('listModal'); toast('📌 Лот выставлен'); await loadInventory(); await loadMarket();
+    closeM('listModal'); toast('📊 Лот выставлен'); await loadInventory(); await loadMarket();
 }
 
 function openAuc(item) {
@@ -774,7 +783,7 @@ async function submitBid() {
     const r = await fetch(API+'/api/auctions/'+curBidAuction+'/bid',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bidderId:currentUser.id,amount})});
     const d = await r.json();
     if(d.error) return toast('❌ '+d.error);
-    closeM('bidModal'); toast('💸 Ставка принята'); await loadAuctions();
+    closeM('bidModal'); toast('💸 Ставка принята'); await refreshBalance(); await loadAuctions();
 }
 
 function openOffer(listingId, name, price, currency) {
@@ -827,7 +836,6 @@ function openTopup() {
     document.getElementById('topupModal').style.display='flex';
 }
 
-// ВЫВОД TON/STARS → заявка админу
 function openWithdraw(currency) {
     wdCurrency = currency;
     document.getElementById('wdAmount').value='';
@@ -849,7 +857,6 @@ async function doWithdraw() {
     closeM('wdModal'); toast('📤 Заявка отправлена админу');
 }
 
-// ВЫВОД NFT → заявка админу
 function openWdNft(item) {
     if(!currentUser) return toast('⚠️ Войдите');
     wdNftItem = item;
@@ -865,6 +872,7 @@ async function doWithdrawNft() {
     const d = await r.json();
     if(d.error) return toast('❌ '+d.error);
     closeM('wdNftModal'); toast('📤 Заявка на вывод NFT отправлена админу');
+    await loadInventory();
 }
 
 function openExchange() {
@@ -872,6 +880,7 @@ function openExchange() {
     document.getElementById('exchangeModal').style.display='flex';
 }
 async function doExchange() {
+    if(!currentUser) return toast('⚠️ Войдите');
     const from = document.getElementById('exFrom').value;
     const amount = parseFloat(document.getElementById('exAmount').value);
     if(!amount||amount<=0) return toast('⚠️ Сумма');
@@ -916,14 +925,14 @@ async function renderAdmin() {
         fetch(API+'/api/admin/auctions?adminId='+id).then(r=>r.json()),
         fetch(API+'/api/admin/withdrawals?adminId='+id).then(r=>r.json())
     ]);
-    allUsers = users;
+    allUsers = users || [];
 
     document.getElementById('adminStatsList').innerHTML = `
         <div class="listing-item"><strong>👥 Пользователей</strong><span class="price">${stats.users}</span></div>
-        <div class="listing-item"><strong>📌 Лотов</strong><span class="price">${stats.listings}</span></div>
+        <div class="listing-item"><strong>📊 Лотов</strong><span class="price">${stats.listings}</span></div>
         <div class="listing-item"><strong>⏳ Аукционов</strong><span class="price">${stats.auctions}</span></div>
         <div class="listing-item"><strong>📤 Заявок на вывод</strong><span class="price">${stats.pendingWithdrawals}</span></div>
-        <div class="listing-item"><strong>💰 Продаж</strong><span class="price">${stats.sales}</span></div>
+        <div class="listing-item"><strong>💸 Продаж</strong><span class="price">${stats.sales}</span></div>
         <div class="listing-item"><strong>💎 Объём TON</strong><span class="price">${stats.salesTon.toFixed(2)} TON</span></div>
         <div class="listing-item"><strong>⭐ Объём Stars</strong><span class="price">${stats.salesStars.toFixed(0)} ⭐</span></div>
     `;
@@ -985,7 +994,6 @@ async function adminRejectWd(id) {
     if(d.error) return toast('❌ '+d.error);
     toast('❌ Отклонён'); await renderAdmin();
 }
-
 async function adminBan(userId, ban) {
     const r = await fetch(API+'/api/admin/ban',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id,userId,ban:!!ban})});
     const d = await r.json();
