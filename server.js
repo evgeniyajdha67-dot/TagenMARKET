@@ -62,8 +62,6 @@ app.get('/api/user/:id', (req, res) => {
 });
 
 // ОБМЕН
-app.get('/api/rates', (req, res) => res.json({ sell: SELL_TON_TO_STARS, buy: BUY_TON_FOR_STARS }));
-
 app.post('/api/exchange', (req, res) => {
     const { userId, from, amount } = req.body;
     const u = getUser(userId);
@@ -123,6 +121,8 @@ app.delete('/api/listings/:id', (req, res) => {
     logAction(userId, 'cancel_listing', l.nft_name);
     res.json({ success: true });
 });
+
+// ОНЛАЙН-ПОКУПКА NFT
 app.post('/api/listings/:id/buy', (req, res) => {
     const { buyerId } = req.body;
     const l = db.prepare("SELECT * FROM listings WHERE id = ? AND status = 'active'").get(req.params.id);
@@ -138,7 +138,7 @@ app.post('/api/listings/:id/buy', (req, res) => {
         db.prepare("UPDATE listings SET status = 'sold' WHERE id = ?").run(l.id);
         db.prepare('INSERT INTO sales_history (seller_id, buyer_id, nft_slug, nft_name, nft_emoji, price, currency, sale_type) VALUES (?,?,?,?,?,?,?,?)').run(l.seller_id, buyerId, l.nft_slug, l.nft_name, l.nft_emoji, l.price, l.currency, 'listing');
     });
-    try { trx(); notify(l.seller_id, '💰 Продажа', `${l.nft_name} за ${l.price} ${l.currency}`); notify(buyerId, '✅ Покупка', l.nft_name); res.json({ success: true }); }
+    try { trx(); notify(l.seller_id, '💰 Продажа', `${l.nft_name} за ${l.price} ${l.currency}`); notify(buyerId, '✅ Покупка', l.nft_name); logAction(buyerId, 'buy', `${l.nft_name} ${l.price} ${l.currency}`); res.json({ success: true }); }
     catch(e) { res.status(500).json({ error: 'Ошибка' }); }
 });
 
@@ -253,6 +253,79 @@ app.get('/api/auctions/:id/bids', (req, res) => {
     res.json(db.prepare(`SELECT b.*, u.username as bidder_name FROM bids b JOIN users u ON b.bidder_id = u.id WHERE b.auction_id = ? ORDER BY b.id DESC LIMIT 20`).all(req.params.id));
 });
 
+// ВЫВОД NFT
+app.post('/api/withdraw/nft', (req, res) => {
+    const { userId, slug, name, emoji, target } = req.body;
+    if (!target || target.length < 4) return res.status(400).json({ error: 'Укажите @username' });
+    const item = db.prepare('SELECT * FROM inventory WHERE user_id = ? AND nft_slug = ?').get(userId, slug);
+    if (!item) return res.status(400).json({ error: 'NFT не найден' });
+    const info = db.prepare('INSERT INTO withdrawals (user_id, type, nft_slug, nft_name, nft_emoji, target) VALUES (?,?,?,?,?,?)').run(userId, 'NFT', slug, name, emoji, target);
+    // уведомляем всех админов
+    const admins = db.prepare("SELECT id FROM users WHERE role IN ('super','moder')").all();
+    admins.forEach(a => notify(a.id, '📤 Заявка на вывод NFT', `${getUser(userId).username}: ${name} → ${target}`));
+    logAction(userId, 'withdraw_nft_request', `${name} → ${target}`);
+    res.json({ success: true, id: info.lastInsertRowid });
+});
+
+// ВЫВОД TON / STARS
+app.post('/api/withdraw/funds', (req, res) => {
+    const { userId, currency, amount, target } = req.body;
+    if (!amount || amount <= 0) return res.status(400).json({ error: 'Сумма' });
+    if (!target || target.length < 4) return res.status(400).json({ error: 'Реквизиты' });
+    const u = getUser(userId);
+    const bf = currency === 'TON' ? 'ton_balance' : 'stars_balance';
+    if (u[bf] < amount) return res.status(400).json({ error: 'Мало ' + currency });
+    const info = db.prepare('INSERT INTO withdrawals (user_id, type, amount, currency, target) VALUES (?,?,?,?,?)').run(userId, 'FUNDS', amount, currency, target);
+    const admins = db.prepare("SELECT id FROM users WHERE role IN ('super','moder')").all();
+    admins.forEach(a => notify(a.id, '📤 Заявка на вывод', `${u.username}: ${amount} ${currency} → ${target}`));
+    logAction(userId, 'withdraw_funds_request', `${amount} ${currency} → ${target}`);
+    res.json({ success: true, id: info.lastInsertRowid });
+});
+
+// АДМИН: ЗАЯВКИ НА ВЫВОД
+app.get('/api/admin/withdrawals', (req, res) => {
+    if (!isAdmin(req.query.adminId)) return res.status(403).json({ error: 'Нет доступа' });
+    res.json(db.prepare(`
+        SELECT w.*, u.username FROM withdrawals w JOIN users u ON w.user_id = u.id
+        WHERE w.status = 'pending' ORDER BY w.id DESC
+    `).all());
+});
+
+app.post('/api/admin/withdrawals/:id/approve', (req, res) => {
+    const { adminId } = req.body;
+    if (!isAdmin(adminId)) return res.status(403).json({ error: 'Нет доступа' });
+    const w = db.prepare("SELECT * FROM withdrawals WHERE id = ? AND status = 'pending'").get(req.params.id);
+    if (!w) return res.status(404).json({ error: 'Нет заявки' });
+    const user = getUser(w.user_id);
+    if (!user) return res.status(404).json({ error: 'Нет юзера' });
+
+    if (w.type === 'NFT') {
+        // списываем NFT
+        const item = db.prepare('SELECT * FROM inventory WHERE user_id = ? AND nft_slug = ?').get(w.user_id, w.nft_slug);
+        if (!item) return res.status(400).json({ error: 'NFT уже нет' });
+        db.prepare('DELETE FROM inventory WHERE id = ?').run(item.id);
+    } else {
+        const bf = w.currency === 'TON' ? 'ton_balance' : 'stars_balance';
+        if (user[bf] < w.amount) return res.status(400).json({ error: 'Мало ' + w.currency });
+        db.prepare(`UPDATE users SET ${bf} = ${bf} - ? WHERE id = ?`).run(w.amount, w.user_id);
+    }
+    db.prepare("UPDATE withdrawals SET status = 'approved' WHERE id = ?").run(w.id);
+    notify(w.user_id, '✅ Вывод одобрен', w.type === 'NFT' ? `${w.nft_name} → ${w.target}` : `${w.amount} ${w.currency} → ${w.target}`);
+    logAction(adminId, 'withdraw_approve', `#${w.id} ${w.type} user ${w.user_id}`);
+    res.json({ success: true });
+});
+
+app.post('/api/admin/withdrawals/:id/reject', (req, res) => {
+    const { adminId } = req.body;
+    if (!isAdmin(adminId)) return res.status(403).json({ error: 'Нет доступа' });
+    const w = db.prepare("SELECT * FROM withdrawals WHERE id = ? AND status = 'pending'").get(req.params.id);
+    if (!w) return res.status(404).json({ error: 'Нет заявки' });
+    db.prepare("UPDATE withdrawals SET status = 'rejected' WHERE id = ?").run(w.id);
+    notify(w.user_id, '❌ Вывод отклонён', w.type === 'NFT' ? w.nft_name : `${w.amount} ${w.currency}`);
+    logAction(adminId, 'withdraw_reject', `#${w.id} ${w.type} user ${w.user_id}`);
+    res.json({ success: true });
+});
+
 // ТОП / ИСТОРИЯ / УВЕДОМЛЕНИЯ
 app.get('/api/top-sellers', (req, res) => {
     res.json(db.prepare(`SELECT u.username, COUNT(s.id) as sold, COALESCE(SUM(s.price),0) as total FROM users u LEFT JOIN sales_history s ON s.seller_id = u.id GROUP BY u.id HAVING sold > 0 ORDER BY sold DESC LIMIT 10`).all());
@@ -281,7 +354,8 @@ app.get('/api/admin/stats', (req, res) => {
     const sales = db.prepare('SELECT COUNT(*) as c, COALESCE(SUM(price),0) as vol FROM sales_history').get();
     const salesTon = db.prepare("SELECT COALESCE(SUM(price),0) as v FROM sales_history WHERE currency='TON'").get().v;
     const salesStars = db.prepare("SELECT COALESCE(SUM(price),0) as v FROM sales_history WHERE currency='STARS'").get().v;
-    res.json({ users, listings, auctions, sales: sales.c, volume: sales.vol, salesTon, salesStars });
+    const pendingWithdrawals = db.prepare("SELECT COUNT(*) as c FROM withdrawals WHERE status='pending'").get().c;
+    res.json({ users, listings, auctions, sales: sales.c, volume: sales.vol, salesTon, salesStars, pendingWithdrawals });
 });
 app.get('/api/admin/logs', (req, res) => {
     if (!isAdmin(req.query.adminId)) return res.status(403).json({ error: 'Нет доступа' });
@@ -340,14 +414,6 @@ app.post('/api/admin/give-nft-mass', (req, res) => {
     });
     try { trx(); logAction(adminId, 'give_nft_mass', `user ${userId} × ${items.length}`); res.json({ success: true }); }
     catch(e) { res.status(500).json({ error: 'Ошибка' }); }
-});
-app.post('/api/admin/balance-mass', (req, res) => {
-    const { adminId, amount, currency } = req.body;
-    if (!isSuper(adminId)) return res.status(403).json({ error: 'Только super' });
-    const field = currency === 'STARS' ? 'stars_balance' : 'ton_balance';
-    db.prepare(`UPDATE users SET ${field} = ${field} + ?`).run(amount);
-    logAction(adminId, 'balance_mass', `all +${amount} ${currency}`);
-    res.json({ success: true });
 });
 app.delete('/api/admin/auctions/:id', (req, res) => {
     if (!isSuper(req.query.adminId)) return res.status(403).json({ error: 'Только super' });
