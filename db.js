@@ -8,10 +8,9 @@ db.exec(`
     password_hash TEXT,
     ton_balance REAL DEFAULT 0,
     stars_balance REAL DEFAULT 0,
-    is_admin INTEGER DEFAULT 0,
+    role TEXT DEFAULT 'user',
     is_banned INTEGER DEFAULT 0,
     ref_by INTEGER,
-    last_bonus INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
   CREATE TABLE IF NOT EXISTS inventory (
@@ -89,15 +88,10 @@ db.exec(`
     is_read INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
-  CREATE TABLE IF NOT EXISTS promos (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
-    code TEXT,
-    UNIQUE(user_id, code)
-  );
   CREATE TABLE IF NOT EXISTS logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER,
+    role TEXT,
     action TEXT,
     details TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
