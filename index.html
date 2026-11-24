@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>FROST MARKET</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+:root {
+    --bg: #070b14; --panel: #0f1726; --card: #141f33; --border: #22334f;
+    --blue: #58b4ff; --cyan: #8ce0ff; --gold: #ffd77a; --green: #34d399;
+    --red: #ff6b8b; --text: #f3f7ff; --muted: #8b9bb5;
+}
+body { background: radial-gradient(circle at 50% 0%, #11223d 0%, var(--bg) 55%); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; min-height: 100vh; padding-bottom: 84px; overflow-x: hidden; }
+header { position: sticky; top: 0; z-index: 30; height: 62px; padding: 0 4%; background: rgba(9,14,26,0.92); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.brand { font-size: 17px; font-weight: 900; color: var(--text); display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.brand span { color: var(--blue); }
+.header-actions { display: flex; align-items: center; gap: 7px; }
+.pill { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 11px; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+.container { width: 92%; max-width: 1120px; margin: auto; padding-top: 16px; }
+.section { display: none; }
+.section.active { display: block; }
+h2 { font-size: 18px; margin: 18px 0 10px; }
+.btn-primary { background: linear-gradient(100deg, #3b8ee8, #6c63ff); color: #fff; border: none; padding: 11px 18px; border-radius: 12px; font-size: 13.5px; font-weight: 700; cursor: pointer; }
+.btn-glass { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.16); color: #fff; padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 11px; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 10px; display: flex; flex-direction: column; }
+.card-img { height: 120px; border-radius: 12px; background: radial-gradient(circle, #28466e, #111b2e); display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 9px; }
+.card-img img { width: 100%; height: 100%; object-fit: cover; }
+.card-emoji { font-size: 48px; }
+.card h3 { font-size: 14px; margin-bottom: 4px; }
+.card-tag { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+.card-price { font-size: 14px; font-weight: 800; color: var(--gold); margin-bottom: 8px; }
+.card-btn { width: 100%; background: #274d80; border: none; color: #fff; padding: 8px; border-radius: 9px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.row { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.row button { flex: 1; min-width: 60px; padding: 8px 4px; border-radius: 8px; font-size: 11px; font-weight: 700; border: none; cursor: pointer; }
+.btn-list { background: #4a2c5a; color: #d8a8ff; }
+.btn-give { background: #194538; color: var(--green); }
+.btn-buy { background: #274d80; color: #fff; }
+.empty { grid-column: 1/-1; text-align: center; padding: 30px; color: var(--muted); font-size: 13px; background: var(--panel); border: 1px dashed var(--border); border-radius: 16px; }
+.modal { display: none; position: fixed; inset: 0; z-index: 50; background: rgba(3,6,14,0.85); align-items: center; justify-content: center; padding: 16px; }
+.modal-box { background: #142036; border: 1px solid var(--border); border-radius: 22px; padding: 20px; width: 100%; max-width: 370px; text-align: center; }
+.m-input { width: 100%; background: #0b1220; border: 1px solid var(--border); color: #fff; padding: 11px 12px; border-radius: 11px; font-size: 14px; margin-bottom: 10px; outline: none; text-align: center; }
+.toast { position: fixed; top: 72px; left: 50%; transform: translateX(-50%); background: #1b2f50; border: 1px solid var(--blue); color: #fff; padding: 9px 16px; border-radius: 12px; font-size: 12.5px; font-weight: 600; z-index: 70; display: none; }
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 64px; background: rgba(9,14,26,0.96); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 35; }
+.b-nav-btn { background: none; border: none; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; cursor: pointer; padding: 5px 8px; }
+.b-nav-btn.active { color: var(--blue); }
+.b-nav-btn .ico { font-size: 18px; }
+@media (max-width: 600px) { .grid { grid-template-columns: repeat(2, 1fr); gap: 9px; } .card-img { height: 110px; } }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast">Готово</div>
+
+<header>
+    <div class="brand" onclick="goTab('catalog')">❄ <span>FROST</span></div>
+    <div class="header-actions">
+        <span class="pill" id="balancePill">0 TON</span>
+        <button class="pill" onclick="login()" id="loginBtn">👤 Войти</button>
+    </div>
+</header>
+
+<div class="container">
+    <div id="sec-catalog" class="section active">
+        <h2>🎁 Каталог подарков</h2>
+        <div class="grid" id="catalogGrid"></div>
+    </div>
+
+    <div id="sec-inventory" class="section">
+        <h2>🎒 Мои NFT</h2>
+        <div class="row" style="margin-bottom:12px">
+            <button class="btn-primary" onclick="giveTestNft()" style="flex:1">🎁 Получить тестовый NFT</button>
+        </div>
+        <div class="grid" id="invGrid"></div>
+    </div>
+
+    <div id="sec-market" class="section">
+        <h2>📊 Рынок — лоты пользователей</h2>
+        <div class="grid" id="marketGrid"></div>
+    </div>
+</div>
+
+<div class="modal" id="listModal">
+    <div class="modal-box">
+        <h3>Выставить NFT</h3>
+        <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="listSub"></p>
+        <input type="number" class="m-input" id="listPrice" placeholder="Цена в TON">
+        <button class="btn-primary" onclick="confirmListing()" style="width:100%;margin-bottom:8px">Выставить</button>
+        <button class="btn-glass" onclick="closeM('listModal')" style="width:100%">Отмена</button>
+    </div>
+</div>
+
+<nav class="bottom-nav">
+    <button class="b-nav-btn active" id="bnav-catalog" onclick="goTab('catalog')"><span class="ico">❄</span><span>Каталог</span></button>
+    <button class="b-nav-btn" id="bnav-inventory" onclick="goTab('inventory')"><span class="ico">🎒</span><span>Мои NFT</span></button>
+    <button class="b-nav-btn" id="bnav-market" onclick="goTab('market')"><span class="ico">📊</span><span>Рынок</span></button>
+</nav>
+
+<script>
+const API = 'https://твой-сервер.onrender.com'; // ← ЗАМЕНИ ПОСЛЕ ДЕПЛОЯ
+let currentUser = null;
+let curListingItem = null;
+
+const RAW = `Plush Pepe|plushpepe|2500|🐸
+Durov's Cap|durovscap|455|🧢
+Heart Locket|heartlocket|890|💖
+Precious Peach|preciouspeach|320|🍑
+Santa Hat|santahat|9.5|🎅
+Snow Globe|snowglobe|17|🔮
+Snow Mittens|snowmittens|15.5|🧤
+Frost Crown|frostcrown|19.5|👑
+Crystal Ball|crystalball|19|🔮
+Eternal Rose|eternalrose|12|🥀
+Snoop Dogg|snoopdogg|4.95|🐕
+Ice Cream|icecream|4.82|🍦
+Sakura Flower|sakuraflower|6.1|🌸
+Magic Wand|magicwand|7.5|🪄
+Royal Goblet|royalgoblet|20.5|🏆
+Aurora Bear|aurorabear|21.5|🐻‍❄️
+Cosmic Pearl|cosmicpearl|24|🦪
+Secret Key|secretkey|17.2|🗝️
+Winter Owl|winterowl|12.9|🦉
+Ginger Cookie|gingercookie|6.8|🍪`;
+const gifts = RAW.trim().split('\n').map((l, i) => {
+    const p = l.split('|');
+    return { id: i+1, name: p[0], slug: p[1], ton: parseFloat(p[2]), emoji: p[3] };
+});
+
+function toast(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.display = 'block'; setTimeout(()=>t.style.display='none',2500); }
+function closeM(id) { document.getElementById(id).style.display = 'none'; }
+function goTab(tab) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.b-nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('sec-' + tab).classList.add('active');
+    document.getElementById('bnav-' + tab).classList.add('active');
+}
+function imgTag(slug, emoji) {
+    return `<img src="https://nft.fragment.com/gift/${slug}-1.webp" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="card-emoji" style="display:none">${emoji}</span>`;
+}
+
+async function login() {
+    const username = prompt('Введите ник (латиницей):');
+    if (!username) return;
+    const res = await fetch(API + '/api/login', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username.trim() })
+    });
+    currentUser = await res.json();
+    if (currentUser.error) return toast('❌ ' + currentUser.error);
+    document.getElementById('loginBtn').innerText = '👤 ' + currentUser.username;
+    document.getElementById('balancePill').innerText = currentUser.ton_balance.toFixed(2) + ' TON';
+    toast('Вы вошли как ' + currentUser.username);
+    await loadInventory();
+    await loadMarket();
+}
+
+async function refreshBalance() {
+    if (!currentUser) return;
+    const res = await fetch(API + '/api/user/' + currentUser.id);
+    currentUser = await res.json();
+    document.getElementById('balancePill').innerText = currentUser.ton_balance.toFixed(2) + ' TON';
+}
+
+async function loadInventory() {
+    if (!currentUser) return;
+    const res = await fetch(API + '/api/inventory/' + currentUser.id);
+    const items = await res.json();
+    const grid = document.getElementById('invGrid');
+    if (!items.length) {
+        grid.innerHTML = '<div class="empty">Нет NFT. Нажмите «Получить тестовый NFT»</div>';
+        return;
+    }
+    grid.innerHTML = items.map(item => `
+        <div class="card">
+            <div class="card-img">${imgTag(item.nft_slug, item.nft_emoji)}</div>
+            <h3>${item.nft_name}</h3>
+            <div class="card-tag">ID: ${item.id}</div>
+            <div class="row"><button class="btn-list" onclick='openListModal(${JSON.stringify(item)})'>Выставить</button></div>
+        </div>
+    `).join('');
+}
+
+async function loadMarket() {
+    const res = await fetch(API + '/api/listings');
+    const listings = await res.json();
+    const grid = document.getElementById('marketGrid');
+    if (!listings.length) {
+        grid.innerHTML = '<div class="empty">Пока нет лотов на продаже</div>';
+        return;
+    }
+    grid.innerHTML = listings.map(l => `
+        <div class="card">
+            <div class="card-img">${imgTag(l.nft_slug, l.nft_emoji)}</div>
+            <h3>${l.nft_name}</h3>
+            <div class="card-tag">Продавец: ${l.seller_name}</div>
+            <div class="card-price">${l.price_ton} TON</div>
+            ${currentUser && l.seller_id !== currentUser.id
+                ? `<button class="card-btn" onclick="buyListing(${l.id})">Купить</button>`
+                : '<div class="card-tag" style="color:var(--gold)">Ваш лот</div>'}
+        </div>
+    `).join('');
+}
+
+function openListModal(item) {
+    if (!currentUser) return toast('⚠️ Сначала войдите');
+    curListingItem = item;
+    document.getElementById('listSub').innerText = item.nft_name + ' (' + item.nft_emoji + ')';
+    document.getElementById('listPrice').value = '';
+    document.getElementById('listModal').style.display = 'flex';
+}
+
+async function confirmListing() {
+    const price = parseFloat(document.getElementById('listPrice').value);
+    if (!price || price <= 0) return toast('⚠️ Введите цену');
+    const res = await fetch(API + '/api/listings', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            userId: currentUser.id,
+            nft_slug: curListingItem.nft_slug,
+            nft_name: curListingItem.nft_name,
+            nft_emoji: curListingItem.nft_emoji,
+            price_ton: price
+        })
+    });
+    const data = await res.json();
+    if (data.error) return toast('❌ ' + data.error);
+    closeM('listModal');
+    toast('📌 Лот выставлен за ' + price + ' TON');
+    await loadInventory();
+    await loadMarket();
+}
+
+async function buyListing(id) {
+    if (!currentUser) return toast('⚠️ Сначала войдите');
+    const res = await fetch(API + '/api/listings/' + id + '/buy', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ buyerId: currentUser.id })
+    });
+    const data = await res.json();
+    if (data.error) return toast('❌ ' + data.error);
+    toast('✅ Куплено!');
+    await refreshBalance();
+    await loadInventory();
+    await loadMarket();
+}
+
+async function giveTestNft() {
+    if (!currentUser) return toast('⚠️ Сначала войдите');
+    const g = gifts[Math.floor(Math.random() * gifts.length)];
+    await fetch(API + '/api/give-nft', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: currentUser.id, slug: g.slug, name: g.name, emoji: g.emoji })
+    });
+    toast('🎁 Получен ' + g.name);
+    await loadInventory();
+}
+
+function renderCatalog() {
+    document.getElementById('catalogGrid').innerHTML = gifts.map(g => `
+        <div class="card">
+            <div class="card-img">${imgTag(g.slug, g.emoji)}</div>
+            <h3>${g.name}</h3>
+            <div class="card-tag">Коллекционный подарок</div>
+            <div class="card-price">${g.ton} TON</div>
+        </div>
+    `).join('');
+}
+
+renderCatalog();
+loadMarket();
+</script>
+</body>
+</html>
