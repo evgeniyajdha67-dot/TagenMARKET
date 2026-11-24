@@ -35,6 +35,7 @@ h2 { font-size:18px; margin:18px 0 10px; }
 .btn-swap { background:#3a2c5a; color:#c8a8ff; }
 .btn-auc { background:#5a3a1f; color:var(--gold); }
 .btn-buy { background:#274d80; color:#fff; }
+.btn-red { background:#5a1f1f; color:#ff9b9b; }
 .empty { grid-column:1/-1; text-align:center; padding:30px; color:var(--muted); font-size:13px; background:var(--panel); border:1px dashed var(--border); border-radius:16px; }
 .modal { display:none; position:fixed; inset:0; z-index:50; background:rgba(3,6,14,0.85); align-items:center; justify-content:center; padding:16px; }
 .modal-box { background:#142036; border:1px solid var(--border); border-radius:22px; padding:20px; width:100%; max-width:370px; text-align:center; max-height:90vh; overflow-y:auto; }
@@ -76,7 +77,10 @@ h2 { font-size:18px; margin:18px 0 10px; }
 .role-badge { font-size:9px; padding:1px 5px; border-radius:4px; margin-left:4px; }
 .role-super { background:#5a1f1f; color:#ff9b9b; }
 .role-moder { background:#1f4678; color:var(--blue); }
-.role-user { background:#1a2945; color:var(--muted); }
+.wd-badge { font-size:9px; padding:1px 5px; border-radius:4px; }
+.wd-nft { background:#4a2c5a; color:#d8a8ff; }
+.wd-ton { background:#1f4678; color:var(--blue); }
+.wd-stars { background:#5a3a1f; color:var(--gold); }
 @media (max-width:860px) { .grid { grid-template-columns:repeat(3,1fr); } }
 @media (max-width:600px) { .grid { grid-template-columns:repeat(2,1fr); gap:9px; } .card-img { height:110px; } .wallet-cards { grid-template-columns:1fr; } .b-nav-btn { font-size:10px; padding:5px 3px; } }
 </style>
@@ -188,6 +192,8 @@ h2 { font-size:18px; margin:18px 0 10px; }
                 <button class="btn-send" onclick="exportLogs()">📥 Логи</button>
             </div>
             <div class="listings-list" id="adminStatsList"></div>
+            <div class="catalog-head"><h2>📤 Заявки на вывод</h2></div>
+            <div class="listings-list" id="adminWithdrawalsList"></div>
             <div class="catalog-head"><h2>👥 Пользователи</h2></div>
             <input class="search-box" id="adminSearch" placeholder="🔍 Поиск по нику..." oninput="renderAdminUsers()">
             <div class="listings-list" id="adminUsersList"></div>
@@ -273,8 +279,18 @@ h2 { font-size:18px; margin:18px 0 10px; }
         <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="wdSub"></p>
         <input type="text" class="m-input" id="wdTarget" placeholder="Реквизиты">
         <input type="number" class="m-input" id="wdAmount" placeholder="Сумма">
-        <button class="btn-primary" onclick="doWithdraw()" style="width:100%;margin-bottom:8px">Создать</button>
+        <button class="btn-primary" onclick="doWithdraw()" style="width:100%;margin-bottom:8px">Отправить заявку</button>
         <button class="btn-glass" onclick="closeM('wdModal')" style="width:100%">Отмена</button>
+    </div>
+</div>
+
+<div class="modal" id="wdNftModal">
+    <div class="modal-box">
+        <h3>Вывод NFT</h3>
+        <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="wdNftSub"></p>
+        <input type="text" class="m-input" id="wdNftTarget" placeholder="@username получателя">
+        <button class="btn-primary" onclick="doWithdrawNft()" style="width:100%;margin-bottom:8px">Отправить заявку</button>
+        <button class="btn-glass" onclick="closeM('wdNftModal')" style="width:100%">Отмена</button>
     </div>
 </div>
 
@@ -341,6 +357,7 @@ const ADMIN_CONTACT = '@tagen';
 let currentUser = null;
 let curListingItem = null, curAuctionItem = null, curOfferListing = null, curBidAuction = null;
 let favorites = [], allUsers = [], curRoleUser = null;
+let wdNftItem = null, wdCurrency = 'TON';
 
 const RAW = `Plush Pepe|plushpepe|nft|2500|🐸
 Algorithm Cup|algorithmcup|nft|1450|🏆
@@ -607,7 +624,7 @@ async function loadInventory() {
                 <button class="btn-auc" onclick='openAuc(${JSON.stringify(i)})'>Аукцион</button>
             </div>
             <div class="row">
-                <button class="btn-send" onclick="openWd('${i.nft_slug}','${i.nft_name}')">Вывод</button>
+                <button class="btn-send" onclick="openWdNft(${JSON.stringify(i)})">Вывод</button>
             </div>
         </div>`).join('');
 }
@@ -809,21 +826,46 @@ function openTopup() {
     document.getElementById('adminContactBox').innerHTML = `💬 <b>Для пополнения напишите админу:</b><br><a href="https://t.me/${ADMIN_CONTACT.replace('@','')}" target="_blank" style="color:var(--gold);font-weight:700">${ADMIN_CONTACT}</a>`;
     document.getElementById('topupModal').style.display='flex';
 }
+
+// ВЫВОД TON/STARS → заявка админу
 function openWithdraw(currency) {
+    wdCurrency = currency;
     document.getElementById('wdAmount').value='';
     const bal = currentUser ? (currency==='TON'?currentUser.ton_balance:currentUser.stars_balance) : 0;
-    document.getElementById('wdSub').innerText = 'Доступно: '+bal.toFixed(2)+' '+currency;
+    document.getElementById('wdSub').innerText = 'Доступно: '+bal.toFixed(2)+' '+currency+'. Заявка уйдёт админу.';
     document.getElementById('wdTarget').placeholder = currency==='TON'?'Адрес TON':'@username';
+    document.getElementById('wdTarget').value = '';
     document.getElementById('wdModal').style.display='flex';
 }
-function doWithdraw() {
+async function doWithdraw() {
+    if(!currentUser) return toast('⚠️ Войдите');
     const t = document.getElementById('wdTarget').value.trim();
     const v = parseFloat(document.getElementById('wdAmount').value);
     if(t.length<4) return toast('⚠️ Реквизиты');
     if(!v||v<1) return toast('⚠️ Сумма');
-    closeM('wdModal'); toast('✅ Заявка создана');
+    const r = await fetch(API+'/api/withdraw/funds',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,currency:wdCurrency,amount:v,target:t})});
+    const d = await r.json();
+    if(d.error) return toast('❌ '+d.error);
+    closeM('wdModal'); toast('📤 Заявка отправлена админу');
 }
-function openWd(slug,name) { toast('📤 Заявка на вывод '+name); }
+
+// ВЫВОД NFT → заявка админу
+function openWdNft(item) {
+    if(!currentUser) return toast('⚠️ Войдите');
+    wdNftItem = item;
+    document.getElementById('wdNftSub').innerText = item.nft_name+' ('+item.nft_emoji+'). Заявка уйдёт админу.';
+    document.getElementById('wdNftTarget').value = '';
+    document.getElementById('wdNftModal').style.display='flex';
+}
+async function doWithdrawNft() {
+    if(!currentUser || !wdNftItem) return;
+    const t = document.getElementById('wdNftTarget').value.trim();
+    if(!t.startsWith('@') || t.length<4) return toast('⚠️ Введите @username');
+    const r = await fetch(API+'/api/withdraw/nft',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,slug:wdNftItem.nft_slug,name:wdNftItem.nft_name,emoji:wdNftItem.nft_emoji,target:t})});
+    const d = await r.json();
+    if(d.error) return toast('❌ '+d.error);
+    closeM('wdNftModal'); toast('📤 Заявка на вывод NFT отправлена админу');
+}
 
 function openExchange() {
     document.getElementById('exAmount').value='';
@@ -866,12 +908,13 @@ async function renderAdmin() {
     if(!currentUser || (currentUser.role!=='super' && currentUser.role!=='moder')) return;
     document.getElementById('adminSection').style.display='block';
     const id = currentUser.id;
-    const [stats, users, logs, list, aucs] = await Promise.all([
+    const [stats, users, logs, list, aucs, wds] = await Promise.all([
         fetch(API+'/api/admin/stats?adminId='+id).then(r=>r.json()),
         fetch(API+'/api/admin/users?adminId='+id).then(r=>r.json()),
         fetch(API+'/api/admin/logs?adminId='+id).then(r=>r.json()),
         fetch(API+'/api/admin/listings?adminId='+id).then(r=>r.json()),
-        fetch(API+'/api/admin/auctions?adminId='+id).then(r=>r.json())
+        fetch(API+'/api/admin/auctions?adminId='+id).then(r=>r.json()),
+        fetch(API+'/api/admin/withdrawals?adminId='+id).then(r=>r.json())
     ]);
     allUsers = users;
 
@@ -879,11 +922,28 @@ async function renderAdmin() {
         <div class="listing-item"><strong>👥 Пользователей</strong><span class="price">${stats.users}</span></div>
         <div class="listing-item"><strong>📌 Лотов</strong><span class="price">${stats.listings}</span></div>
         <div class="listing-item"><strong>⏳ Аукционов</strong><span class="price">${stats.auctions}</span></div>
+        <div class="listing-item"><strong>📤 Заявок на вывод</strong><span class="price">${stats.pendingWithdrawals}</span></div>
         <div class="listing-item"><strong>💰 Продаж</strong><span class="price">${stats.sales}</span></div>
         <div class="listing-item"><strong>💎 Объём TON</strong><span class="price">${stats.salesTon.toFixed(2)} TON</span></div>
         <div class="listing-item"><strong>⭐ Объём Stars</strong><span class="price">${stats.salesStars.toFixed(0)} ⭐</span></div>
     `;
     renderAdminUsers();
+
+    document.getElementById('adminWithdrawalsList').innerHTML = wds.length ? wds.map(w=>{
+        let badge = '';
+        if(w.type==='NFT') badge = '<span class="wd-badge wd-nft">NFT</span>';
+        else if(w.currency==='TON') badge = '<span class="wd-badge wd-ton">TON</span>';
+        else badge = '<span class="wd-badge wd-stars">STARS</span>';
+        const label = w.type==='NFT' ? `${w.nft_emoji} ${w.nft_name} → ${w.target}` : `${w.amount} ${w.currency} → ${w.target}`;
+        return `<div class="listing-item">
+            <div>${badge} <strong>${w.username}</strong><br><span style="color:var(--muted);font-size:10px">${label}</span></div>
+            <div style="display:flex;gap:4px">
+                <button class="btn-send" style="padding:4px 8px;font-size:10px" onclick="adminApproveWd(${w.id})">Одобрить</button>
+                <button class="btn-red" style="padding:4px 8px;font-size:10px" onclick="adminRejectWd(${w.id})">Отклонить</button>
+            </div>
+        </div>`;
+    }).join('') : '<div class="empty">Нет заявок</div>';
+
     document.getElementById('adminListingsList').innerHTML = list.length ? list.map(l=>`
         <div class="listing-item">
             <div><strong>${l.nft_emoji} ${l.nft_name}</strong><br><span style="color:var(--muted);font-size:10px">${l.seller_name} • ${l.price} ${l.currency}</span></div>
@@ -908,9 +968,22 @@ function renderAdminUsers() {
             <div style="display:flex;gap:4px;flex-wrap:wrap">
                 ${currentUser.role==='super' && x.role!=='super'?`<button class="btn-glass" style="padding:4px 6px;font-size:10px" onclick="openRole(${x.id},'${x.username}')">Роль</button>`:''}
                 ${x.role!=='super'?`<button class="btn-glass" style="padding:4px 6px;font-size:10px" onclick="adminBan(${x.id},${x.is_banned?0:1})">${x.is_banned?'Разбан':'Бан'}</button>`:''}
-                ${currentUser.role==='super' && x.role!=='super'?`<button class="btn-glass" style="padding:4px 6px;font-size:10px;color:var(--red)" onclick="adminDeleteUser(${x.id})">Удалить</button>`:''}
+                ${currentUser.role==='super' && x.role!=='super'?`<button class="btn-red" style="padding:4px 6px;font-size:10px" onclick="adminDeleteUser(${x.id})">Удалить</button>`:''}
             </div>
         </div>`).join('') || '<div class="empty">Пусто</div>';
+}
+
+async function adminApproveWd(id) {
+    const r = await fetch(API+'/api/admin/withdrawals/'+id+'/approve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id})});
+    const d = await r.json();
+    if(d.error) return toast('❌ '+d.error);
+    toast('✅ Вывод одобрен'); await renderAdmin();
+}
+async function adminRejectWd(id) {
+    const r = await fetch(API+'/api/admin/withdrawals/'+id+'/reject',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id})});
+    const d = await r.json();
+    if(d.error) return toast('❌ '+d.error);
+    toast('❌ Отклонён'); await renderAdmin();
 }
 
 async function adminBan(userId, ban) {
