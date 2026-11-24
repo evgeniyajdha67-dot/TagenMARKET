@@ -7,8 +7,11 @@ db.exec(`
     username TEXT UNIQUE,
     password_hash TEXT,
     ton_balance REAL DEFAULT 0,
+    stars_balance REAL DEFAULT 0,
     is_admin INTEGER DEFAULT 0,
     is_banned INTEGER DEFAULT 0,
+    ref_by INTEGER,
+    last_bonus INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
   CREATE TABLE IF NOT EXISTS inventory (
@@ -25,7 +28,8 @@ db.exec(`
     nft_slug TEXT,
     nft_name TEXT,
     nft_emoji TEXT,
-    price_ton REAL,
+    price REAL,
+    currency TEXT DEFAULT 'TON',
     status TEXT DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
@@ -33,7 +37,8 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     listing_id INTEGER,
     buyer_id INTEGER,
-    price_ton REAL,
+    price REAL,
+    currency TEXT DEFAULT 'TON',
     status TEXT DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
@@ -46,6 +51,7 @@ db.exec(`
     start_price REAL,
     current_bid REAL,
     current_bidder_id INTEGER,
+    currency TEXT DEFAULT 'TON',
     end_time INTEGER,
     status TEXT DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -64,9 +70,30 @@ db.exec(`
     nft_slug TEXT,
     nft_name TEXT,
     nft_emoji TEXT,
-    price_ton REAL,
+    price REAL,
+    currency TEXT,
     sale_type TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS favorites (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    nft_slug TEXT,
+    UNIQUE(user_id, nft_slug)
+  );
+  CREATE TABLE IF NOT EXISTS notifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    title TEXT,
+    text TEXT,
+    is_read INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS promos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    code TEXT,
+    UNIQUE(user_id, code)
   );
   CREATE TABLE IF NOT EXISTS logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
