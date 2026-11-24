@@ -1,301 +1,803 @@
-const express = require('express');
-const cors = require('cors');
-const db = require('./db');
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>FROST MARKET</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+:root { --bg:#070b14; --panel:#0f1726; --card:#141f33; --border:#22334f; --blue:#58b4ff; --cyan:#8ce0ff; --gold:#ffd77a; --green:#34d399; --red:#ff6b8b; --text:#f3f7ff; --muted:#8b9bb5; }
+body { background: radial-gradient(circle at 50% 0%, #11223d 0%, var(--bg) 55%); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; min-height: 100vh; padding-bottom: 84px; overflow-x: hidden; }
+header { position: sticky; top: 0; z-index: 30; height: 62px; padding: 0 4%; background: rgba(9,14,26,0.92); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.brand { font-size: 17px; font-weight: 900; color: var(--text); display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.brand span { color: var(--blue); }
+.header-actions { display: flex; align-items: center; gap: 7px; }
+.pill { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 11px; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+.container { width: 92%; max-width: 1120px; margin: auto; padding-top: 16px; }
+.section { display: none; }
+.section.active { display: block; }
+h2 { font-size: 18px; margin: 18px 0 10px; }
+.btn-primary { background: linear-gradient(100deg, #3b8ee8, #6c63ff); color: #fff; border: none; padding: 11px 18px; border-radius: 12px; font-size: 13.5px; font-weight: 700; cursor: pointer; }
+.btn-glass { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.16); color: #fff; padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 11px; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 10px; display: flex; flex-direction: column; position: relative; }
+.card-img { height: 138px; border-radius: 12px; background: radial-gradient(circle, #28466e, #111b2e); display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 9px; }
+.card-img img { width: 100%; height: 100%; object-fit: cover; }
+.card-emoji { font-size: 54px; }
+.card h3 { font-size: 14px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-tag { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+.card-price { font-size: 14px; font-weight: 800; color: var(--gold); margin-bottom: 8px; }
+.card-btn { width: 100%; background: #274d80; border: none; color: #fff; padding: 8px; border-radius: 9px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.row { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.row button { flex: 1; min-width: 60px; padding: 8px 4px; border-radius: 8px; font-size: 11px; font-weight: 700; border: none; cursor: pointer; }
+.btn-list { background: #4a2c5a; color: #d8a8ff; }
+.btn-send { background: #194538; color: var(--green); }
+.btn-swap { background: #3a2c5a; color: #c8a8ff; }
+.btn-auc { background: #5a3a1f; color: var(--gold); }
+.empty { grid-column: 1/-1; text-align: center; padding: 30px; color: var(--muted); font-size: 13px; background: var(--panel); border: 1px dashed var(--border); border-radius: 16px; }
+.modal { display: none; position: fixed; inset: 0; z-index: 50; background: rgba(3,6,14,0.85); align-items: center; justify-content: center; padding: 16px; }
+.modal-box { background: #142036; border: 1px solid var(--border); border-radius: 22px; padding: 20px; width: 100%; max-width: 370px; text-align: center; max-height: 90vh; overflow-y: auto; }
+.m-input { width: 100%; background: #0b1220; border: 1px solid var(--border); color: #fff; padding: 11px 12px; border-radius: 11px; font-size: 14px; margin-bottom: 10px; outline: none; text-align: center; }
+.toast { position: fixed; top: 72px; left: 50%; transform: translateX(-50%); background: #1b2f50; border: 1px solid var(--blue); color: #fff; padding: 9px 16px; border-radius: 12px; font-size: 12.5px; font-weight: 600; z-index: 70; display: none; }
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 64px; background: rgba(9,14,26,0.96); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 35; }
+.b-nav-btn { background: none; border: none; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; cursor: pointer; padding: 5px 6px; }
+.b-nav-btn.active { color: var(--blue); }
+.b-nav-btn .ico { font-size: 18px; }
+.listings-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.listing-item { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; gap: 8px; flex-wrap: wrap; }
+.listing-item .price { color: var(--gold); font-weight: 700; }
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+.stat-card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 14px 12px; text-align: center; }
+.stat-card strong { display: block; font-size: 17px; color: var(--cyan); margin-bottom: 3px; }
+.stat-card span { font-size: 11.5px; color: var(--muted); }
+.hero { margin-top: 16px; padding: 26px 22px; border-radius: 22px; border: 1px solid #2b4369; background: radial-gradient(circle at 88% 18%, rgba(88,180,255,0.28) 0%, transparent 48%), linear-gradient(135deg, #102342, #121b30 60%, #192642); }
+.hero h1 { font-size: clamp(23px, 5vw, 34px); margin-bottom: 8px; }
+.hero p { color: #bdd0eb; font-size: 13.5px; margin-bottom: 16px; }
+.hero-btns { display: flex; flex-wrap: wrap; gap: 9px; }
+.curr-pill { color: var(--blue); border-color: rgba(88,180,255,0.45); }
+.wallet-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.w-card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 14px; }
+.w-card strong { font-size: 19px; display: block; margin-bottom: 10px; }
+.w-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.w-in { flex: 1; min-width: 60px; background: #214575; color: #8cc5ff; border: none; padding: 8px; border-radius: 9px; font-size: 12px; font-weight: 700; cursor: pointer; }
+.w-out { flex: 1; min-width: 60px; background: #19253d; color: var(--gold); border: 1px solid #32486e; padding: 8px; border-radius: 9px; font-size: 12px; font-weight: 700; cursor: pointer; }
+.profile-header { margin-top: 16px; background: linear-gradient(140deg, #14223b, #0e1626); border: 1px solid var(--border); border-radius: 20px; padding: 18px; display: flex; align-items: center; gap: 14px; }
+.avatar { width: 58px; height: 58px; border-radius: 50%; background: linear-gradient(135deg, #3b8ee8, #6c63ff); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; border: 2px solid var(--blue); }
+.wallet-strip { margin-top: 12px; background: var(--panel); border: 1px solid var(--border); border-radius: 15px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.tx-list { display: flex; flex-direction: column; gap: 8px; }
+.tx-item { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 11px 13px; display: flex; justify-content: space-between; align-items: center; }
+.tx-plus { color: var(--green); font-weight: 700; font-size: 13px; }
+.tx-minus { color: var(--red); font-weight: 700; font-size: 13px; }
+.search-box { width: 100%; background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 11px 14px; border-radius: 12px; font-size: 14px; outline: none; margin-bottom: 10px; }
+.filters { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 8px; }
+.filter-btn { background: var(--panel); border: 1px solid var(--border); color: var(--muted); padding: 8px 14px; border-radius: 11px; font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.filter-btn.active { background: #1f4678; border-color: var(--blue); color: #fff; }
+.catalog-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 22px 0 12px; }
+.sort-select { background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 8px 10px; border-radius: 10px; font-size: 12.5px; outline: none; }
+.bids-list { text-align: left; font-size: 12px; max-height: 200px; overflow-y: auto; margin-top: 10px; }
+.bid-row { display: flex; justify-content: space-between; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+@media (max-width: 860px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 600px) { .grid { grid-template-columns: repeat(2, 1fr); gap: 9px; } .card-img { height: 110px; } .wallet-cards { grid-template-columns: 1fr; } .b-nav-btn { font-size: 10px; padding: 5px 3px; } }
+</style>
+</head>
+<body>
 
-const app = express();
-app.use(cors());
-app.use(express.json());
+<div class="toast" id="toast">Готово</div>
 
-const ADMIN_USERNAME = 'tagen'; // ← ТВОЙ НИК
+<header>
+    <div class="brand" onclick="goTab('catalog')">❄ <span>FROST</span> MARKET</div>
+    <div class="header-actions">
+        <span class="pill" id="balancePill">0 TON</span>
+        <button class="pill curr-pill" onclick="openTopup()">+ Пополнить</button>
+    </div>
+</header>
 
-app.get('/', (req, res) => res.sendFile(__dirname + '/index.html'));
+<div class="container">
+    <div id="sec-catalog" class="section active">
+        <section class="hero">
+            <h1>Зимняя коллекция 2026 ❄</h1>
+            <p>Полный каталог 124 NFT. Покупка, продажа, офферы, аукционы, обмен.</p>
+            <div class="hero-btns">
+                <button class="btn-primary" onclick="document.getElementById('catalogAnchor').scrollIntoView({behavior:'smooth'})">Открыть каталог →</button>
+                <button class="btn-glass" onclick="giveTestNft()">🎁 Тестовый NFT</button>
+            </div>
+        </section>
+        <div class="stats-row">
+            <div class="stat-card"><strong id="totalCollections">124</strong><span>NFT-коллекций</span></div>
+            <div class="stat-card"><strong>❄ 2026</strong><span>Зимний сезон</span></div>
+            <div class="stat-card"><strong id="totalInvStat">0</strong><span>В инвентаре</span></div>
+        </div>
+        <div class="catalog-head" id="catalogAnchor">
+            <h2>🎁 Каталог (<span id="shownCount">124</span>)</h2>
+            <select class="sort-select" id="sortSel" onchange="renderCatalog()">
+                <option value="default">По популярности</option>
+                <option value="desc">Сначала дорогие</option>
+                <option value="asc">Сначала дешёвые</option>
+            </select>
+        </div>
+        <input type="text" class="search-box" id="searchInp" placeholder="🔍 Поиск..." oninput="renderCatalog()">
+        <div class="filters">
+            <button class="filter-btn active" onclick="setFilter('all', this)">Все</button>
+            <button class="filter-btn" onclick="setFilter('nft', this)">💎 NFT</button>
+            <button class="filter-btn" onclick="setFilter('winter', this)">❄ Зима</button>
+            <button class="filter-btn" onclick="setFilter('rare', this)">👑 Редкие</button>
+            <button class="filter-btn" onclick="setFilter('classic', this)">🎁 Доступные</button>
+        </div>
+        <div class="grid" id="catalogGrid"></div>
+    </div>
 
-// ========== ВХОД ==========
-app.post('/api/login', (req, res) => {
-    const { username } = req.body;
-    if (!username) return res.status(400).json({ error: 'Введите ник' });
-    let user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
-    if (!user) {
-        const isAdmin = username === ADMIN_USERNAME ? 1 : 0;
-        const info = db.prepare('INSERT INTO users (username, is_admin) VALUES (?, ?)').run(username, isAdmin);
-        user = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
-    } else if (username === ADMIN_USERNAME && user.is_admin !== 1) {
-        db.prepare('UPDATE users SET is_admin = 1 WHERE id = ?').run(user.id);
-        user.is_admin = 1;
+    <div id="sec-inventory" class="section">
+        <div class="catalog-head">
+            <h2>🎒 Мои NFT</h2>
+            <button class="btn-glass" onclick="giveTestNft()">🎁 Тестовый NFT</button>
+        </div>
+        <div class="grid" id="invGrid"></div>
+    </div>
+
+    <div id="sec-market" class="section">
+        <div class="catalog-head">
+            <h2>📊 Рынок</h2>
+            <button class="btn-glass" onclick="loadMarket(); loadAuctions();">🔄 Обновить</button>
+        </div>
+
+        <div class="catalog-head"><h2>📌 Лоты пользователей</h2></div>
+        <div class="grid" id="marketGrid"></div>
+
+        <div class="catalog-head"><h2>⏳ Аукционы</h2></div>
+        <div class="grid" id="auctionGrid"></div>
+
+        <div class="catalog-head"><h2>📥 Входящие офферы</h2></div>
+        <div class="listings-list" id="incomingOffersList"></div>
+
+        <div class="catalog-head"><h2>💰 История продаж</h2></div>
+        <div class="listings-list" id="salesHistoryList"></div>
+    </div>
+
+    <div id="sec-profile" class="section">
+        <div class="profile-header">
+            <div class="avatar" id="uAvatar">❄</div>
+            <div>
+                <h3 id="uName">Гость</h3>
+                <p id="uMeta" style="font-size:12px;color:var(--muted)">Не авторизован</p>
+            </div>
+        </div>
+        <div class="wallet-strip">
+            <div>
+                <div style="font-size:12px;font-weight:700">💎 TON-кошелёк</div>
+                <div id="wAddrTxt" style="font-size:12px;color:var(--muted);font-family:monospace">Не привязан</div>
+            </div>
+            <button class="btn-glass" id="wLinkBtn" onclick="linkWallet()">Привязать</button>
+        </div>
+        <div class="wallet-cards">
+            <div class="w-card">
+                <small>💎 TON</small>
+                <strong id="pTon">0 TON</strong>
+                <div class="w-actions">
+                    <button class="w-in" onclick="openTopup('TON')">+ Пополнить</button>
+                    <button class="w-out" onclick="openWithdraw('TON')">↑ Вывести</button>
+                </div>
+            </div>
+            <div class="w-card">
+                <small>⭐ Stars</small>
+                <strong id="pStars">0 ⭐</strong>
+                <div class="w-actions">
+                    <button class="w-in" onclick="openTopup('STARS')">+ Пополнить</button>
+                    <button class="w-out" onclick="openWithdraw('STARS')">↑ Вывести</button>
+                </div>
+            </div>
+        </div>
+        <div class="catalog-head"><h2>📜 История операций</h2></div>
+        <div class="tx-list" id="txList"></div>
+        <div class="catalog-head" id="adminPanel" style="display:none"><h2>👑 Админ-панель (tagen)</h2></div>
+        <div class="listings-list" id="adminStatsList"></div>
+        <div class="listings-list" id="adminUsersList"></div>
+    </div>
+</div>
+
+<div class="modal" id="listModal">
+    <div class="modal-box">
+        <h3>Выставить лот</h3>
+        <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="listSub"></p>
+        <input type="number" class="m-input" id="listPrice" placeholder="Цена TON">
+        <button class="btn-primary" onclick="confirmListing()" style="width:100%;margin-bottom:8px">Выставить</button>
+        <button class="btn-glass" onclick="closeM('listModal')" style="width:100%">Отмена</button>
+    </div>
+</div>
+
+<div class="modal" id="auctionModal">
+    <div class="modal-box">
+        <h3>Аукцион</h3>
+        <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="aucSub"></p>
+        <input type="number" class="m-input" id="aucStart" placeholder="Стартовая цена TON">
+        <input type="number" class="m-input" id="aucHours" placeholder="Часы" value="1">
+        <button class="btn-primary" onclick="confirmAuction()" style="width:100%;margin-bottom:8px">Запустить</button>
+        <button class="btn-glass" onclick="closeM('auctionModal')" style="width:100%">Отмена</button>
+    </div>
+</div>
+
+<div class="modal" id="offerModal">
+    <div class="modal-box">
+        <h3>Оффер</h3>
+        <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="offerSub"></p>
+        <input type="number" class="m-input" id="offerPrice" placeholder="Цена TON">
+        <button class="btn-primary" onclick="submitOffer()" style="width:100%;margin-bottom:8px">Отправить</button>
+        <button class="btn-glass" onclick="closeM('offerModal')" style="width:100%">Отмена</button>
+    </div>
+</div>
+
+<div class="modal" id="bidModal">
+    <div class="modal-box">
+        <h3>Ставка</h3>
+        <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="bidSub"></p>
+        <input type="number" class="m-input" id="bidAmount" placeholder="Сумма TON">
+        <div class="bids-list" id="bidsList"></div>
+        <button class="btn-primary" onclick="submitBid()" style="width:100%;margin-bottom:8px;margin-top:10px">Поставить</button>
+        <button class="btn-glass" onclick="closeM('bidModal')" style="width:100%">Отмена</button>
+    </div>
+</div>
+
+<div class="modal" id="swapModal">
+    <div class="modal-box">
+        <h3>Обмен NFT</h3>
+        <select class="m-input" id="swapMyNft"></select>
+        <input type="text" class="m-input" id="swapTarget" placeholder="Slug (напр. santahat)">
+        <div id="swapCalc" style="font-size:12px;color:var(--muted);margin-bottom:10px"></div>
+        <button class="btn-primary" onclick="doSwap()" style="width:100%;margin-bottom:8px">Обменять</button>
+        <button class="btn-glass" onclick="closeM('swapModal')" style="width:100%">Отмена</button>
+    </div>
+</div>
+
+<div class="modal" id="topupModal">
+    <div class="modal-box">
+        <h3>Пополнение</h3>
+        <div id="adminContactBox" style="background:#1a2945;border:1px solid var(--gold);border-radius:12px;padding:10px;margin-bottom:10px;font-size:12.5px;text-align:left"></div>
+        <input type="number" class="m-input" id="tuAmount" placeholder="Сумма">
+        <button class="btn-primary" onclick="doTopup()" style="width:100%;margin-bottom:8px">Пополнить</button>
+        <button class="btn-glass" onclick="closeM('topupModal')" style="width:100%">Отмена</button>
+    </div>
+</div>
+
+<div class="modal" id="wdModal">
+    <div class="modal-box">
+        <h3>Вывод</h3>
+        <p style="color:var(--muted);font-size:12px;margin-bottom:10px" id="wdSub"></p>
+        <input type="text" class="m-input" id="wdTarget" placeholder="Реквизиты">
+        <input type="number" class="m-input" id="wdAmount" placeholder="Сумма">
+        <button class="btn-primary" onclick="doWithdraw()" style="width:100%;margin-bottom:8px">Создать</button>
+        <button class="btn-glass" onclick="closeM('wdModal')" style="width:100%">Отмена</button>
+    </div>
+</div>
+
+<nav class="bottom-nav">
+    <button class="b-nav-btn active" id="bnav-catalog" onclick="goTab('catalog')"><span class="ico">❄</span><span>Каталог</span></button>
+    <button class="b-nav-btn" id="bnav-inventory" onclick="goTab('inventory')"><span class="ico">🎒</span><span>Мои NFT</span></button>
+    <button class="b-nav-btn" id="bnav-market" onclick="goTab('market')"><span class="ico">📊</span><span>Рынок</span></button>
+    <button class="b-nav-btn" id="bnav-profile" onclick="goTab('profile')"><span class="ico">👤</span><span>Профиль</span></button>
+</nav>
+
+<script>
+const API = 'https://твой-сервер.onrender.com';
+const ADMIN_CONTACT = '@tagen';
+let currentUser = null;
+let curListingItem = null, curAuctionItem = null, curOfferListing = null, curBidAuction = null;
+
+// ВСЕ 124 NFT
+const RAW = `Plush Pepe|plushpepe|nft|2500|🐸
+Algorithm Cup|algorithmcup|nft|1450|🏆
+Intelligence Cup|intelligencecup|nft|1320|🧠
+Heart Locket|heartlocket|nft|890|💖
+Resistance Dog|resistancedog|nft|640|🐶
+Durov's Cap|durovscap|nft|455|🧢
+Durov's Glasses|durovsglasses|nft|380|🕶️
+Precious Peach|preciouspeach|nft|320|🍑
+Heroic Helmet|heroichelmet|nft|210|🪖
+Mighty Arm|mightyarm|nft|175|💪
+Nail Bracelet|nailbracelet|nft|145|📿
+Artisan Brick|artisanbrick|nft|120|🧱
+Ion Gem|iongem|nft|95|💎
+Astral Shard|astralshard|nft|89|🔮
+Perfume Bottle|perfumebottle|nft|85|🧴
+Mini Oscar|minioscar|nft|78|🏆
+Gem Signet|gemsignet|nft|72|💍
+Westside Sign|westsidesign|nft|68|🤟
+Low Rider|lowrider|nft|64|🚗
+Magic Potion|magicpotion|nft|55|🧪
+Sharp Tongue|sharptongue|nft|52|👅
+Voodoo Doll|voodoodoll|nft|49|🪆
+Loot Bag|lootbag|rare|44|💰
+Genie Lamp|genielamp|rare|39|🪔
+Bond Peach|bondpeach|rare|37|🍑
+Electric Skull|electricskull|rare|35|💀
+Swiss Watch|swisswatch|rare|32|⌚
+Signet Ring|signetring|rare|28|💍
+Neko Helmet|nekohelmet|rare|27|🐱
+Scared Cat|scaredcat|rare|25|🙀
+Kissed Frog|kissedfrog|rare|22|🐸
+Diamond Ring|diamondring|rare|21|💎
+Crystal Ball|crystalball|rare|19|🔮
+Cupid Charm|cupidcharm|rare|18.5|💘
+Toy Bear|toybear|rare|18|🧸
+Khabib's Papakha|khabibspapakha|rare|17.5|🐑
+Snow Globe|snowglobe|winter|17|🔮
+Love Potion|lovepotion|rare|16.5|🍷
+Mad Pumpkin|madpumpkin|rare|16|🎃
+Snow Mittens|snowmittens|winter|15.5|🧤
+Top Hat|tophat|rare|15|🎩
+Vintage Cigar|vintagecigar|rare|14.5|🚬
+Trapped Heart|trappedheart|rare|14|❤️‍🔥
+Sleigh Bell|sleighbell|winter|13.5|🔔
+Sky Stilettos|skystilettos|rare|13|👠
+Hanging Star|hangingstar|winter|12.5|⭐
+Eternal Rose|eternalrose|rare|12|🥀
+Jingle Bells|jinglebells|winter|11.5|🛎️
+Record Player|recordplayer|rare|11|📻
+Skull Flower|skullflower|rare|10.5|💀
+Ionic Dryer|ionicdryer|rare|10.2|💨
+Joyful Bundle|joyfulbundle|winter|10|🎁
+Santa Hat|santahat|winter|9.5|🎅
+UFC Strike|ufcstrike|rare|9.4|🥊
+Evil Eye|evileye|rare|9.2|🧿
+Bunny Muffin|bunnymuffin|rare|9.0|🧁
+Witch Hat|witchhat|classic|8.8|🧙‍♀️
+Bow Tie|bowtie|classic|8.6|🎀
+Snoop Cigar|snoopcigar|classic|8.5|🌿
+Winter Wreath|winterwreath|winter|8.2|🎄
+Valentine Box|valentinebox|classic|8.0|💝
+Hex Pot|hexpot|classic|7.8|🧪
+Lush Bouquet|lushbouquet|classic|7.6|💐
+Spiced Wine|spicedwine|winter|7.4|🍷
+Light Sword|lightsword|classic|7.3|⚔️
+Flying Broom|flyingbroom|classic|7.1|🧹
+Restless Jar|restlessjar|classic|7.0|🫙
+Jester Hat|jesterhat|classic|6.9|🃏
+Ginger Cookie|gingercookie|winter|6.8|🍪
+Money Pot|moneypot|classic|6.7|🍯
+Star Notepad|starnotepad|winter|6.5|📓
+Berry Box|berrybox|classic|6.4|🫐
+Party Sparkler|partysparkler|winter|6.3|🎇
+Homemade Cake|homemadecake|classic|6.2|🎂
+Sakura Flower|sakuraflower|classic|6.1|🌸
+Jelly Bunny|jellybunny|classic|6.0|🐰
+Candy Cane|candycane|winter|5.9|🍬
+Love Candle|lovecandle|classic|5.8|🕯️
+Spring Basket|springbasket|classic|5.7|🧺
+Clover Pin|cloverpin|classic|5.6|🍀
+Cookie Heart|cookieheart|winter|5.5|🤎
+Hypno Lollipop|hypnolollipop|classic|5.45|🍭
+Pet Snake|petsnake|classic|5.4|🐍
+Desk Calendar|deskcalendar|classic|5.35|📅
+Tama Gadget|tamagadget|classic|5.3|👾
+Easter Egg|easteregg|classic|5.25|🥚
+Stellar Rocket|stellarrocket|classic|5.2|🚀
+Whip Cupcake|whipcupcake|classic|5.18|🧁
+Moon Pendant|moonpendant|classic|5.15|🌙
+Lol Pop|lolpop|classic|5.12|🍭
+B-Day Candle|bdaycandle|classic|5.1|🕯️
+Xmas Stocking|xmasstocking|winter|5.08|🧦
+Lunar Snake|lunarsnake|winter|5.05|🐉
+Snake Box|snakebox|classic|5.02|📦
+Big Year|bigyear|winter|5.0|2️⃣
+Holiday Drink|holidaydrink|winter|4.98|☕
+Snoop Dogg|snoopdogg|classic|4.95|🐕
+Swag Bag|swagbag|classic|4.92|🎒
+Input Key|inputkey|classic|4.9|⌨️
+Happy Brownie|happybrownie|classic|4.88|🍫
+Instant Ramen|instantramen|classic|4.85|🍜
+Ice Cream|icecream|classic|4.82|🍦
+Faith Amulet|faithamulet|classic|4.8|🧿
+Bling Binky|blingbinky|classic|4.78|🍼
+Fresh Socks|freshsocks|winter|4.75|🧦
+Pretty Posy|prettyposy|classic|4.72|🌼
+Mousse Cake|moussecake|classic|4.7|🍰
+BDay Candle Gold|bdaycandlegold|classic|5.5|✨
+Crystal Eagle|crystaleagle|rare|14.2|🦅
+Golden Star|goldenstar|winter|11.8|🌟
+Neon Cat|neoncat|rare|16.2|🐈
+Cyber Mask|cybermask|rare|13.8|🎭
+Frost Crown|frostcrown|winter|19.5|👑
+Velvet Box|velvetbox|classic|6.1|🎁
+Magic Wand|magicwand|classic|7.5|🪄
+Diamond Dice|diamonddice|rare|15.8|🎲
+Royal Goblet|royalgoblet|rare|20.5|🏆
+Winter Owl|winterowl|winter|12.9|🦉
+Lucky Horseshoe|luckyhorseshoe|classic|6.6|🧲
+Cosmic Pearl|cosmicpearl|rare|24.0|🦪
+Silver Bell|silverbell|winter|9.8|🔔
+Secret Key|secretkey|rare|17.2|🗝️
+Frost Crystal|frostcrystal|winter|14.8|💠
+Aurora Bear|aurorabear|winter|21.5|🐻‍❄️`;
+const TAGS = { nft:'💎 Легендарный NFT', winter:'❄ Зима 2026', rare:'👑 Редкий', classic:'🎁 Классика' };
+const gifts = RAW.trim().split('\n').map((l,i)=>{const p=l.split('|');return{id:i+1,name:p[0],slug:p[1],cat:p[2],tag:TAGS[p[2]],ton:parseFloat(p[3]),emoji:p[4]};});
+
+let state = {
+    tx: JSON.parse(localStorage.getItem('frost_tx'))||[],
+    stars: Number(localStorage.getItem('frost_stars'))||2500,
+    wallet: localStorage.getItem('frost_wallet')||'',
+    inv: [], listings: [], auctions: []
+};
+function saveLocal() {
+    localStorage.setItem('frost_tx', JSON.stringify(state.tx));
+    localStorage.setItem('frost_stars', state.stars);
+    localStorage.setItem('frost_wallet', state.wallet);
+}
+function toast(m) { const t=document.getElementById('toast'); t.innerText=m; t.style.display='block'; setTimeout(()=>t.style.display='none',2500); }
+function closeM(id) { document.getElementById(id).style.display='none'; }
+function timeNow() { return new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}); }
+
+// ===== ФОТО С КАСКАДНЫМ FALLBACK =====
+const IMG_NUMS = [1, 2, 10, 100, 1000, 5000, 10000];
+function imgUrl(slug, n) { return `https://nft.fragment.com/gift/${encodeURIComponent(slug)}-${n}.webp`; }
+function imgTag(slug, emoji) {
+    const urls = IMG_NUMS.map(n=>imgUrl(slug,n));
+    let onerror = '';
+    for (let i=0; i<urls.length; i++) {
+        if (i===0) onerror += `if(!this.dataset.t){this.dataset.t=1;this.src='${urls[1]}'}`;
+        else if (i<urls.length-1) onerror += `else if(this.dataset.t==${i}){this.dataset.t=${i+1};this.src='${urls[i+1]}'}`;
+        else onerror += `else{this.style.display='none';this.nextElementSibling.style.display='block'}`;
     }
-    if (user.is_banned) return res.status(403).json({ error: 'Вы забанены' });
-    res.json(user);
-});
-
-app.get('/api/user/:id', (req, res) => {
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
-    if (!user) return res.status(404).json({ error: 'Нет пользователя' });
-    res.json(user);
-});
-
-// ========== ИНВЕНТАРЬ ==========
-app.get('/api/inventory/:userId', (req, res) => {
-    res.json(db.prepare('SELECT * FROM inventory WHERE user_id = ?').all(req.params.userId));
-});
-
-app.post('/api/give-nft', (req, res) => {
-    const { userId, slug, name, emoji } = req.body;
-    db.prepare('INSERT INTO inventory (user_id, nft_slug, nft_name, nft_emoji) VALUES (?,?,?,?)')
-      .run(userId, slug, name, emoji);
-    res.json({ success: true });
-});
-
-// ========== ЛОТЫ ==========
-app.get('/api/listings', (req, res) => {
-    res.json(db.prepare(`
-        SELECT l.*, u.username as seller_name
-        FROM listings l JOIN users u ON l.seller_id = u.id
-        WHERE l.status = 'active' ORDER BY l.id DESC
-    `).all());
-});
-
-app.post('/api/listings', (req, res) => {
-    const { userId, nft_slug, nft_name, nft_emoji, price_ton } = req.body;
-    const item = db.prepare('SELECT * FROM inventory WHERE user_id = ? AND nft_slug = ?').get(userId, nft_slug);
-    if (!item) return res.status(400).json({ error: 'NFT не найден' });
-    const already = db.prepare("SELECT id FROM listings WHERE seller_id = ? AND nft_slug = ? AND status = 'active'").get(userId, nft_slug);
-    if (already) return res.status(400).json({ error: 'Уже выставлен' });
-    db.prepare('INSERT INTO listings (seller_id, nft_slug, nft_name, nft_emoji, price_ton) VALUES (?,?,?,?,?)')
-      .run(userId, nft_slug, nft_name, nft_emoji, price_ton);
-    db.prepare('DELETE FROM inventory WHERE id = ?').run(item.id);
-    res.json({ success: true });
-});
-
-app.delete('/api/listings/:id', (req, res) => {
-    const { userId } = req.query;
-    const l = db.prepare("SELECT * FROM listings WHERE id = ? AND status = 'active'").get(req.params.id);
-    if (!l) return res.status(404).json({ error: 'Нет лота' });
-    if (l.seller_id !== Number(userId)) return res.status(403).json({ error: 'Не ваш' });
-    db.prepare("UPDATE listings SET status = 'cancelled' WHERE id = ?").run(req.params.id);
-    db.prepare('INSERT INTO inventory (user_id, nft_slug, nft_name, nft_emoji) VALUES (?,?,?,?)')
-      .run(l.seller_id, l.nft_slug, l.nft_name, l.nft_emoji);
-    res.json({ success: true });
-});
-
-app.post('/api/listings/:id/buy', (req, res) => {
-    const { buyerId } = req.body;
-    const l = db.prepare("SELECT * FROM listings WHERE id = ? AND status = 'active'").get(req.params.id);
-    if (!l) return res.status(404).json({ error: 'Нет лота' });
-    if (l.seller_id === buyerId) return res.status(400).json({ error: 'Свой лот' });
-    const buyer = db.prepare('SELECT * FROM users WHERE id = ?').get(buyerId);
-    if (!buyer || buyer.ton_balance < l.price_ton) return res.status(400).json({ error: 'Мало TON' });
-    const trx = db.transaction(() => {
-        db.prepare('UPDATE users SET ton_balance = ton_balance - ? WHERE id = ?').run(l.price_ton, buyerId);
-        db.prepare('UPDATE users SET ton_balance = ton_balance + ? WHERE id = ?').run(l.price_ton, l.seller_id);
-        db.prepare('INSERT INTO inventory (user_id, nft_slug, nft_name, nft_emoji) VALUES (?,?,?,?)')
-          .run(buyerId, l.nft_slug, l.nft_name, l.nft_emoji);
-        db.prepare("UPDATE listings SET status = 'sold' WHERE id = ?").run(l.id);
-        db.prepare('INSERT INTO sales_history (seller_id, buyer_id, nft_slug, nft_name, nft_emoji, price_ton, sale_type) VALUES (?,?,?,?,?,?,?)')
-          .run(l.seller_id, buyerId, l.nft_slug, l.nft_name, l.nft_emoji, l.price_ton, 'listing');
-    });
-    try { trx(); res.json({ success: true }); } catch(e) { res.status(500).json({ error: 'Ошибка' }); }
-});
-
-// ========== ОФФЕРЫ ==========
-app.post('/api/offers', (req, res) => {
-    const { listingId, buyerId, price } = req.body;
-    if (!price || price <= 0) return res.status(400).json({ error: 'Цена' });
-    const l = db.prepare("SELECT * FROM listings WHERE id = ? AND status = 'active'").get(listingId);
-    if (!l) return res.status(404).json({ error: 'Лот не найден' });
-    if (l.seller_id === buyerId) return res.status(400).json({ error: 'Свой лот' });
-    const buyer = db.prepare('SELECT * FROM users WHERE id = ?').get(buyerId);
-    if (!buyer || buyer.ton_balance < price) return res.status(400).json({ error: 'Мало TON' });
-    const info = db.prepare('INSERT INTO offers (listing_id, buyer_id, price_ton) VALUES (?,?,?)').run(listingId, buyerId, price);
-    res.json({ success: true, id: info.lastInsertRowid });
-});
-
-app.get('/api/offers/incoming/:userId', (req, res) => {
-    res.json(db.prepare(`
-        SELECT o.*, u.username as buyer_name, l.nft_name, l.nft_emoji
-        FROM offers o
-        JOIN listings l ON o.listing_id = l.id
-        JOIN users u ON o.buyer_id = u.id
-        WHERE l.seller_id = ? AND o.status = 'pending' AND l.status = 'active'
-        ORDER BY o.id DESC
-    `).all(req.params.userId));
-});
-
-app.post('/api/offers/:id/accept', (req, res) => {
-    const { sellerId } = req.body;
-    const o = db.prepare("SELECT * FROM offers WHERE id = ? AND status = 'pending'").get(req.params.id);
-    if (!o) return res.status(404).json({ error: 'Оффер не найден' });
-    const l = db.prepare("SELECT * FROM listings WHERE id = ? AND status = 'active'").get(o.listing_id);
-    if (!l || l.seller_id !== sellerId) return res.status(403).json({ error: 'Нет доступа' });
-    const buyer = db.prepare('SELECT * FROM users WHERE id = ?').get(o.buyer_id);
-    if (!buyer || buyer.ton_balance < o.price_ton) return res.status(400).json({ error: 'У покупателя мало TON' });
-    const trx = db.transaction(() => {
-        db.prepare('UPDATE users SET ton_balance = ton_balance - ? WHERE id = ?').run(o.price_ton, o.buyer_id);
-        db.prepare('UPDATE users SET ton_balance = ton_balance + ? WHERE id = ?').run(o.price_ton, sellerId);
-        db.prepare('INSERT INTO inventory (user_id, nft_slug, nft_name, nft_emoji) VALUES (?,?,?,?)')
-          .run(o.buyer_id, l.nft_slug, l.nft_name, l.nft_emoji);
-        db.prepare("UPDATE listings SET status = 'sold' WHERE id = ?").run(l.id);
-        db.prepare("UPDATE offers SET status = 'accepted' WHERE id = ?").run(o.id);
-        db.prepare("UPDATE offers SET status = 'rejected' WHERE listing_id = ? AND id != ?").run(l.id, o.id);
-        db.prepare('INSERT INTO sales_history (seller_id, buyer_id, nft_slug, nft_name, nft_emoji, price_ton, sale_type) VALUES (?,?,?,?,?,?,?)')
-          .run(sellerId, o.buyer_id, l.nft_slug, l.nft_name, l.nft_emoji, o.price_ton, 'offer');
-    });
-    try { trx(); res.json({ success: true }); } catch(e) { res.status(500).json({ error: 'Ошибка' }); }
-});
-
-app.post('/api/offers/:id/reject', (req, res) => {
-    const { sellerId } = req.body;
-    const o = db.prepare("SELECT * FROM offers WHERE id = ? AND status = 'pending'").get(req.params.id);
-    if (!o) return res.status(404).json({ error: 'Нет оффера' });
-    const l = db.prepare('SELECT * FROM listings WHERE id = ?').get(o.listing_id);
-    if (!l || l.seller_id !== sellerId) return res.status(403).json({ error: 'Нет доступа' });
-    db.prepare("UPDATE offers SET status = 'rejected' WHERE id = ?").run(req.params.id);
-    res.json({ success: true });
-});
-
-// ========== АУКЦИОНЫ ==========
-app.get('/api/auctions', (req, res) => {
-    const now = Date.now();
-    // Автозавершение просроченных
-    const expired = db.prepare("SELECT * FROM auctions WHERE end_time < ? AND status = 'active'").all(now);
-    for (const a of expired) {
-        if (a.current_bidder_id) {
-            const buyer = db.prepare('SELECT * FROM users WHERE id = ?').get(a.current_bidder_id);
-            if (buyer && buyer.ton_balance >= a.current_bid) {
-                const trx = db.transaction(() => {
-                    db.prepare('UPDATE users SET ton_balance = ton_balance - ? WHERE id = ?').run(a.current_bid, a.current_bidder_id);
-                    db.prepare('UPDATE users SET ton_balance = ton_balance + ? WHERE id = ?').run(a.current_bid, a.seller_id);
-                    db.prepare('INSERT INTO inventory (user_id, nft_slug, nft_name, nft_emoji) VALUES (?,?,?,?)')
-                      .run(a.current_bidder_id, a.nft_slug, a.nft_name, a.nft_emoji);
-                    db.prepare("UPDATE auctions SET status = 'sold' WHERE id = ?").run(a.id);
-                    db.prepare('INSERT INTO sales_history (seller_id, buyer_id, nft_slug, nft_name, nft_emoji, price_ton, sale_type) VALUES (?,?,?,?,?,?,?)')
-                      .run(a.seller_id, a.current_bidder_id, a.nft_slug, a.nft_name, a.nft_emoji, a.current_bid, 'auction');
-                });
-                try { trx(); } catch(e) {}
-            } else {
-                db.prepare("UPDATE auctions SET status = 'ended' WHERE id = ?").run(a.id);
-                db.prepare('INSERT INTO inventory (user_id, nft_slug, nft_name, nft_emoji) VALUES (?,?,?,?)')
-                  .run(a.seller_id, a.nft_slug, a.nft_name, a.nft_emoji);
-            }
-        } else {
-            db.prepare("UPDATE auctions SET status = 'ended' WHERE id = ?").run(a.id);
-            db.prepare('INSERT INTO inventory (user_id, nft_slug, nft_name, nft_emoji) VALUES (?,?,?,?)')
-              .run(a.seller_id, a.nft_slug, a.nft_name, a.nft_emoji);
-        }
-    }
-    res.json(db.prepare(`
-        SELECT a.*, u.username as seller_name,
-               (SELECT COUNT(*) FROM bids WHERE auction_id = a.id) as bids_count
-        FROM auctions a JOIN users u ON a.seller_id = u.id
-        WHERE a.status = 'active' ORDER BY a.end_time ASC
-    `).all());
-});
-
-app.post('/api/auctions', (req, res) => {
-    const { userId, nft_slug, nft_name, nft_emoji, start_price, hours } = req.body;
-    if (!start_price || start_price <= 0 || !hours || hours <= 0) return res.status(400).json({ error: 'Параметры' });
-    const item = db.prepare('SELECT * FROM inventory WHERE user_id = ? AND nft_slug = ?').get(userId, nft_slug);
-    if (!item) return res.status(400).json({ error: 'NFT не найден' });
-    const endTime = Date.now() + hours * 3600 * 1000;
-    db.prepare('INSERT INTO auctions (seller_id, nft_slug, nft_name, nft_emoji, start_price, current_bid, end_time) VALUES (?,?,?,?,?,?,?)')
-      .run(userId, nft_slug, nft_name, nft_emoji, start_price, start_price, endTime);
-    db.prepare('DELETE FROM inventory WHERE id = ?').run(item.id);
-    res.json({ success: true });
-});
-
-app.post('/api/auctions/:id/bid', (req, res) => {
-    const { bidderId, amount } = req.body;
-    const a = db.prepare("SELECT * FROM auctions WHERE id = ? AND status = 'active'").get(req.params.id);
-    if (!a) return res.status(404).json({ error: 'Нет аукциона' });
-    if (Date.now() > a.end_time) return res.status(400).json({ error: 'Аукцион завершён' });
-    if (a.seller_id === bidderId) return res.status(400).json({ error: 'Свой аукцион' });
-    if (amount <= a.current_bid) return res.status(400).json({ error: 'Ставка должна быть выше текущей' });
-    const bidder = db.prepare('SELECT * FROM users WHERE id = ?').get(bidderId);
-    if (!bidder || bidder.ton_balance < amount) return res.status(400).json({ error: 'Мало TON' });
-    db.prepare('UPDATE auctions SET current_bid = ?, current_bidder_id = ? WHERE id = ?').run(amount, bidderId, a.id);
-    db.prepare('INSERT INTO bids (auction_id, bidder_id, amount) VALUES (?,?,?)').run(a.id, bidderId, amount);
-    res.json({ success: true });
-});
-
-app.get('/api/auctions/:id/bids', (req, res) => {
-    res.json(db.prepare(`
-        SELECT b.*, u.username as bidder_name
-        FROM bids b JOIN users u ON b.bidder_id = u.id
-        WHERE b.auction_id = ? ORDER BY b.id DESC LIMIT 20
-    `).all(req.params.id));
-});
-
-// ========== ОБМЕН ==========
-app.post('/api/swap', (req, res) => {
-    const { userId, mySlug, targetSlug, targetName, targetEmoji, targetTon } = req.body;
-    const mine = db.prepare('SELECT * FROM inventory WHERE user_id = ? AND nft_slug = ?').get(userId, mySlug);
-    if (!mine) return res.status(400).json({ error: 'Ваш NFT не найден' });
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
-    const myTon = 10; // базовая оценка
-    const diff = targetTon - myTon;
-    if (diff > 0 && user.ton_balance < diff) return res.status(400).json({ error: 'Мало TON для доплаты' });
-    const trx = db.transaction(() => {
-        if (diff > 0) db.prepare('UPDATE users SET ton_balance = ton_balance - ? WHERE id = ?').run(diff, userId);
-        else if (diff < 0) db.prepare('UPDATE users SET ton_balance = ton_balance + ? WHERE id = ?').run(-diff, userId);
-        db.prepare('DELETE FROM inventory WHERE id = ?').run(mine.id);
-        db.prepare('INSERT INTO inventory (user_id, nft_slug, nft_name, nft_emoji) VALUES (?,?,?,?)')
-          .run(userId, targetSlug, targetName, targetEmoji);
-    });
-    try { trx(); res.json({ success: true, diff }); } catch(e) { res.status(500).json({ error: 'Ошибка' }); }
-});
-
-// ========== ИСТОРИЯ ==========
-app.get('/api/history/sales/:userId', (req, res) => {
-    res.json(db.prepare(`
-        SELECT s.*, su.username as seller_name, bu.username as buyer_name
-        FROM sales_history s
-        LEFT JOIN users su ON s.seller_id = su.id
-        LEFT JOIN users bu ON s.buyer_id = bu.id
-        WHERE s.seller_id = ? OR s.buyer_id = ?
-        ORDER BY s.id DESC LIMIT 50
-    `).all(req.params.userId, req.params.userId));
-});
-
-// ========== АДМИН ==========
-function checkAdmin(id) {
-    const u = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
-    return u && u.is_admin === 1;
+    return `<img src="${urls[0]}" loading="lazy" onerror="${onerror}"><span class="card-emoji" style="display:none">${emoji}</span>`;
 }
 
-app.get('/api/admin/users', (req, res) => {
-    if (!checkAdmin(req.query.adminId)) return res.status(403).json({ error: 'Нет доступа' });
-    res.json(db.prepare('SELECT id, username, ton_balance, is_admin, is_banned FROM users').all());
-});
+function goTab(t) {
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('.b-nav-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('sec-'+t).classList.add('active');
+    document.getElementById('bnav-'+t).classList.add('active');
+    if (t==='market') { loadMarket(); loadAuctions(); loadIncomingOffers(); loadSalesHistory(); }
+    if (t==='inventory') loadInventory();
+    if (t==='profile' && currentUser?.is_admin) renderAdmin();
+    window.scrollTo({top:0,behavior:'smooth'});
+}
 
-app.get('/api/admin/stats', (req, res) => {
-    if (!checkAdmin(req.query.adminId)) return res.status(403).json({ error: 'Нет доступа' });
-    const users = db.prepare('SELECT COUNT(*) as c FROM users').get().c;
-    const listings = db.prepare("SELECT COUNT(*) as c FROM listings WHERE status = 'active'").get().c;
-    const auctions = db.prepare("SELECT COUNT(*) as c FROM auctions WHERE status = 'active'").get().c;
-    const sales = db.prepare('SELECT COUNT(*) as c, COALESCE(SUM(price_ton),0) as vol FROM sales_history').get();
-    res.json({ users, listings, auctions, sales: sales.c, volume: sales.vol });
-});
+async function autoRegister() {
+    const savedName = localStorage.getItem('frost_username');
+    const name = savedName || prompt('Добро пожаловать в FROST MARKET!\nВведите ник для регистрации (латиницей):');
+    if (!name || !name.trim()) return toast('⚠️ Без ника нельзя');
+    const res = await fetch(API+'/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:name.trim()})});
+    const data = await res.json();
+    if (data.error) return toast('❌ '+data.error);
+    currentUser = data;
+    localStorage.setItem('frost_username', currentUser.username);
+    document.getElementById('uName').innerText = currentUser.username;
+    document.getElementById('uMeta').innerText = 'ID: '+currentUser.id + (currentUser.is_admin?' • 👑 Админ (tagen)':'');
+    updateBalance();
+    toast('✅ Вы вошли как '+currentUser.username);
+    await loadInventory(); await loadMarket();
+}
 
-app.post('/api/admin/ban', (req, res) => {
-    const { adminId, userId, ban } = req.body;
-    if (!checkAdmin(adminId)) return res.status(403).json({ error: 'Нет доступа' });
-    if (userId === adminId) return res.status(400).json({ error: 'Себя нельзя' });
-    db.prepare('UPDATE users SET is_banned = ? WHERE id = ?').run(ban ? 1 : 0, userId);
-    res.json({ success: true });
-});
+function updateBalance() {
+    if (!currentUser) return;
+    document.getElementById('balancePill').innerText = currentUser.ton_balance.toFixed(2)+' TON';
+    document.getElementById('pTon').innerText = currentUser.ton_balance.toFixed(2)+' TON';
+    document.getElementById('pStars').innerText = state.stars+' ⭐';
+}
+async function refreshBalance() {
+    if (!currentUser) return;
+    const r = await fetch(API+'/api/user/'+currentUser.id);
+    currentUser = await r.json();
+    updateBalance();
+}
 
-app.post('/api/admin/give-nft', (req, res) => {
-    const { adminId, userId, slug, name, emoji } = req.body;
-    if (!checkAdmin(adminId)) return res.status(403).json({ error: 'Нет доступа' });
-    db.prepare('INSERT INTO inventory (user_id, nft_slug, nft_name, nft_emoji) VALUES (?,?,?,?)')
-      .run(userId, slug, name, emoji);
-    res.json({ success: true });
-});
+async function loadInventory() {
+    if (!currentUser) return;
+    const r = await fetch(API+'/api/inventory/'+currentUser.id);
+    state.inv = await r.json();
+    document.getElementById('totalInvStat').innerText = state.inv.length;
+    const g = document.getElementById('invGrid');
+    if (!state.inv.length) { g.innerHTML='<div class="empty">Нет NFT. Нажмите «Тестовый NFT»</div>'; return; }
+    g.innerHTML = state.inv.map(i=>`
+        <div class="card">
+            <div class="card-img">${imgTag(i.nft_slug, i.nft_emoji)}</div>
+            <h3>${i.nft_name}</h3>
+            <div class="card-tag">ID: ${i.id}</div>
+            <div class="row">
+                <button class="btn-list" onclick='openList(${JSON.stringify(i)})'>Лот</button>
+                <button class="btn-auc" onclick='openAuc(${JSON.stringify(i)})'>Аукцион</button>
+            </div>
+            <div class="row">
+                <button class="btn-swap" onclick='openSwap(${JSON.stringify(i)})'>Обмен</button>
+                <button class="btn-send" onclick="openWd('${i.nft_slug}','${i.nft_name}')">Вывод</button>
+            </div>
+        </div>`).join('');
+}
+async function giveTestNft() {
+    if (!currentUser) return toast('⚠️ Войдите');
+    const g = gifts[Math.floor(Math.random()*gifts.length)];
+    await fetch(API+'/api/give-nft',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,slug:g.slug,name:g.name,emoji:g.emoji})});
+    toast('🎁 '+g.name); await loadInventory();
+}
 
-app.delete('/api/admin/listings/:id', (req, res) => {
-    if (!checkAdmin(req.query.adminId)) return res.status(403).json({ error: 'Нет доступа' });
-    db.prepare("UPDATE listings SET status = 'cancelled' WHERE id = ?").run(req.params.id);
-    res.json({ success: true });
-});
+function cardHTML(g) {
+    return `<div class="card">
+        <div class="card-img">${imgTag(g.slug,g.emoji)}</div>
+        <h3>${g.name}</h3>
+        <div class="card-tag">${g.tag}</div>
+        <div class="card-price">${g.ton} TON</div>
+    </div>`;
+}
+function renderCatalog() {
+    const q = document.getElementById('searchInp').value.toLowerCase().trim();
+    const sort = document.getElementById('sortSel').value;
+    let list = gifts.filter(g=>g.name.toLowerCase().includes(q)||g.tag.toLowerCase().includes(q));
+    if (sort==='desc') list.sort((a,b)=>b.ton-a.ton);
+    if (sort==='asc') list.sort((a,b)=>a.ton-b.ton);
+    document.getElementById('shownCount').innerText = list.length;
+    document.getElementById('totalCollections').innerText = gifts.length;
+    document.getElementById('catalogGrid').innerHTML = list.map(cardHTML).join('');
+}
+let curFilter='all';
+function setFilter(f,btn) {
+    curFilter=f;
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const q = document.getElementById('searchInp').value.toLowerCase().trim();
+    let list = gifts.filter(g=>(curFilter==='all'||g.cat===curFilter)&&(g.name.toLowerCase().includes(q)||g.tag.toLowerCase().includes(q)));
+    document.getElementById('catalogGrid').innerHTML = list.map(cardHTML).join('');
+}
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => console.log('Сервер на порту ' + PORT));
+async function loadMarket() {
+    const r = await fetch(API+'/api/listings');
+    state.listings = await r.json();
+    const g = document.getElementById('marketGrid');
+    if (!state.listings.length) { g.innerHTML='<div class="empty">Нет лотов</div>'; return; }
+    g.innerHTML = state.listings.map(l=>`
+        <div class="card">
+            <div class="card-img">${imgTag(l.nft_slug, l.nft_emoji)}</div>
+            <h3>${l.nft_name}</h3>
+            <div class="card-tag">Продавец: ${l.seller_name}</div>
+            <div class="card-price">${l.price_ton} TON</div>
+            ${currentUser && l.seller_id !== currentUser.id
+                ? `<div class="row">
+                    <button class="btn-primary" onclick="buyListing(${l.id})">Купить</button>
+                    <button class="btn-swap" onclick="openOffer(${l.id},'${l.nft_name}')">Оффер</button>
+                  </div>`
+                : `<div class="row"><button class="btn-send" onclick="cancelListing(${l.id})">Снять</button></div>`}
+        </div>`).join('');
+}
+async function buyListing(id) {
+    if (!currentUser) return toast('⚠️ Войдите');
+    const r = await fetch(API+'/api/listings/'+id+'/buy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({buyerId:currentUser.id})});
+    const d = await r.json();
+    if (d.error) return toast('❌ '+d.error);
+    toast('✅ Куплено'); await refreshBalance(); await loadInventory(); await loadMarket();
+}
+async function cancelListing(id) {
+    const r = await fetch(API+'/api/listings/'+id+'?userId='+currentUser.id,{method:'DELETE'});
+    const d = await r.json();
+    if (d.error) return toast('❌ '+d.error);
+    toast('🗑 Снят'); await loadInventory(); await loadMarket();
+}
+
+function openList(item) {
+    if (!currentUser) return toast('⚠️ Войдите');
+    curListingItem = item;
+    document.getElementById('listSub').innerText = item.nft_name+' ('+item.nft_emoji+')';
+    document.getElementById('listPrice').value='';
+    document.getElementById('listModal').style.display='flex';
+}
+async function confirmListing() {
+    const price = parseFloat(document.getElementById('listPrice').value);
+    if (!price||price<=0) return toast('⚠️ Цена');
+    const r = await fetch(API+'/api/listings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,nft_slug:curListingItem.nft_slug,nft_name:curListingItem.nft_name,nft_emoji:curListingItem.nft_emoji,price_ton:price})});
+    const d = await r.json();
+    if (d.error) return toast('❌ '+d.error);
+    closeM('listModal'); toast('📌 Лот выставлен'); await loadInventory(); await loadMarket();
+}
+
+// ===== АУКЦИОН РАБОЧИЙ =====
+function openAuc(item) {
+    if (!currentUser) return toast('⚠️ Войдите');
+    curAuctionItem = item;
+    document.getElementById('aucSub').innerText = item.nft_name+' ('+item.nft_emoji+')';
+    document.getElementById('aucStart').value='';
+    document.getElementById('aucHours').value=1;
+    document.getElementById('auctionModal').style.display='flex';
+}
+async function confirmAuction() {
+    const start = parseFloat(document.getElementById('aucStart').value);
+    const hours = parseFloat(document.getElementById('aucHours').value);
+    if (!start||start<=0||!hours||hours<=0) return toast('⚠️ Заполните');
+    const r = await fetch(API+'/api/auctions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,nft_slug:curAuctionItem.nft_slug,nft_name:curAuctionItem.nft_name,nft_emoji:curAuctionItem.nft_emoji,start_price:start,hours})});
+    const d = await r.json();
+    if (d.error) return toast('❌ '+d.error);
+    closeM('auctionModal'); toast('⏳ Аукцион запущен'); await loadInventory(); await loadAuctions();
+}
+async function loadAuctions() {
+    const r = await fetch(API+'/api/auctions');
+    state.auctions = await r.json();
+    const g = document.getElementById('auctionGrid');
+    if (!state.auctions.length) { g.innerHTML='<div class="empty">Нет аукционов</div>'; return; }
+    g.innerHTML = state.auctions.map(a=>{
+        const left = Math.max(0,Math.floor((a.end_time-Date.now())/1000));
+        const h = Math.floor(left/3600), m = Math.floor((left%3600)/60), s = left%60;
+        const timer = left>0 ? `${h}ч ${m}м ${s}с` : 'Завершён';
+        const isMine = currentUser && a.seller_id === currentUser.id;
+        return `<div class="card">
+            <div class="card-img">${imgTag(a.nft_slug,a.nft_emoji)}</div>
+            <h3>${a.nft_name}</h3>
+            <div class="card-tag">${a.seller_name} • ${timer} • ставок: ${a.bids_count}</div>
+            <div class="card-price">${a.current_bid} TON</div>
+            <div class="row">
+                ${isMine
+                    ? `<button class="btn-glass" style="padding:8px;font-size:11px;flex:1" disabled>Ваш лот</button>`
+                    : `<button class="btn-primary" onclick="openBid(${a.id},${a.current_bid})">Ставка</button>`}
+            </div>
+        </div>`;
+    }).join('');
+}
+async function openBid(id, cur) {
+    if (!currentUser) return toast('⚠️ Войдите');
+    curBidAuction = id;
+    document.getElementById('bidSub').innerText = 'Текущая ставка: '+cur+' TON';
+    document.getElementById('bidAmount').value = (cur+1).toFixed(2);
+    const r = await fetch(API+'/api/auctions/'+id+'/bids');
+    const bids = await r.json();
+    document.getElementById('bidsList').innerHTML = bids.length
+        ? '<strong style="font-size:11px">История ставок:</strong>' + bids.map(b=>`<div class="bid-row"><span>${b.bidder_name}</span><span>${b.amount} TON</span></div>`).join('')
+        : '<div style="color:var(--muted);font-size:11px">Ставок пока нет</div>';
+    document.getElementById('bidModal').style.display='flex';
+}
+async function submitBid() {
+    const amount = parseFloat(document.getElementById('bidAmount').value);
+    if (!amount||amount<=0) return toast('⚠️ Сумма');
+    const r = await fetch(API+'/api/auctions/'+curBidAuction+'/bid',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bidderId:currentUser.id,amount})});
+    const d = await r.json();
+    if (d.error) return toast('❌ '+d.error);
+    closeM('bidModal'); toast('💸 Ставка принята'); await loadAuctions();
+}
+
+// ===== ОФФЕРЫ =====
+function openOffer(listingId, name) {
+    if (!currentUser) return toast('⚠️ Войдите');
+    curOfferListing = listingId;
+    document.getElementById('offerSub').innerText = 'Лот: '+name;
+    document.getElementById('offerPrice').value='';
+    document.getElementById('offerModal').style.display='flex';
+}
+async function submitOffer() {
+    const price = parseFloat(document.getElementById('offerPrice').value);
+    if (!price||price<=0) return toast('⚠️ Цена');
+    const r = await fetch(API+'/api/offers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({listingId:curOfferListing,buyerId:currentUser.id,price})});
+    const d = await r.json();
+    if (d.error) return toast('❌ '+d.error);
+    closeM('offerModal'); toast('📩 Оффер отправлен');
+}
+async function loadIncomingOffers() {
+    if (!currentUser) return;
+    const r = await fetch(API+'/api/offers/incoming/'+currentUser.id);
+    const list = await r.json();
+    const box = document.getElementById('incomingOffersList');
+    if (!list.length) { box.innerHTML='<div class="empty">Нет офферов</div>'; return; }
+    box.innerHTML = list.map(o=>`
+        <div class="listing-item">
+            <div><strong>${o.nft_emoji} ${o.nft_name}</strong><br><span style="color:var(--muted);font-size:10px">от ${o.buyer_name}</span></div>
+            <div style="text-align:right"><span class="price">${o.price_ton} TON</span><br>
+                <button class="btn-send" style="padding:4px 8px;font-size:10px;margin-top:4px" onclick="acceptOffer(${o.id})">Принять</button>
+                <button class="btn-glass" style="padding:4px 8px;font-size:10px" onclick="rejectOffer(${o.id})">✕</button>
+            </div>
+        </div>`).join('');
+}
+async function acceptOffer(id) {
+    const r = await fetch(API+'/api/offers/'+id+'/accept',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sellerId:currentUser.id})});
+    const d = await r.json();
+    if (d.error) return toast('❌ '+d.error);
+    toast('✅ Оффер принят'); await refreshBalance(); await loadInventory(); await loadIncomingOffers(); await loadMarket();
+}
+async function rejectOffer(id) {
+    await fetch(API+'/api/offers/'+id+'/reject',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sellerId:currentUser.id})});
+    toast('❌ Отклонён'); loadIncomingOffers();
+}
+
+// ===== ОБМЕН =====
+function openSwap(item) {
+    if (!currentUser) return toast('⚠️ Войдите');
+    document.getElementById('swapMyNft').innerHTML = `<option value="${item.nft_slug}">${item.nft_name} (${item.nft_emoji})</option>`;
+    document.getElementById('swapTarget').value='';
+    document.getElementById('swapCalc').innerText='';
+    document.getElementById('swapModal').style.display='flex';
+}
+async function doSwap() {
+    const mySlug = document.getElementById('swapMyNft').value;
+    const tSlug = document.getElementById('swapTarget').value.trim().toLowerCase();
+    const tgt = gifts.find(g=>g.slug===tSlug||g.name.toLowerCase()===tSlug);
+    if (!tgt) return toast('❌ Цель не найдена');
+    const r = await fetch(API+'/api/swap',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,mySlug,targetSlug:tgt.slug,targetName:tgt.name,targetEmoji:tgt.emoji,targetTon:tgt.ton})});
+    const d = await r.json();
+    if (d.error) return toast('❌ '+d.error);
+    closeM('swapModal'); toast('🔄 Обмен выполнен'); await refreshBalance(); await loadInventory();
+}
+
+// ===== ПОПОЛНЕНИЕ / ВЫВОД =====
+function openTopup() {
+    document.getElementById('adminContactBox').innerHTML = `💬 <b>Для пополнения напишите админу:</b><br><a href="https://t.me/${ADMIN_CONTACT.replace('@','')}" target="_blank" style="color:var(--gold);font-weight:700">${ADMIN_CONTACT}</a>`;
+    document.getElementById('tuAmount').value=10;
+    document.getElementById('topupModal').style.display='flex';
+}
+async function doTopup() {
+    const v = parseFloat(document.getElementById('tuAmount').value);
+    if (!v||v<=0) return toast('⚠️ Сумма');
+    if (currentUser) {
+        await fetch(API+'/api/give-nft',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,slug:'_topup',name:'_topup',emoji:''})});
+        // просто начислим локально для демо
+        currentUser.ton_balance += v;
+    }
+    state.tx.unshift({plus:true,ico:'💳',title:'Пополнение',val:'+'+v+' TON',time:timeNow()});
+    saveLocal(); updateBalance(); renderTx(); closeM('topupModal'); toast('✅ Пополнено');
+}
+function openWithdraw() {
+    document.getElementById('wdAmount').value='';
+    document.getElementById('wdSub').innerText = 'Доступно: '+(currentUser?currentUser.ton_balance.toFixed(2):'0')+' TON';
+    document.getElementById('wdTarget').placeholder='Адрес TON';
+    document.getElementById('wdModal').style.display='flex';
+}
+function doWithdraw() {
+    const t = document.getElementById('wdTarget').value.trim();
+    const v = parseFloat(document.getElementById('wdAmount').value);
+    if (t.length<4) return toast('⚠️ Реквизиты');
+    if (!v||v<1) return toast('⚠️ Сумма');
+    if (currentUser && currentUser.ton_balance < v) return toast('❌ Мало TON');
+    if (currentUser) currentUser.ton_balance -= v;
+    state.tx.unshift({plus:false,ico:'📤',title:'Вывод TON',val:'-'+v+' TON',time:timeNow()});
+    saveLocal(); updateBalance(); renderTx(); closeM('wdModal'); toast('✅ Заявка');
+}
+function openWd(slug,name) {
+    state.tx.unshift({plus:false,ico:'📤',title:'Вывод NFT: '+name,val:'-0.10 TON',time:timeNow()});
+    saveLocal(); renderTx(); toast('📤 Заявка на вывод '+name);
+}
+function linkWallet() {
+    if (state.wallet) { state.wallet=''; saveLocal(); toast('🔌 Отвязан'); }
+    else { const a = prompt('Адрес TON:'); if (a&&a.length>20) { state.wallet=a; saveLocal(); toast('💎 Привязан'); } }
+    document.getElementById('wAddrTxt').innerText = state.wallet?state.wallet.slice(0,6)+'...'+state.wallet.slice(-5):'Не привязан';
+    document.getElementById('wLinkBtn').innerText = state.wallet?'Отвязать':'Привязать';
+}
+
+// ===== ИСТОРИЯ / АДМИН =====
+async function loadSalesHistory() {
+    if (!currentUser) return;
+    const r = await fetch(API+'/api/history/sales/'+currentUser.id);
+    const list = await r.json();
+    const box = document.getElementById('salesHistoryList');
+    if (!list.length) { box.innerHTML='<div class="empty">Нет продаж</div>'; return; }
+    box.innerHTML = list.map(s=>`
+        <div class="listing-item">
+            <div><strong>${s.nft_emoji} ${s.nft_name}</strong><br><span style="color:var(--muted);font-size:10px">${s.seller_name} → ${s.buyer_name}</span></div>
+            <span class="price">${s.price_ton} TON</span>
+        </div>`).join('');
+}
+async function renderAdmin() {
+    if (!currentUser?.is_admin) return;
+    document.getElementById('adminPanel').style.display='flex';
+    const [u,s] = await Promise.all([
+        fetch(API+'/api/admin/users?adminId='+currentUser.id).then(r=>r.json()),
+        fetch(API+'/api/admin/stats?adminId='+currentUser.id).then(r=>r.json())
+    ]);
+    document.getElementById('adminStatsList').innerHTML = `
+        <div class="listing-item"><strong>👥 Пользователей</strong><span class="price">${s.users}</span></div>
+        <div class="listing-item"><strong>📌 Лотов</strong><span class="price">${s.listings}</span></div>
+        <div class="listing-item"><strong>⏳ Аукционов</strong><span class="price">${s.auctions}</span></div>
+        <div class="listing-item"><strong>💰 Продаж</strong><span class="price">${s.sales} на ${s.volume.toFixed(2)} TON</span></div>`;
+    document.getElementById('adminUsersList').innerHTML = u.map(x=>`
+        <div class="listing-item">
+            <div><strong>${x.is_admin?'👑 ':''}${x.is_banned?'🚫 ':''}${x.username}</strong><br><span style="color:var(--muted);font-size:10px">ID: ${x.id}</span></div>
+            <div style="text-align:right"><span class="price">${x.ton_balance.toFixed(2)} TON</span><br>
+                ${x.is_admin?'':`<button class="btn-glass" style="padding:4px 8px;font-size:10px;margin-top:4px" onclick="adminBan(${x.id},${x.is_banned?0:1})">${x.is_banned?'Разбан':'Бан'}</button>`}
+            </div>
+        </div>`).join('');
+}
+async function adminBan(userId, ban) {
+    await fetch(API+'/api/admin/ban',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id,userId,ban:!!ban})});
+    toast('✅ Обновлено'); renderAdmin();
+}
+function renderTx() {
+    document.getElementById('txList').innerHTML = state.tx.length ? state.tx.map(t=>`<div class="tx-item"><div><strong>${t.ico} ${t.title}</strong><div style="font-size:11px;color:var(--muted)">${t.time}</div></div><div class="${t.plus?'tx-plus':'tx-minus'}">${t.val}</div></div>`).join('') : '<div class="empty">История пуста</div>';
+}
+
+document.getElementById('wAddrTxt').innerText = state.wallet?state.wallet.slice(0,6)+'...'+state.wallet.slice(-5):'Не привязан';
+document.getElementById('wLinkBtn').innerText = state.wallet?'Отвязать':'Привязать';
+renderCatalog(); renderTx();
+autoRegister();
+// обновление аукционов раз в 10 сек
+setInterval(()=>{ if (document.getElementById('sec-market').classList.contains('active')) loadAuctions(); }, 10000);
+</script>
+</body>
+</html>
