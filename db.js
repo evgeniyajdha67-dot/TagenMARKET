@@ -13,6 +13,9 @@ db.exec(`
     is_verified INTEGER DEFAULT 0,
     ref_by INTEGER,
     heir_id INTEGER,
+    telegram_id INTEGER,
+    bonus_streak INTEGER DEFAULT 0,
+    last_bonus_at INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
   CREATE TABLE IF NOT EXISTS inventory (
@@ -115,6 +118,7 @@ db.exec(`
     role TEXT,
     action TEXT,
     details TEXT,
+    ip TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
   CREATE TABLE IF NOT EXISTS withdrawals (
@@ -182,9 +186,56 @@ db.exec(`
     result TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
+  CREATE TABLE IF NOT EXISTS reviews (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    seller_id INTEGER,
+    buyer_id INTEGER,
+    rating INTEGER,
+    text TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS transactions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    type TEXT,
+    currency TEXT,
+    amount REAL,
+    balance_after REAL,
+    meta TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS promocodes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT UNIQUE,
+    currency TEXT,
+    amount REAL,
+    max_uses INTEGER DEFAULT 1,
+    used INTEGER DEFAULT 0,
+    expires_at INTEGER,
+    created_by INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS promo_uses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    promo_id INTEGER,
+    user_id INTEGER,
+    UNIQUE(promo_id, user_id)
+  );
+  CREATE TABLE IF NOT EXISTS achievements (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    code TEXT,
+    unlocked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, code)
+  );
+  CREATE TABLE IF NOT EXISTS watchlist (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    collection_slug TEXT,
+    UNIQUE(user_id, collection_slug)
+  );
 `);
 
-// Идемпотентные миграции для старых БД
 const migrations = [
   "ALTER TABLE sales_history ADD COLUMN fee REAL DEFAULT 0",
   "ALTER TABLE sales_history ADD COLUMN fee_currency TEXT",
@@ -193,6 +244,9 @@ const migrations = [
   "ALTER TABLE withdrawals ADD COLUMN urgent INTEGER DEFAULT 0",
   "ALTER TABLE users ADD COLUMN is_verified INTEGER DEFAULT 0",
   "ALTER TABLE users ADD COLUMN heir_id INTEGER",
+  "ALTER TABLE users ADD COLUMN telegram_id INTEGER",
+  "ALTER TABLE users ADD COLUMN bonus_streak INTEGER DEFAULT 0",
+  "ALTER TABLE users ADD COLUMN last_bonus_at INTEGER DEFAULT 0",
   "ALTER TABLE listings ADD COLUMN boosted_until INTEGER DEFAULT 0",
   "ALTER TABLE listings ADD COLUMN search_boost_until INTEGER DEFAULT 0",
   "ALTER TABLE listings ADD COLUMN price_locked_until INTEGER DEFAULT 0",
@@ -202,6 +256,7 @@ const migrations = [
   "ALTER TABLE offers ADD COLUMN fast_delivery INTEGER DEFAULT 0",
   "ALTER TABLE auctions ADD COLUMN reserve_price REAL DEFAULT 0",
   "ALTER TABLE auctions ADD COLUMN is_urgent INTEGER DEFAULT 0",
+  "ALTER TABLE logs ADD COLUMN ip TEXT",
 ];
 for (const m of migrations) { try { db.exec(m); } catch(e){} }
 
