@@ -27,13 +27,13 @@ h2 { font-size: 18px; margin: 18px 0 10px; }
 .card h3 { font-size: 14px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card-tag { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
 .card-price { font-size: 14px; font-weight: 800; color: var(--gold); margin-bottom: 8px; }
-.card-btn { width: 100%; background: #274d80; border: none; color: #fff; padding: 8px; border-radius: 9px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
 .row { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
 .row button { flex: 1; min-width: 60px; padding: 8px 4px; border-radius: 8px; font-size: 11px; font-weight: 700; border: none; cursor: pointer; }
 .btn-list { background: #4a2c5a; color: #d8a8ff; }
 .btn-send { background: #194538; color: var(--green); }
 .btn-swap { background: #3a2c5a; color: #c8a8ff; }
 .btn-auc { background: #5a3a1f; color: var(--gold); }
+.btn-primary2 { background: #274d80; color: #fff; }
 .empty { grid-column: 1/-1; text-align: center; padding: 30px; color: var(--muted); font-size: 13px; background: var(--panel); border: 1px dashed var(--border); border-radius: 16px; }
 .modal { display: none; position: fixed; inset: 0; z-index: 50; background: rgba(3,6,14,0.85); align-items: center; justify-content: center; padding: 16px; }
 .modal-box { background: #142036; border: 1px solid var(--border); border-radius: 22px; padding: 20px; width: 100%; max-width: 370px; text-align: center; max-height: 90vh; overflow-y: auto; }
@@ -54,7 +54,6 @@ h2 { font-size: 18px; margin: 18px 0 10px; }
 .hero h1 { font-size: clamp(23px, 5vw, 34px); margin-bottom: 8px; }
 .hero p { color: #bdd0eb; font-size: 13.5px; margin-bottom: 16px; }
 .hero-btns { display: flex; flex-wrap: wrap; gap: 9px; }
-.curr-pill { color: var(--blue); border-color: rgba(88,180,255,0.45); }
 .wallet-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
 .w-card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 14px; }
 .w-card strong { font-size: 19px; display: block; margin-bottom: 10px; }
@@ -76,6 +75,7 @@ h2 { font-size: 18px; margin: 18px 0 10px; }
 .sort-select { background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 8px 10px; border-radius: 10px; font-size: 12.5px; outline: none; }
 .bids-list { text-align: left; font-size: 12px; max-height: 200px; overflow-y: auto; margin-top: 10px; }
 .bid-row { display: flex; justify-content: space-between; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+.log-row { font-size: 11px; padding: 6px 8px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; gap: 6px; }
 @media (max-width: 860px) { .grid { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 600px) { .grid { grid-template-columns: repeat(2, 1fr); gap: 9px; } .card-img { height: 110px; } .wallet-cards { grid-template-columns: 1fr; } .b-nav-btn { font-size: 10px; padding: 5px 3px; } }
 </style>
@@ -88,7 +88,7 @@ h2 { font-size: 18px; margin: 18px 0 10px; }
     <div class="brand" onclick="goTab('catalog')">❄ <span>FROST</span> MARKET</div>
     <div class="header-actions">
         <span class="pill" id="balancePill">0 TON</span>
-        <button class="pill curr-pill" onclick="openTopup()">+ Пополнить</button>
+        <button class="pill" onclick="openTopup()">+ Пополнить</button>
     </div>
 </header>
 
@@ -99,7 +99,6 @@ h2 { font-size: 18px; margin: 18px 0 10px; }
             <p>Полный каталог 124 NFT. Покупка, продажа, офферы, аукционы, обмен.</p>
             <div class="hero-btns">
                 <button class="btn-primary" onclick="document.getElementById('catalogAnchor').scrollIntoView({behavior:'smooth'})">Открыть каталог →</button>
-                <button class="btn-glass" onclick="giveTestNft()">🎁 Тестовый NFT</button>
             </div>
         </section>
         <div class="stats-row">
@@ -127,30 +126,29 @@ h2 { font-size: 18px; margin: 18px 0 10px; }
     </div>
 
     <div id="sec-inventory" class="section">
-        <div class="catalog-head">
-            <h2>🎒 Мои NFT</h2>
-            <button class="btn-glass" onclick="giveTestNft()">🎁 Тестовый NFT</button>
-        </div>
+        <div class="catalog-head"><h2>🎒 Мои NFT</h2></div>
         <div class="grid" id="invGrid"></div>
     </div>
 
     <div id="sec-market" class="section">
         <div class="catalog-head">
             <h2>📊 Рынок</h2>
-            <button class="btn-glass" onclick="loadMarket(); loadAuctions();">🔄 Обновить</button>
+            <button class="btn-glass" onclick="loadMarket(); loadIncomingOffers(); loadSalesHistory();">🔄 Обновить</button>
         </div>
-
         <div class="catalog-head"><h2>📌 Лоты пользователей</h2></div>
         <div class="grid" id="marketGrid"></div>
-
-        <div class="catalog-head"><h2>⏳ Аукционы</h2></div>
-        <div class="grid" id="auctionGrid"></div>
-
         <div class="catalog-head"><h2>📥 Входящие офферы</h2></div>
         <div class="listings-list" id="incomingOffersList"></div>
-
         <div class="catalog-head"><h2>💰 История продаж</h2></div>
         <div class="listings-list" id="salesHistoryList"></div>
+    </div>
+
+    <div id="sec-auctions" class="section">
+        <div class="catalog-head">
+            <h2>⏳ Аукционы</h2>
+            <button class="btn-glass" onclick="loadAuctions();">🔄 Обновить</button>
+        </div>
+        <div class="grid" id="auctionGrid"></div>
     </div>
 
     <div id="sec-profile" class="section">
@@ -161,13 +159,6 @@ h2 { font-size: 18px; margin: 18px 0 10px; }
                 <p id="uMeta" style="font-size:12px;color:var(--muted)">Не авторизован</p>
             </div>
         </div>
-        <div class="wallet-strip">
-            <div>
-                <div style="font-size:12px;font-weight:700">💎 TON-кошелёк</div>
-                <div id="wAddrTxt" style="font-size:12px;color:var(--muted);font-family:monospace">Не привязан</div>
-            </div>
-            <button class="btn-glass" id="wLinkBtn" onclick="linkWallet()">Привязать</button>
-        </div>
         <div class="wallet-cards">
             <div class="w-card">
                 <small>💎 TON</small>
@@ -177,36 +168,31 @@ h2 { font-size: 18px; margin: 18px 0 10px; }
                     <button class="w-out" onclick="openWithdraw('TON')">↑ Вывести</button>
                 </div>
             </div>
-            <div class="w-card">
-                <small>⭐ Stars</small>
-                <strong id="pStars">0 ⭐</strong>
-                <div class="w-actions">
-                    <button class="w-in" onclick="openTopup('STARS')">+ Пополнить</button>
-                    <button class="w-out" onclick="openWithdraw('STARS')">↑ Вывести</button>
-                </div>
-            </div>
         </div>
         <div class="catalog-head"><h2>📜 История операций</h2></div>
         <div class="tx-list" id="txList"></div>
         <div class="catalog-head" id="adminPanel" style="display:none"><h2>👑 Админ-панель (tagen)</h2></div>
         <div class="listings-list" id="adminStatsList"></div>
         <div class="listings-list" id="adminUsersList"></div>
+        <div class="catalog-head" id="adminLogsHead" style="display:none"><h2>📝 Логи</h2></div>
+        <div class="listings-list" id="adminLogsList"></div>
     </div>
 </div>
 
-<!-- МОДАЛКА АВТОРИЗАЦИИ -->
+<!-- АВТОРИЗАЦИЯ -->
 <div class="modal" id="authModal">
     <div class="modal-box">
         <h3 id="authTitle">Регистрация</h3>
-        <p style="color:var(--muted);font-size:12px;margin-bottom:14px" id="authSub">Создайте аккаунт для доступа к маркету</p>
+        <p style="color:var(--muted);font-size:12px;margin-bottom:14px" id="authSub">Создайте аккаунт</p>
         <input type="text" class="m-input" id="authUsername" placeholder="Ник (латиницей)">
-        <input type="password" class="m-input" id="authPassword" placeholder="Пароль (мин. 6 символов)">
+        <input type="password" class="m-input" id="authPassword" placeholder="Пароль (мин. 6)">
         <input type="password" class="m-input" id="authPassword2" placeholder="Повторите пароль">
         <button class="btn-primary" id="authBtn" onclick="submitAuth()" style="width:100%;margin-bottom:8px">Зарегистрироваться</button>
         <button class="btn-glass" onclick="toggleAuthMode()" style="width:100%;font-size:12px" id="authSwitch">Уже есть аккаунт? Войти</button>
     </div>
 </div>
 
+<!-- ЛОТ -->
 <div class="modal" id="listModal">
     <div class="modal-box">
         <h3>Выставить лот</h3>
@@ -217,6 +203,7 @@ h2 { font-size: 18px; margin: 18px 0 10px; }
     </div>
 </div>
 
+<!-- АУКЦИОН -->
 <div class="modal" id="auctionModal">
     <div class="modal-box">
         <h3>Аукцион</h3>
@@ -228,6 +215,7 @@ h2 { font-size: 18px; margin: 18px 0 10px; }
     </div>
 </div>
 
+<!-- ОФФЕР -->
 <div class="modal" id="offerModal">
     <div class="modal-box">
         <h3>Оффер</h3>
@@ -238,6 +226,7 @@ h2 { font-size: 18px; margin: 18px 0 10px; }
     </div>
 </div>
 
+<!-- СТАВКА -->
 <div class="modal" id="bidModal">
     <div class="modal-box">
         <h3>Ставка</h3>
@@ -249,17 +238,7 @@ h2 { font-size: 18px; margin: 18px 0 10px; }
     </div>
 </div>
 
-<div class="modal" id="swapModal">
-    <div class="modal-box">
-        <h3>Обмен NFT</h3>
-        <select class="m-input" id="swapMyNft"></select>
-        <input type="text" class="m-input" id="swapTarget" placeholder="Slug (напр. santahat)">
-        <div id="swapCalc" style="font-size:12px;color:var(--muted);margin-bottom:10px"></div>
-        <button class="btn-primary" onclick="doSwap()" style="width:100%;margin-bottom:8px">Обменять</button>
-        <button class="btn-glass" onclick="closeM('swapModal')" style="width:100%">Отмена</button>
-    </div>
-</div>
-
+<!-- ПОПОЛНЕНИЕ -->
 <div class="modal" id="topupModal">
     <div class="modal-box">
         <h3>Пополнение</h3>
@@ -270,6 +249,7 @@ h2 { font-size: 18px; margin: 18px 0 10px; }
     </div>
 </div>
 
+<!-- ВЫВОД -->
 <div class="modal" id="wdModal">
     <div class="modal-box">
         <h3>Вывод</h3>
@@ -281,10 +261,34 @@ h2 { font-size: 18px; margin: 18px 0 10px; }
     </div>
 </div>
 
+<!-- АДМИН: ВЫДАТЬ NFT -->
+<div class="modal" id="giveNftModal">
+    <div class="modal-box">
+        <h3>Выдать NFT</h3>
+        <p style="color:var(--muted);font-size:12px;margin-bottom:10px">Выберите пользователя и NFT</p>
+        <select class="m-input" id="giveUserId"></select>
+        <select class="m-input" id="giveNftSlug"></select>
+        <button class="btn-primary" onclick="adminGiveNft()" style="width:100%;margin-bottom:8px">Выдать</button>
+        <button class="btn-glass" onclick="closeM('giveNftModal')" style="width:100%">Отмена</button>
+    </div>
+</div>
+
+<!-- АДМИН: ИЗМЕНИТЬ БАЛАНС -->
+<div class="modal" id="balanceModal">
+    <div class="modal-box">
+        <h3>Изменить баланс</h3>
+        <select class="m-input" id="balUserId"></select>
+        <input type="number" class="m-input" id="balAmount" placeholder="Сумма (+ пополнить / - списать)">
+        <button class="btn-primary" onclick="adminBalance()" style="width:100%;margin-bottom:8px">Применить</button>
+        <button class="btn-glass" onclick="closeM('balanceModal')" style="width:100%">Отмена</button>
+    </div>
+</div>
+
 <nav class="bottom-nav">
     <button class="b-nav-btn active" id="bnav-catalog" onclick="goTab('catalog')"><span class="ico">❄</span><span>Каталог</span></button>
     <button class="b-nav-btn" id="bnav-inventory" onclick="goTab('inventory')"><span class="ico">🎒</span><span>Мои NFT</span></button>
     <button class="b-nav-btn" id="bnav-market" onclick="goTab('market')"><span class="ico">📊</span><span>Рынок</span></button>
+    <button class="b-nav-btn" id="bnav-auctions" onclick="goTab('auctions')"><span class="ico">⏳</span><span>Аукционы</span></button>
     <button class="b-nav-btn" id="bnav-profile" onclick="goTab('profile')"><span class="ico">👤</span><span>Профиль</span></button>
 </nav>
 
@@ -418,20 +422,15 @@ Silver Bell|silverbell|winter|9.8|🔔
 Secret Key|secretkey|rare|17.2|🗝️
 Frost Crystal|frostcrystal|winter|14.8|💠
 Aurora Bear|aurorabear|winter|21.5|🐻‍❄️`;
-const TAGS = { nft:'💎 Легендарный NFT', winter:'❄ Зима 2026', rare:'👑 Редкий', classic:'🎁 Классика' };
+const TAGS = { nft:'💎 NFT', winter:'❄ Зима 2026', rare:'👑 Редкий', classic:'🎁 Классика' };
 const gifts = RAW.trim().split('\n').map((l,i)=>{const p=l.split('|');return{id:i+1,name:p[0],slug:p[1],cat:p[2],tag:TAGS[p[2]],ton:parseFloat(p[3]),emoji:p[4]};});
 
 let state = {
     tx: JSON.parse(localStorage.getItem('frost_tx'))||[],
-    stars: Number(localStorage.getItem('frost_stars'))||2500,
     wallet: localStorage.getItem('frost_wallet')||'',
     inv: [], listings: [], auctions: []
 };
-function saveLocal() {
-    localStorage.setItem('frost_tx', JSON.stringify(state.tx));
-    localStorage.setItem('frost_stars', state.stars);
-    localStorage.setItem('frost_wallet', state.wallet);
-}
+function saveLocal() { localStorage.setItem('frost_tx', JSON.stringify(state.tx)); localStorage.setItem('frost_wallet', state.wallet); }
 function toast(m) { const t=document.getElementById('toast'); t.innerText=m; t.style.display='block'; setTimeout(()=>t.style.display='none',2500); }
 function closeM(id) { document.getElementById(id).style.display='none'; }
 function timeNow() { return new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}); }
@@ -454,51 +453,43 @@ function goTab(t) {
     document.querySelectorAll('.b-nav-btn').forEach(b=>b.classList.remove('active'));
     document.getElementById('sec-'+t).classList.add('active');
     document.getElementById('bnav-'+t).classList.add('active');
-    if (t==='market') { loadMarket(); loadAuctions(); loadIncomingOffers(); loadSalesHistory(); }
+    if (t==='market') { loadMarket(); loadIncomingOffers(); loadSalesHistory(); }
     if (t==='inventory') loadInventory();
+    if (t==='auctions') loadAuctions();
     if (t==='profile' && currentUser?.is_admin) renderAdmin();
     window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// ===== АВТОРИЗАЦИЯ С ПАРОЛЕМ =====
+// ===== АВТОРИЗАЦИЯ =====
 let isLoginMode = false;
-
 function toggleAuthMode() {
     isLoginMode = !isLoginMode;
     document.getElementById('authTitle').innerText = isLoginMode ? 'Вход' : 'Регистрация';
-    document.getElementById('authSub').innerText = isLoginMode ? 'Войдите в свой аккаунт' : 'Создайте аккаунт для доступа к маркету';
+    document.getElementById('authSub').innerText = isLoginMode ? 'Войдите в аккаунт' : 'Создайте аккаунт';
     document.getElementById('authPassword2').style.display = isLoginMode ? 'none' : 'block';
     document.getElementById('authBtn').innerText = isLoginMode ? 'Войти' : 'Зарегистрироваться';
     document.getElementById('authSwitch').innerText = isLoginMode ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти';
 }
-
 async function submitAuth() {
     const username = document.getElementById('authUsername').value.trim();
     const password = document.getElementById('authPassword').value;
     const password2 = document.getElementById('authPassword2').value;
-    if (!username || !password) return toast('⚠️ Заполните все поля');
+    if (!username || !password) return toast('⚠️ Заполните поля');
     if (!isLoginMode && password !== password2) return toast('⚠️ Пароли не совпадают');
-    if (password.length < 6) return toast('⚠️ Пароль минимум 6 символов');
-
+    if (password.length < 6) return toast('⚠️ Пароль мин. 6');
     const endpoint = isLoginMode ? '/api/login' : '/api/register';
-    const res = await fetch(API + endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-    });
+    const res = await fetch(API + endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ username, password }) });
     const data = await res.json();
     if (data.error) return toast('❌ ' + data.error);
-
     currentUser = data;
     localStorage.setItem('frost_userId', currentUser.id);
     closeM('authModal');
     document.getElementById('uName').innerText = currentUser.username;
-    document.getElementById('uMeta').innerText = 'ID: ' + currentUser.id + (currentUser.is_admin ? ' • 👑 Админ (tagen)' : '');
+    document.getElementById('uMeta').innerText = 'ID: ' + currentUser.id + (currentUser.is_admin ? ' • 👑 Админ' : '');
     updateBalance();
-    toast('✅ Добро пожаловать, ' + currentUser.username);
+    toast('✅ ' + currentUser.username);
     await loadInventory(); await loadMarket();
 }
-
 async function initAuth() {
     const savedId = localStorage.getItem('frost_userId');
     if (savedId) {
@@ -508,7 +499,7 @@ async function initAuth() {
             if (user && !user.error && !user.is_banned) {
                 currentUser = user;
                 document.getElementById('uName').innerText = currentUser.username;
-                document.getElementById('uMeta').innerText = 'ID: ' + currentUser.id + (currentUser.is_admin ? ' • 👑 Админ (tagen)' : '');
+                document.getElementById('uMeta').innerText = 'ID: ' + currentUser.id + (currentUser.is_admin ? ' • 👑 Админ' : '');
                 updateBalance();
                 closeM('authModal');
                 await loadInventory(); await loadMarket();
@@ -523,7 +514,6 @@ function updateBalance() {
     if (!currentUser) return;
     document.getElementById('balancePill').innerText = currentUser.ton_balance.toFixed(2)+' TON';
     document.getElementById('pTon').innerText = currentUser.ton_balance.toFixed(2)+' TON';
-    document.getElementById('pStars').innerText = state.stars+' ⭐';
 }
 async function refreshBalance() {
     if (!currentUser) return;
@@ -538,7 +528,7 @@ async function loadInventory() {
     state.inv = await r.json();
     document.getElementById('totalInvStat').innerText = state.inv.length;
     const g = document.getElementById('invGrid');
-    if (!state.inv.length) { g.innerHTML='<div class="empty">Нет NFT. Нажмите «Тестовый NFT»</div>'; return; }
+    if (!state.inv.length) { g.innerHTML='<div class="empty">Нет NFT. Купите на рынке или попросите админа.</div>'; return; }
     g.innerHTML = state.inv.map(i=>`
         <div class="card">
             <div class="card-img">${imgTag(i.nft_slug, i.nft_emoji)}</div>
@@ -549,16 +539,9 @@ async function loadInventory() {
                 <button class="btn-auc" onclick='openAuc(${JSON.stringify(i)})'>Аукцион</button>
             </div>
             <div class="row">
-                <button class="btn-swap" onclick='openSwap(${JSON.stringify(i)})'>Обмен</button>
                 <button class="btn-send" onclick="openWd('${i.nft_slug}','${i.nft_name}')">Вывод</button>
             </div>
         </div>`).join('');
-}
-async function giveTestNft() {
-    if (!currentUser) return toast('⚠️ Войдите');
-    const g = gifts[Math.floor(Math.random()*gifts.length)];
-    await fetch(API+'/api/give-nft',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,slug:g.slug,name:g.name,emoji:g.emoji})});
-    toast('🎁 '+g.name); await loadInventory();
 }
 
 function cardHTML(g) {
@@ -602,7 +585,7 @@ async function loadMarket() {
             <div class="card-price">${l.price_ton} TON</div>
             ${currentUser && l.seller_id !== currentUser.id
                 ? `<div class="row">
-                    <button class="btn-primary" onclick="buyListing(${l.id})">Купить</button>
+                    <button class="btn-primary2" onclick="buyListing(${l.id})">Купить</button>
                     <button class="btn-swap" onclick="openOffer(${l.id},'${l.nft_name}')">Оффер</button>
                   </div>`
                 : `<div class="row"><button class="btn-send" onclick="cancelListing(${l.id})">Снять</button></div>`}
@@ -673,7 +656,7 @@ async function loadAuctions() {
             <div class="row">
                 ${isMine
                     ? `<button class="btn-glass" style="padding:8px;font-size:11px;flex:1" disabled>Ваш лот</button>`
-                    : `<button class="btn-primary" onclick="openBid(${a.id},${a.current_bid})">Ставка</button>`}
+                    : `<button class="btn-primary2" onclick="openBid(${a.id},${a.current_bid})">Ставка</button>`}
             </div>
         </div>`;
     }).join('');
@@ -686,8 +669,8 @@ async function openBid(id, cur) {
     const r = await fetch(API+'/api/auctions/'+id+'/bids');
     const bids = await r.json();
     document.getElementById('bidsList').innerHTML = bids.length
-        ? '<strong style="font-size:11px">История ставок:</strong>' + bids.map(b=>`<div class="bid-row"><span>${b.bidder_name}</span><span>${b.amount} TON</span></div>`).join('')
-        : '<div style="color:var(--muted);font-size:11px">Ставок пока нет</div>';
+        ? '<strong style="font-size:11px">История:</strong>' + bids.map(b=>`<div class="bid-row"><span>${b.bidder_name}</span><span>${b.amount} TON</span></div>`).join('')
+        : '<div style="color:var(--muted);font-size:11px">Ставок нет</div>';
     document.getElementById('bidModal').style.display='flex';
 }
 async function submitBid() {
@@ -733,29 +716,11 @@ async function acceptOffer(id) {
     const r = await fetch(API+'/api/offers/'+id+'/accept',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sellerId:currentUser.id})});
     const d = await r.json();
     if (d.error) return toast('❌ '+d.error);
-    toast('✅ Оффер принят'); await refreshBalance(); await loadInventory(); await loadIncomingOffers(); await loadMarket();
+    toast('✅ Принят'); await refreshBalance(); await loadInventory(); await loadIncomingOffers(); await loadMarket();
 }
 async function rejectOffer(id) {
     await fetch(API+'/api/offers/'+id+'/reject',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sellerId:currentUser.id})});
     toast('❌ Отклонён'); loadIncomingOffers();
-}
-
-function openSwap(item) {
-    if (!currentUser) return toast('⚠️ Войдите');
-    document.getElementById('swapMyNft').innerHTML = `<option value="${item.nft_slug}">${item.nft_name} (${item.nft_emoji})</option>`;
-    document.getElementById('swapTarget').value='';
-    document.getElementById('swapCalc').innerText='';
-    document.getElementById('swapModal').style.display='flex';
-}
-async function doSwap() {
-    const mySlug = document.getElementById('swapMyNft').value;
-    const tSlug = document.getElementById('swapTarget').value.trim().toLowerCase();
-    const tgt = gifts.find(g=>g.slug===tSlug||g.name.toLowerCase()===tSlug);
-    if (!tgt) return toast('❌ Цель не найдена');
-    const r = await fetch(API+'/api/swap',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,mySlug,targetSlug:tgt.slug,targetName:tgt.name,targetEmoji:tgt.emoji,targetTon:tgt.ton})});
-    const d = await r.json();
-    if (d.error) return toast('❌ '+d.error);
-    closeM('swapModal'); toast('🔄 Обмен выполнен'); await refreshBalance(); await loadInventory();
 }
 
 function openTopup() {
@@ -763,15 +728,7 @@ function openTopup() {
     document.getElementById('tuAmount').value=10;
     document.getElementById('topupModal').style.display='flex';
 }
-async function doTopup() {
-    const v = parseFloat(document.getElementById('tuAmount').value);
-    if (!v||v<=0) return toast('⚠️ Сумма');
-    if (currentUser) {
-        currentUser.ton_balance += v;
-    }
-    state.tx.unshift({plus:true,ico:'💳',title:'Пополнение',val:'+'+v+' TON',time:timeNow()});
-    saveLocal(); updateBalance(); renderTx(); closeM('topupModal'); toast('✅ Пополнено');
-}
+function doTopup() { closeM('topupModal'); toast('💬 Напишите админу ' + ADMIN_CONTACT); }
 function openWithdraw() {
     document.getElementById('wdAmount').value='';
     document.getElementById('wdSub').innerText = 'Доступно: '+(currentUser?currentUser.ton_balance.toFixed(2):'0')+' TON';
@@ -792,12 +749,6 @@ function openWd(slug,name) {
     state.tx.unshift({plus:false,ico:'📤',title:'Вывод NFT: '+name,val:'-0.10 TON',time:timeNow()});
     saveLocal(); renderTx(); toast('📤 Заявка на вывод '+name);
 }
-function linkWallet() {
-    if (state.wallet) { state.wallet=''; saveLocal(); toast('🔌 Отвязан'); }
-    else { const a = prompt('Адрес TON:'); if (a&&a.length>20) { state.wallet=a; saveLocal(); toast('💎 Привязан'); } }
-    document.getElementById('wAddrTxt').innerText = state.wallet?state.wallet.slice(0,6)+'...'+state.wallet.slice(-5):'Не привязан';
-    document.getElementById('wLinkBtn').innerText = state.wallet?'Отвязать':'Привязать';
-}
 
 async function loadSalesHistory() {
     if (!currentUser) return;
@@ -811,18 +762,25 @@ async function loadSalesHistory() {
             <span class="price">${s.price_ton} TON</span>
         </div>`).join('');
 }
+
 async function renderAdmin() {
     if (!currentUser?.is_admin) return;
     document.getElementById('adminPanel').style.display='flex';
-    const [u,s] = await Promise.all([
+    document.getElementById('adminLogsHead').style.display='flex';
+    const [u,s,logs] = await Promise.all([
         fetch(API+'/api/admin/users?adminId='+currentUser.id).then(r=>r.json()),
-        fetch(API+'/api/admin/stats?adminId='+currentUser.id).then(r=>r.json())
+        fetch(API+'/api/admin/stats?adminId='+currentUser.id).then(r=>r.json()),
+        fetch(API+'/api/admin/logs?adminId='+currentUser.id).then(r=>r.json())
     ]);
     document.getElementById('adminStatsList').innerHTML = `
         <div class="listing-item"><strong>👥 Пользователей</strong><span class="price">${s.users}</span></div>
         <div class="listing-item"><strong>📌 Лотов</strong><span class="price">${s.listings}</span></div>
         <div class="listing-item"><strong>⏳ Аукционов</strong><span class="price">${s.auctions}</span></div>
-        <div class="listing-item"><strong>💰 Продаж</strong><span class="price">${s.sales} на ${s.volume.toFixed(2)} TON</span></div>`;
+        <div class="listing-item"><strong>💰 Продаж</strong><span class="price">${s.sales} на ${s.volume.toFixed(2)} TON</span></div>
+        <div class="row" style="margin-top:8px">
+            <button class="btn-primary2" onclick="openGiveNft()">🎁 Выдать NFT</button>
+            <button class="btn-primary2" onclick="openBalance()">💎 Изменить баланс</button>
+        </div>`;
     document.getElementById('adminUsersList').innerHTML = u.map(x=>`
         <div class="listing-item">
             <div><strong>${x.is_admin?'👑 ':''}${x.is_banned?'🚫 ':''}${x.username}</strong><br><span style="color:var(--muted);font-size:10px">ID: ${x.id}</span></div>
@@ -830,20 +788,49 @@ async function renderAdmin() {
                 ${x.is_admin?'':`<button class="btn-glass" style="padding:4px 8px;font-size:10px;margin-top:4px" onclick="adminBan(${x.id},${x.is_banned?0:1})">${x.is_banned?'Разбан':'Бан'}</button>`}
             </div>
         </div>`).join('');
+    document.getElementById('adminLogsList').innerHTML = logs.map(l=>`
+        <div class="log-row"><span style="color:var(--blue)">${l.username||'—'}</span><span>${l.action}</span><span style="color:var(--muted)">${l.details||''}</span><span style="color:var(--muted);font-size:10px">${l.created_at}</span></div>
+    `).join('');
 }
 async function adminBan(userId, ban) {
     await fetch(API+'/api/admin/ban',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id,userId,ban:!!ban})});
-    toast('✅ Обновлено'); renderAdmin();
+    toast('✅'); renderAdmin();
 }
+async function openGiveNft() {
+    const r = await fetch(API+'/api/admin/users?adminId='+currentUser.id);
+    const users = await r.json();
+    document.getElementById('giveUserId').innerHTML = users.filter(u=>!u.is_admin).map(u=>`<option value="${u.id}">${u.username}</option>`).join('');
+    document.getElementById('giveNftSlug').innerHTML = gifts.map(g=>`<option value="${g.slug}|${g.name}|${g.emoji}">${g.emoji} ${g.name}</option>`).join('');
+    document.getElementById('giveNftModal').style.display='flex';
+}
+async function adminGiveNft() {
+    const userId = Number(document.getElementById('giveUserId').value);
+    const [slug,name,emoji] = document.getElementById('giveNftSlug').value.split('|');
+    await fetch(API+'/api/admin/give-nft',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id,userId,slug,name,emoji})});
+    closeM('giveNftModal'); toast('🎁 Выдано'); renderAdmin();
+}
+async function openBalance() {
+    const r = await fetch(API+'/api/admin/users?adminId='+currentUser.id);
+    const users = await r.json();
+    document.getElementById('balUserId').innerHTML = users.map(u=>`<option value="${u.id}">${u.username} (${u.ton_balance.toFixed(2)} TON)</option>`).join('');
+    document.getElementById('balAmount').value='';
+    document.getElementById('balanceModal').style.display='flex';
+}
+async function adminBalance() {
+    const userId = Number(document.getElementById('balUserId').value);
+    const amount = parseFloat(document.getElementById('balAmount').value);
+    if (!amount || isNaN(amount)) return toast('⚠️ Сумма');
+    await fetch(API+'/api/admin/balance',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminId:currentUser.id,userId,amount})});
+    closeM('balanceModal'); toast('💎 Обновлено'); renderAdmin();
+}
+
 function renderTx() {
     document.getElementById('txList').innerHTML = state.tx.length ? state.tx.map(t=>`<div class="tx-item"><div><strong>${t.ico} ${t.title}</strong><div style="font-size:11px;color:var(--muted)">${t.time}</div></div><div class="${t.plus?'tx-plus':'tx-minus'}">${t.val}</div></div>`).join('') : '<div class="empty">История пуста</div>';
 }
 
-document.getElementById('wAddrTxt').innerText = state.wallet?state.wallet.slice(0,6)+'...'+state.wallet.slice(-5):'Не привязан';
-document.getElementById('wLinkBtn').innerText = state.wallet?'Отвязать':'Привязать';
 renderCatalog(); renderTx();
 initAuth();
-setInterval(()=>{ if (document.getElementById('sec-market').classList.contains('active')) loadAuctions(); }, 10000);
+setInterval(()=>{ if (document.getElementById('sec-auctions').classList.contains('active')) loadAuctions(); }, 10000);
 </script>
 </body>
 </html>
