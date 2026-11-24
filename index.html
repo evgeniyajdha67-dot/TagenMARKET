@@ -194,6 +194,19 @@ h2 { font-size: 18px; margin: 18px 0 10px; }
     </div>
 </div>
 
+<!-- МОДАЛКА АВТОРИЗАЦИИ -->
+<div class="modal" id="authModal">
+    <div class="modal-box">
+        <h3 id="authTitle">Регистрация</h3>
+        <p style="color:var(--muted);font-size:12px;margin-bottom:14px" id="authSub">Создайте аккаунт для доступа к маркету</p>
+        <input type="text" class="m-input" id="authUsername" placeholder="Ник (латиницей)">
+        <input type="password" class="m-input" id="authPassword" placeholder="Пароль (мин. 6 символов)">
+        <input type="password" class="m-input" id="authPassword2" placeholder="Повторите пароль">
+        <button class="btn-primary" id="authBtn" onclick="submitAuth()" style="width:100%;margin-bottom:8px">Зарегистрироваться</button>
+        <button class="btn-glass" onclick="toggleAuthMode()" style="width:100%;font-size:12px" id="authSwitch">Уже есть аккаунт? Войти</button>
+    </div>
+</div>
+
 <div class="modal" id="listModal">
     <div class="modal-box">
         <h3>Выставить лот</h3>
@@ -276,12 +289,11 @@ h2 { font-size: 18px; margin: 18px 0 10px; }
 </nav>
 
 <script>
-const API = 'https://твой-сервер.onrender.com';
+const API = 'https://tagenmarket.onrender.com';
 const ADMIN_CONTACT = '@tagen';
 let currentUser = null;
 let curListingItem = null, curAuctionItem = null, curOfferListing = null, curBidAuction = null;
 
-// ВСЕ 124 NFT
 const RAW = `Plush Pepe|plushpepe|nft|2500|🐸
 Algorithm Cup|algorithmcup|nft|1450|🏆
 Intelligence Cup|intelligencecup|nft|1320|🧠
@@ -424,7 +436,6 @@ function toast(m) { const t=document.getElementById('toast'); t.innerText=m; t.s
 function closeM(id) { document.getElementById(id).style.display='none'; }
 function timeNow() { return new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}); }
 
-// ===== ФОТО С КАСКАДНЫМ FALLBACK =====
 const IMG_NUMS = [1, 2, 10, 100, 1000, 5000, 10000];
 function imgUrl(slug, n) { return `https://nft.fragment.com/gift/${encodeURIComponent(slug)}-${n}.webp`; }
 function imgTag(slug, emoji) {
@@ -449,20 +460,63 @@ function goTab(t) {
     window.scrollTo({top:0,behavior:'smooth'});
 }
 
-async function autoRegister() {
-    const savedName = localStorage.getItem('frost_username');
-    const name = savedName || prompt('Добро пожаловать в FROST MARKET!\nВведите ник для регистрации (латиницей):');
-    if (!name || !name.trim()) return toast('⚠️ Без ника нельзя');
-    const res = await fetch(API+'/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:name.trim()})});
+// ===== АВТОРИЗАЦИЯ С ПАРОЛЕМ =====
+let isLoginMode = false;
+
+function toggleAuthMode() {
+    isLoginMode = !isLoginMode;
+    document.getElementById('authTitle').innerText = isLoginMode ? 'Вход' : 'Регистрация';
+    document.getElementById('authSub').innerText = isLoginMode ? 'Войдите в свой аккаунт' : 'Создайте аккаунт для доступа к маркету';
+    document.getElementById('authPassword2').style.display = isLoginMode ? 'none' : 'block';
+    document.getElementById('authBtn').innerText = isLoginMode ? 'Войти' : 'Зарегистрироваться';
+    document.getElementById('authSwitch').innerText = isLoginMode ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти';
+}
+
+async function submitAuth() {
+    const username = document.getElementById('authUsername').value.trim();
+    const password = document.getElementById('authPassword').value;
+    const password2 = document.getElementById('authPassword2').value;
+    if (!username || !password) return toast('⚠️ Заполните все поля');
+    if (!isLoginMode && password !== password2) return toast('⚠️ Пароли не совпадают');
+    if (password.length < 6) return toast('⚠️ Пароль минимум 6 символов');
+
+    const endpoint = isLoginMode ? '/api/login' : '/api/register';
+    const res = await fetch(API + endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+    });
     const data = await res.json();
-    if (data.error) return toast('❌ '+data.error);
+    if (data.error) return toast('❌ ' + data.error);
+
     currentUser = data;
-    localStorage.setItem('frost_username', currentUser.username);
+    localStorage.setItem('frost_userId', currentUser.id);
+    closeM('authModal');
     document.getElementById('uName').innerText = currentUser.username;
-    document.getElementById('uMeta').innerText = 'ID: '+currentUser.id + (currentUser.is_admin?' • 👑 Админ (tagen)':'');
+    document.getElementById('uMeta').innerText = 'ID: ' + currentUser.id + (currentUser.is_admin ? ' • 👑 Админ (tagen)' : '');
     updateBalance();
-    toast('✅ Вы вошли как '+currentUser.username);
+    toast('✅ Добро пожаловать, ' + currentUser.username);
     await loadInventory(); await loadMarket();
+}
+
+async function initAuth() {
+    const savedId = localStorage.getItem('frost_userId');
+    if (savedId) {
+        try {
+            const r = await fetch(API + '/api/user/' + savedId);
+            const user = await r.json();
+            if (user && !user.error && !user.is_banned) {
+                currentUser = user;
+                document.getElementById('uName').innerText = currentUser.username;
+                document.getElementById('uMeta').innerText = 'ID: ' + currentUser.id + (currentUser.is_admin ? ' • 👑 Админ (tagen)' : '');
+                updateBalance();
+                closeM('authModal');
+                await loadInventory(); await loadMarket();
+                return;
+            }
+        } catch(e) {}
+    }
+    document.getElementById('authModal').style.display = 'flex';
 }
 
 function updateBalance() {
@@ -584,7 +638,6 @@ async function confirmListing() {
     closeM('listModal'); toast('📌 Лот выставлен'); await loadInventory(); await loadMarket();
 }
 
-// ===== АУКЦИОН РАБОЧИЙ =====
 function openAuc(item) {
     if (!currentUser) return toast('⚠️ Войдите');
     curAuctionItem = item;
@@ -646,7 +699,6 @@ async function submitBid() {
     closeM('bidModal'); toast('💸 Ставка принята'); await loadAuctions();
 }
 
-// ===== ОФФЕРЫ =====
 function openOffer(listingId, name) {
     if (!currentUser) return toast('⚠️ Войдите');
     curOfferListing = listingId;
@@ -688,7 +740,6 @@ async function rejectOffer(id) {
     toast('❌ Отклонён'); loadIncomingOffers();
 }
 
-// ===== ОБМЕН =====
 function openSwap(item) {
     if (!currentUser) return toast('⚠️ Войдите');
     document.getElementById('swapMyNft').innerHTML = `<option value="${item.nft_slug}">${item.nft_name} (${item.nft_emoji})</option>`;
@@ -707,7 +758,6 @@ async function doSwap() {
     closeM('swapModal'); toast('🔄 Обмен выполнен'); await refreshBalance(); await loadInventory();
 }
 
-// ===== ПОПОЛНЕНИЕ / ВЫВОД =====
 function openTopup() {
     document.getElementById('adminContactBox').innerHTML = `💬 <b>Для пополнения напишите админу:</b><br><a href="https://t.me/${ADMIN_CONTACT.replace('@','')}" target="_blank" style="color:var(--gold);font-weight:700">${ADMIN_CONTACT}</a>`;
     document.getElementById('tuAmount').value=10;
@@ -717,8 +767,6 @@ async function doTopup() {
     const v = parseFloat(document.getElementById('tuAmount').value);
     if (!v||v<=0) return toast('⚠️ Сумма');
     if (currentUser) {
-        await fetch(API+'/api/give-nft',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:currentUser.id,slug:'_topup',name:'_topup',emoji:''})});
-        // просто начислим локально для демо
         currentUser.ton_balance += v;
     }
     state.tx.unshift({plus:true,ico:'💳',title:'Пополнение',val:'+'+v+' TON',time:timeNow()});
@@ -751,7 +799,6 @@ function linkWallet() {
     document.getElementById('wLinkBtn').innerText = state.wallet?'Отвязать':'Привязать';
 }
 
-// ===== ИСТОРИЯ / АДМИН =====
 async function loadSalesHistory() {
     if (!currentUser) return;
     const r = await fetch(API+'/api/history/sales/'+currentUser.id);
@@ -795,8 +842,7 @@ function renderTx() {
 document.getElementById('wAddrTxt').innerText = state.wallet?state.wallet.slice(0,6)+'...'+state.wallet.slice(-5):'Не привязан';
 document.getElementById('wLinkBtn').innerText = state.wallet?'Отвязать':'Привязать';
 renderCatalog(); renderTx();
-autoRegister();
-// обновление аукционов раз в 10 сек
+initAuth();
 setInterval(()=>{ if (document.getElementById('sec-market').classList.contains('active')) loadAuctions(); }, 10000);
 </script>
 </body>
