@@ -1,10 +1,11 @@
 const Database = require('better-sqlite3');
-const db = new Database('market.db');
+const db = new Database(process.env.DB_PATH || 'market.db');
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE,
+    password_hash TEXT,
     ton_balance REAL DEFAULT 100,
     is_admin INTEGER DEFAULT 0,
     is_banned INTEGER DEFAULT 0,
