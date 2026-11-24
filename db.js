@@ -80,6 +80,12 @@ db.exec(`
     nft_slug TEXT,
     UNIQUE(user_id, nft_slug)
   );
+  CREATE TABLE IF NOT EXISTS watchlist (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    collection_slug TEXT,
+    UNIQUE(user_id, collection_slug)
+  );
   CREATE TABLE IF NOT EXISTS notifications (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER,
