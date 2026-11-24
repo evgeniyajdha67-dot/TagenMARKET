@@ -182,15 +182,9 @@ db.exec(`
     result TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
-  CREATE TABLE IF NOT EXISTS search_boosts (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    listing_id INTEGER,
-    paid REAL,
-    until INTEGER
-  );
 `);
 
-// идемпотентные миграции для старых БД
+// Идемпотентные миграции для старых БД
 const migrations = [
   "ALTER TABLE sales_history ADD COLUMN fee REAL DEFAULT 0",
   "ALTER TABLE sales_history ADD COLUMN fee_currency TEXT",
